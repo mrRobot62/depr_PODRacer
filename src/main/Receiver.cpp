@@ -1,12 +1,30 @@
 #include "Receiver.h"
 
-namespace recv {
 
-  Receiver::Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert) : TaskAbstract(log)  {
+  Receiver::Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap) : TaskAbstract(log)  {
     _bus = bus;
     _invert = invert;
     _txpin = txpin;
     _rxpin = rxpin;
+
+    if (sizeof(chmap) < 4 || sizeof(chmap) > 4) {
+      logger->error("wrong ChannelMap settings", false);
+      logger->error(chmap);
+    }
+    for (uint8_t c=0; c < sizeof(chmap); c++) {
+        if (chmap[c] == 'A') {
+          channelMap[AILERON] = c;
+        }
+        else if (chmap[c] == 'E') {
+          channelMap[ELEVATOR] = c;
+        }
+        else if (chmap[c] == 'T') {
+          channelMap[THROTTLE] = c;
+        }
+        else if (chmap[c] == 'R') {
+          channelMap[YAW] = c;
+        }
+    }
 
     logger->info("Receiver initialized");
   }
@@ -24,7 +42,7 @@ namespace recv {
     sbus_rx->Begin();
     sbus_tx->Begin();
     rc = true;
-    logger->info("Receiver.begin(void) started ");
+    logger->info("Receiver ready");
     return rc;
   }
 
@@ -39,12 +57,25 @@ namespace recv {
                   channel_calibration[i][1], 
                   channel_calibration[i][2], 
                   channel_calibration[i][3]);
+        //remove 
+        _data.ch[i] = centeredValue(_data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
       _data.failsafe = sbus_data.failsafe;
       _data.lost_frame = sbus_data.lost_frame;
       _data.updated = true;
 
-      #if defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL)
+      #if defined(LOG_TASK_RECEIVER) && defined (USE_SERIAL_PLOTTER)
+        sprintf(buffer, "CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d",
+          _data.ch[0],
+          _data.ch[1],
+          _data.ch[2],
+          _data.ch[3],
+          _data.ch[4],
+          _data.ch[5]        
+        );
+        logger->simulate(buffer);
+
+      #elif defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL)
         sprintf(buffer, "Receiver::update() CH:<%4d, %4d, %4d, %4d> AUX:<%4d, %4d, %4d, %4d>", 
           _data.ch[0],
           _data.ch[1],
@@ -53,9 +84,8 @@ namespace recv {
           _data.ch[4],
           _data.ch[5],
           _data.ch[6],
-          _data.ch[7]
-        );
-        logger->debug(buffer);
+          _data.ch[7]);
+          logger->debug(buffer);
       #endif
     }
   }
@@ -79,7 +109,9 @@ namespace recv {
     */
     sbus_tx->data(sbus_data);
 
-    #if defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL) 
+    #if defined(LOG_TASK_RECEIVER) || defined (USE_SERIAL_PLOTTER)
+
+    #elif defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL) 
       sprintf(buffer, "Receiver::write sbus_data CH:<%4d, %4d, %4d, %4d> AUX:<%4d, %4d, %4d, %4d>", 
         sbus_data.ch[0],
         sbus_data.ch[1],
@@ -92,12 +124,5 @@ namespace recv {
       );
       logger->debug(buffer);
     #endif
-    
     sbus_tx->Write();
-  
-    #if defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL)
-      logger->debug("RECEIVER::WRITE");
-    #endif
-
   }
-};

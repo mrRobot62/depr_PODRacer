@@ -38,7 +38,6 @@
 **/
 
 
-namespace recv {
 /*
   typedef struct data SDATA;  
   struct data {
@@ -52,7 +51,8 @@ namespace recv {
 
   class Receiver : public TaskAbstract {
     public:
-      Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert);
+      Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap="AETR");
+
       bool begin(void);
 
       /** read data from receiver and update internal SDATA struct **/
@@ -64,6 +64,10 @@ namespace recv {
       /** send data to receiver **/
       void write(void);
 
+
+      uint16_t getRoll() {
+        
+      }
 
       /** return channel data from last update **/
       uint16_t getData(int8_t ch) {
@@ -91,26 +95,31 @@ namespace recv {
       bfs::SbusTx *sbus_tx;
       bfs::SbusData sbus_data;
 
-      char buffer[100];
+      // mapping Roll/Pitch/Throttle/Yaw axis to channels
+      // default : ch0 = roll, ch1 = pitch, ch2 = throttle, ch3=yaw
+      // ch4 and others = aux
+      //
+      uint8_t channelMap[4] = {0,1,2,3};
       uint16_t channel_calibration [16][4] = {
-        {192, 1800, 1000, 2000},
-        {192, 1794, 1000, 2000},
-        {192, 1794, 1000, 2000},
-        {192, 1794, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000},
-        {173, 1810, 1000, 2000}
+        // calibrations values for 16 channels
+        // idx0= SBUS lowes value, idx1=SBUS highest value, idx2+3=calibrated min/max values
+        {192, 1800, GIMBAL_MIN, GIMBAL_MAX},
+        {192, 1794, GIMBAL_MIN, GIMBAL_MAX},
+        {192, 1794, GIMBAL_MIN, GIMBAL_MAX},
+        {192, 1794, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
+        {173, 1810, GIMBAL_MIN, GIMBAL_MAX}
       };
   };
-};
 
 #endif

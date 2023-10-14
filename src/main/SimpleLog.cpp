@@ -34,6 +34,10 @@
         }
       }
 
+      void simulate(const char *text) {
+        _print(text, "SIMUALTE", true, true);
+      }
+
       void info(const long v, bool cr=true) {
         sprintf(buffer, "%d", v);
         info(buffer, cr);
@@ -74,13 +78,18 @@
       uint8_t _level;
       char buffer [100];
     private:
-      void _print(const char *text, const char *LEVEL, bool cr=true) {
-        sprintf(buffer,"%10d|%5s|%s", millis(), LEVEL, text);
-        if (cr) {
-          _bus->println(buffer);
+      void _print(const char *text, const char *LEVEL, bool cr=true, bool simulate=false) {
+        if (simulate) {
+          _bus->println(text);
         }
         else {
-          _bus->print(buffer);
+          sprintf(buffer,"%10d|%5s|%s", millis(), LEVEL, text);
+          if (cr) {
+            _bus->println(buffer);
+          }
+          else {
+            _bus->print(buffer);
+        }
         }
         _bus->flush();
         /*

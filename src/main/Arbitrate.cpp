@@ -1,6 +1,5 @@
 #include "Arbitrate.h"
 
-namespace arbi {
 
 Arbitrate::Arbitrate(SLog *logger) : TaskAbstract(logger)  {
 
@@ -25,4 +24,3 @@ void Arbitrate::update() {
   #endif
 }
 
-}

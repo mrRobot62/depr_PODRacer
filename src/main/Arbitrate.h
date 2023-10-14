@@ -6,7 +6,6 @@
 #include "Receiver.h"
 #include "constants.h"
 
-namespace arbi {
 
   typedef struct sbus_data SDATA;  
   struct sbus_data {
@@ -23,7 +22,7 @@ namespace arbi {
       bool begin(void);
       void update(void);
 
-      inline bool begin(recv::Receiver *receiver) {
+      inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
           logger->info("Arbitrate.begin(receiver) started, receiver: ", false);
@@ -43,8 +42,7 @@ namespace arbi {
     private: 
       char buffer[100];
       SDATA _data;
-      recv::Receiver *_recv;
+      Receiver *_recv;
   };
-};
 
 #endif

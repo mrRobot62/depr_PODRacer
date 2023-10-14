@@ -33,9 +33,10 @@ Arbitrate (Priorisierung)
 #include <assert.h>
 #include "Receiver.h"
 #include "Arbitrate.h"
+#include "OpticalFlow.h"
 #include "SimpleLog.cpp"
+#include "Hover.h"
 #include "constants.h"
-
 
 CoopSemaphore taskSema(1,1);
 #define NUMBER_OF_LAYER_TASKS 5
@@ -44,15 +45,18 @@ int taskToken = 1;
 SLog logger(&Serial, 115200, LOGLEVEL);
 
 CoopTask<void>* heartBeatTask = nullptr;
-//CoopTask<void>* movementCtrlTask = nullptr;
+CoopTask<void>* movementCtrlTask = nullptr;
+CoopTask<void>* hoverCtrlTask = nullptr;
 //CoopTask<void>* surfaceDist1Task = nullptr;
 //CoopTask<void>* surfaceDist2Task = nullptr;
-CoopTask<void>* receiverTask = nullptr;
-CoopTask<void>* arbitrateTask = nullptr;
+CoopTask<void>* receiverCtrlTask = nullptr;
+CoopTask<void>* arbitrateCtrlTask = nullptr;
 
 
-recv::Receiver receiver(&logger, &Serial2, 16, 17, true);
-arbi::Arbitrate arbitrate(&logger);
+Hover hover(&logger);
+OpticalFlow flow(&logger, PIN_PMW3901);
+Receiver receiver(&logger, &Serial2, 16, 17, true);
+Arbitrate arbitrate(&logger);
 
 
 //Receiver *receiver;
@@ -74,16 +78,19 @@ void HeartBeatFunction() {
   }
 }
 
-/*
+
 // Task 2: use PMW3901 optical flow sensor
 void MovementControlFunction() {
 //  taskSema.wait();
   unsigned long lastMillis = millis();
   int16_t deltaX,deltaY;
-
+  if (flow.begin() == false) {
+    logger.error("MAIN : can't start OpticalFlow");
+    return;
+  }
   for(;;) {
-    Serial.println("run MovementControlFunction");
-    
+    //Serial.println("run MovementControlFunction");
+    flow.update();
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
@@ -93,6 +100,25 @@ void MovementControlFunction() {
 
 }
 
+
+// Primary Task Hovering is the base functionality of the complete PODRacer System
+// 
+void HoverControlFunction() {
+  unsigned long lastMillis = millis();
+  if (hover.begin() == false ) {
+    logger.error("MAIN : can't start Hover object");
+    return;
+  }
+  for(;;) {
+    if ((millis() - lastMillis) > LOOP_TIME) {
+      yield();
+    }
+    delay(LOOP_TIME);
+  }
+
+}
+
+/*
 // Task 3: use TFMini sensor
 void SurfaceDistanceControl1Function() {
   unsigned long lastMillis = millis();
@@ -123,10 +149,10 @@ void SurfaceDistanceControl2Function() {
 */
 
 // Task 5: control SBUS activites (Receiver -> EPS32 -> FlightController)
-void ReceiverFunction() {
+void ReceiverControlFunction() {
   unsigned long lastMillis = millis();
   if (!receiver.begin()) {
-    logger.error("MAIN : can't create Receiver object");
+    logger.error("MAIN : can't start Receiver object");
     return;
   }
   for(;;) {
@@ -141,11 +167,11 @@ void ReceiverFunction() {
 
 }
 // Task 6: arbitrate 
-void ArbitrateFunction() {
+void ArbitrateControlFunction() {
   unsigned long lastMillis = millis();
   if (&receiver) {
     if (!arbitrate.begin(&receiver)) {
-      logger.error("MAIN : can't create arbitrate object");
+      logger.error("MAIN : can't start arbitrate object");
     }
   }
   else {
@@ -153,7 +179,7 @@ void ArbitrateFunction() {
   }
   for(;;) {
 
-    arbitrate.update();
+    //arbitrate.update();
 
 
     //flow.readMotionCount(&deltaX, &deltaY);
@@ -182,12 +208,14 @@ bool SleepCoopFunction() {
   else {
     logger.info("!!!! no obj HB");
   }
-  //if (movementCtrlTask) movementCtrlTask->wakeup();
+  if (hoverCtrlTask) hoverCtrlTask->wakeup();
+  if (movementCtrlTask) movementCtrlTask->wakeup();
   //if (surfaceDist1Task) surfaceDist1Task->wakeup();
   //if (surfaceDist2Task) surfaceDist2Task->wakeup();
-  if (receiverTask) receiverTask->wakeup();
-  if (arbitrateTask) arbitrateTask->wakeup();
+  if (receiverCtrlTask) receiverCtrlTask->wakeup();
 
+  delay(100);
+  if (arbitrateCtrlTask) arbitrateCtrlTask->wakeup();
   return true;
 }
 
@@ -210,11 +238,12 @@ void setup() {
   logger.info("create tasks....");
 
   heartBeatTask = new CoopTask<void>(F("HeartBeat"),HeartBeatFunction);
-  //movementCtrlTask = new CoopTask<void>(F("MovementCtrl"), MovementControlFunction);
+  movementCtrlTask = new CoopTask<void>(F("MovementCtrl"), MovementControlFunction);
+  hoverCtrlTask = new CoopTask<void>(F("HoverCtrl"), HoverControlFunction);
   //surfaceDist1Task= new CoopTask<void>(F("SurfaceDist 1"), SurfaceDistanceControl1Function);
   //surfaceDist2Task = new CoopTask<void>(F("SurfaceDist 2"), SurfaceDistanceControl2Function);
-  receiverTask = new CoopTask<void>(F("RECEIVER"),ReceiverFunction);
-  arbitrateTask = new CoopTask<void>(F("ARBITRATE"),ArbitrateFunction);
+  receiverCtrlTask = new CoopTask<void>(F("RECEIVER"),ReceiverControlFunction);
+  arbitrateCtrlTask = new CoopTask<void>(F("ARBITRATE"),ArbitrateControlFunction);
   logger.info("all tasks ready");
 
   //-----------------------------------------
@@ -228,8 +257,9 @@ Serial.print("heartBeatTask:"); Serial.println((unsigned long)&heartBeatTask);
   //movementCtrlTask->scheduleTask();
   //surfaceDist1Task->scheduleTask();
   //surfaceDist2Task->scheduleTask();
-  receiverTask->scheduleTask();
-  arbitrateTask->scheduleTask();
+  hoverCtrlTask->scheduleTask();
+  receiverCtrlTask->scheduleTask();
+  arbitrateCtrlTask->scheduleTask();
   logger.info("all tasks scheduled");
 }
 
