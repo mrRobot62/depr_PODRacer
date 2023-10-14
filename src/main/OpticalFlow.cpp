@@ -16,6 +16,8 @@ OpticalFlow::OpticalFlow(SLog *log, uint8_t cs_pin) : TaskAbstract(log) {
     }
     slipX = slipY = slipAdjX = slipAdjY = 0;
     rawX = rawY = 0;
+    setPointSlipX = setPointSlipY = 0;
+
 
     //
     // PID behaviour
@@ -67,20 +69,20 @@ OpticalFlow::OpticalFlow(SLog *log, uint8_t cs_pin) : TaskAbstract(log) {
 
     // note we set a new slipAdjX/Y value based on the current slipX/Y value
     pidX->Compute();
-
+    pidY->Compute();
 
 
     
     #if defined (LOG_TASK_OPTICALFLOW) || defined (LOG_TASK_ALL)
       #if defined (USE_SERIAL_PLOTTER)
-        sprintf(buffer, "rawInX: %d, rawInY:%d, slipX: %d, slipY: %d, slipAdjX: %d, slipAdjY: %d",
-          rawInX, rawInY,
+        sprintf(buffer, "rawX:%d, rawY:%d, slipX: %d, slipY:%d, slipAdjX:%d, slipAdjY:%d",
+          rawX, rawY,
           slipX, slipY,
           slipAdjX, slipAdjY
         );
         logger->simulate(buffer);
       #elif defined (LOG_TASK_OPTICALFLOW)
-        sprintf(buffer, "rX: %d, rY:%d, sX: %d, sY: %d, sAX: %d, sAY: %d",
+        sprintf(buffer, "rX:%d, rY:%d, sX:%d, sY:%d, sAX:%d, sAY:%d",
           rawX, rawY,
           slipX, slipY,
           slipAdjX, slipAdjY
