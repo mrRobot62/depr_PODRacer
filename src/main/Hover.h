@@ -5,18 +5,22 @@
 #include "Task.h"
 #include <PID_v1.h>
 #include "constants.h"
+#include "Receiver.h"
+
 
 class Hover : public TaskAbstract {
   public:
-    Hover(SLog *log);
+    Hover(uint8_t taskID, SLog *log);
 
     /** initialize **/
-    bool begin(void);
+    bool begin(void) {;};
+    bool begin(Receiver *receiver);
 
     /** update site loop **/
     void update(void);
 
   private:
+    Receiver *_recv;
     SimpleKalmanFilter *skfHover;
 };
 

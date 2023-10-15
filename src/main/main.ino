@@ -52,11 +52,11 @@ CoopTask<void>* hoverCtrlTask = nullptr;
 CoopTask<void>* receiverCtrlTask = nullptr;
 CoopTask<void>* arbitrateCtrlTask = nullptr;
 
+Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
 
-Hover hover(&logger);
-OpticalFlow flow(&logger, PIN_PMW3901);
-Receiver receiver(&logger, &Serial2, 16, 17, true);
-Arbitrate arbitrate(&logger);
+Hover hover(TASK_HOVER, &logger);
+OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901);
+Arbitrate arbitrate(TASK_ARBITRATE, &logger);
 
 
 //Receiver *receiver;
@@ -84,7 +84,7 @@ void MovementControlFunction() {
 //  taskSema.wait();
   unsigned long lastMillis = millis();
   int16_t deltaX,deltaY;
-  if (flow.begin() == false) {
+  if (flow.begin(&receiver) == false) {
     logger.error("MAIN : can't start OpticalFlow");
     return;
   }
@@ -105,7 +105,7 @@ void MovementControlFunction() {
 // 
 void HoverControlFunction() {
   unsigned long lastMillis = millis();
-  if (hover.begin() == false ) {
+  if (hover.begin(&receiver) == false ) {
     logger.error("MAIN : can't start Hover object");
     return;
   }
@@ -199,23 +199,16 @@ bool SleepCoopFunction() {
   Serial.println("run SleepCoopFunction");
   Serial.flush();
   delay(LOOP_TIME);
-  Serial.print(">> hBT:"); Serial.println((unsigned long)&heartBeatTask);
-
-  if (heartBeatTask) {
-    logger.info(">>> Wakup HB");
-    heartBeatTask->wakeup();
-  }
-  else {
-    logger.info("!!!! no obj HB");
-  }
+  if (heartBeatTask) heartBeatTask->wakeup();
   if (hoverCtrlTask) hoverCtrlTask->wakeup();
   if (movementCtrlTask) movementCtrlTask->wakeup();
   //if (surfaceDist1Task) surfaceDist1Task->wakeup();
   //if (surfaceDist2Task) surfaceDist2Task->wakeup();
   if (receiverCtrlTask) receiverCtrlTask->wakeup();
-
-  delay(100);
   if (arbitrateCtrlTask) arbitrateCtrlTask->wakeup();
+  #if defined (LOG_TASK_ALL)
+    logger->debug ("SleepCoopFunction wakeup tasks done");
+  #endif
   return true;
 }
 

@@ -12,16 +12,18 @@
 #define USE_SERIAL_PLOTTER
 
 #define LED_BUILTIN 15
-#define LOOP_TIME 20
+#define LOOP_TIME 10
 #define HB_BLINK_FREQ 250
 #define PIN_PMW3901 5
 
 // arbitration flag as a 16bit flag
-#define HB 1
-#define MOVEMENT 2
-#define DISTANCE1 4
-#define DISTANCE2 8
-#define RECEIVER 0x10
+#define TASK_HB 0
+#define TASK_HOVER 1
+#define TASK_OPTICALFLOW 2
+#define TASK_SURFACEDISTANCE 3
+#define TASK_FRONTDISTANCE 4
+#define TASK_RECEIVER 10
+#define TASK_ARBITRATE 15
 
 // receivers toogle values around 1-5 +/- if nothing done by user activity
 // this avoid false readings inside Receiver-class. As bigger the value is, as less sensitive your PODracer is around center gimbal position
@@ -32,24 +34,25 @@
 #define GIMBAL_MIN (int16_t)1000
 #define GIMBAL_MAX (int16_t)2000
 
-#define AILERON  0  // internal channel mapping set A(Roll) on position 0
-#define ELEVATOR 1  // dito for E(Pitch)
+#define ROLL  0  // internal channel mapping set A(Roll) on position 0
+#define PITCH 1  // dito for E(Pitch)
 #define THROTTLE 2  // dito for T(Throttle)
 #define YAW 3       // dito for R(Yaw)
 #define AUX1 4
 #define AUX2 5
 #define AUX3 6
-#define AUX4 6
+#define HOVER 7
 
 // range interval around centerpositoin for A/E/Y
 // this is used by sensors like OpticalFlow. All Values between value-CENTER_RANGE and value+CENTER_RANGE are used as "CENTER"
 // this avoid very sensible gimbal movements. For a PODRacer this is ok, for real quad copters a totally NO_GO ;-)
+// value is used for isGimbalMin/Max
 #define CENTER_RANGE 50 
 
 //
 // OpticalFlow
-#define MOVE_RANGE 500
-
-
+#define FLOW_COUNTER_MAX 100
+#define SLIP_RANGE 500
+#define PMW3901_ZERO 1
 
 #endif

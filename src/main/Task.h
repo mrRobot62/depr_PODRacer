@@ -12,8 +12,9 @@
 
   class TaskAbstract {
     public:
-      TaskAbstract(SLog *log) {
+      TaskAbstract(uint8_t taskID, SLog *log) {
         logger = log;
+        _id = taskID;
       };
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
@@ -22,6 +23,8 @@
       inline TDATA data() const {return _data;}
       /** set data struct **/
       inline TDATA data(TDATA data) { _data = data;}
+
+      uint8_t getID() {return _id;};
 
     protected:
 
@@ -32,6 +35,15 @@
         }
         return value;
       }
+
+      /** check if value is >= min and value <= max **/
+      inline bool isInRange(double value, double min, double max) {
+        if ((value >= min) && (value <= max)) {
+          return true;
+        }
+        return false;
+      }
+
 
       /** check if value is >= value-offset and value <= value+offset **/
       inline bool isInInterval(int16_t value, int16_t offset) {
@@ -82,6 +94,8 @@
       //-----
       char buffer[100];
 
+    private:
+      uint8_t _id;
   };
 //};
 

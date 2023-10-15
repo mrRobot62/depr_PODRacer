@@ -1,7 +1,7 @@
 #include "Arbitrate.h"
 
 
-Arbitrate::Arbitrate(SLog *logger) : TaskAbstract(logger)  {
+Arbitrate::Arbitrate(uint8_t taskID, SLog *logger) : TaskAbstract(taskID, logger)  {
 
 }
 

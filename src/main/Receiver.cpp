@@ -1,31 +1,71 @@
 #include "Receiver.h"
 
 
-  Receiver::Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap) : TaskAbstract(log)  {
+  Receiver::Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap) : TaskAbstract(taskID, log)  {
     _bus = bus;
     _invert = invert;
     _txpin = txpin;
     _rxpin = rxpin;
 
-    if (sizeof(chmap) < 4 || sizeof(chmap) > 4) {
-      logger->error("wrong ChannelMap settings", false);
-      logger->error(chmap);
+    if (strlen(chmap) < 8 || strlen(chmap) > 8) {
+      sprintf(buffer, "Wrong ChannelMap settings (%s) - sizeof(%d)", chmap, sizeof(chmap));
+      logger->error(buffer);
     }
-    for (uint8_t c=0; c < sizeof(chmap); c++) {
+    for (uint8_t c=0; c < strlen(chmap); c++) {
         if (chmap[c] == 'A') {
-          channelMap[AILERON] = c;
+          channelMap[ROLL] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], ROLL);
+          #endif
         }
         else if (chmap[c] == 'E') {
-          channelMap[ELEVATOR] = c;
+          channelMap[PITCH] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], PITCH);
+          #endif
         }
         else if (chmap[c] == 'T') {
           channelMap[THROTTLE] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THROTTLE);
+          #endif
         }
         else if (chmap[c] == 'R') {
           channelMap[YAW] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], YAW);
+          #endif
         }
-    }
+        else if (chmap[c] == '1') {
+          channelMap[AUX1] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX1);
+          #endif
+        }
+        else if (chmap[c] == '2') {
+          channelMap[AUX2] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX2);
+          #endif
+        }
+        else if (chmap[c] == '3') {
+          channelMap[AUX3] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX3);
+          #endif
+        }
+        else if (chmap[c] == 'H') {
+          channelMap[HOVER] = c;
+          #if defined(LOG_TASK_RECEIVER)
+            sprintf(buffer, "CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], HOVER);
+          #endif
+        }
+        #if defined(LOG_TASK_RECEIVER)
+          logger->info(buffer);
+        #endif
 
+    }
+    logger->info("Channel mapping: ", false) ; logger->info(chmap);
     logger->info("Receiver initialized");
   }
 
@@ -52,40 +92,31 @@
       sbus_data = sbus_rx->data();
       uint16_t v1,v2;
       for (uint8_t i=0; i < _data.NUM_CH;i++) {
-        _data.ch[i] = map(sbus_data.ch[i], 
-                  channel_calibration[i][0], 
-                  channel_calibration[i][1], 
-                  channel_calibration[i][2], 
-                  channel_calibration[i][3]);
-        //remove 
+        _data.ch[i] = map(
+                          sbus_data.ch[i], 
+                          channel_calibration[i][0], 
+                          channel_calibration[i][1], 
+                          channel_calibration[i][2], 
+                          channel_calibration[i][3]
+                        );
         _data.ch[i] = centeredValue(_data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
       _data.failsafe = sbus_data.failsafe;
       _data.lost_frame = sbus_data.lost_frame;
       _data.updated = true;
 
-      #if defined(LOG_TASK_RECEIVER) && defined (USE_SERIAL_PLOTTER)
-        sprintf(buffer, "CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d",
+      #if defined(LOG_TASK_RECEIVER) && defined(USE_SERIAL_PLOTTER)
+        sprintf(buffer, "CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
           _data.ch[0],
           _data.ch[1],
           _data.ch[2],
           _data.ch[3],
           _data.ch[4],
-          _data.ch[5]        
+          _data.ch[5],        
+          _data.ch[6],        
+          _data.ch[7]     
         );
         logger->simulate(buffer);
-
-      #elif defined(LOG_TASK_RECEIVER) || defined(LOG_TASK_ALL)
-        sprintf(buffer, "Receiver::update() CH:<%4d, %4d, %4d, %4d> AUX:<%4d, %4d, %4d, %4d>", 
-          _data.ch[0],
-          _data.ch[1],
-          _data.ch[2],
-          _data.ch[3],
-          _data.ch[4],
-          _data.ch[5],
-          _data.ch[6],
-          _data.ch[7]);
-          logger->debug(buffer);
       #endif
     }
   }

@@ -51,7 +51,7 @@
 
   class Receiver : public TaskAbstract {
     public:
-      Receiver(SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap="AETR");
+      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap="AETR123H");
 
       bool begin(void);
 
@@ -85,6 +85,32 @@
         return _data.lost_frame;
       }
 
+      /** **/
+      bool isGimbalCentered(uint8_t ch, bool useRange=true) {
+        uint8_t range (useRange ? CENTER_RANGE : 0);
+        if (isInInterval(getData(ch), GIMBAL_CENTER_POSITION, range)) {
+          return true;
+        }
+        return false;
+      }
+
+      /** **/
+      bool isGimbalMin(uint8_t ch, bool useRange=true) {
+        uint8_t range (useRange ? CENTER_RANGE : 0);
+        if (isInInterval(getData(ch), GIMBAL_MIN, 0, range)) {
+          return true;
+        }
+        return false;
+      }
+
+      /** **/
+      bool isGimbalMax(uint8_t ch, bool useRange=true) {
+        uint8_t range (useRange ? CENTER_RANGE : 0);
+        if (isInInterval(getData(ch), GIMBAL_MAX, range, 0)) {
+          return true;
+        }
+        return false;
+      }
 
     private:
       HardwareSerial *_bus;
@@ -99,7 +125,7 @@
       // default : ch0 = roll, ch1 = pitch, ch2 = throttle, ch3=yaw
       // ch4 and others = aux
       //
-      uint8_t channelMap[4] = {0,1,2,3};
+      uint8_t channelMap[8] = {0,1,2,3,4,5,6,7};
       uint16_t channel_calibration [16][4] = {
         // calibrations values for 16 channels
         // idx0= SBUS lowes value, idx1=SBUS highest value, idx2+3=calibrated min/max values

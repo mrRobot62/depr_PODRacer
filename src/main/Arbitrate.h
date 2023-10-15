@@ -18,7 +18,7 @@
 
   class Arbitrate: public TaskAbstract {
     public:
-      Arbitrate(SLog *log);
+      Arbitrate(uint8_t taskID, SLog *log);
       bool begin(void);
       void update(void);
 
