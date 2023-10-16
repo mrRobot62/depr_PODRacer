@@ -34,6 +34,7 @@ Arbitrate (Priorisierung)
 #include "Receiver.h"
 #include "Arbitrate.h"
 #include "OpticalFlow.h"
+#include "SurfaceDistance.h"
 #include "SimpleLog.cpp"
 #include "Hover.h"
 #include "constants.h"

@@ -71,10 +71,10 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     #endif 
 
     /** if one gimbal is not centered, no optical flow measurement is needed **/
-    if (  ((_recv->isGimbalCentered(ROLL) == false) ||
-          (_recv->isGimbalCentered(PITCH) == false) ||
-          (_recv->isGimbalCentered(YAW) == false))
-     ) {
+    if (  (_recv->isGimbalCentered(ROLL) == false)
+          || (_recv->isGimbalCentered(PITCH) == false)
+//          || (_recv->isGimbalCentered(YAW) == false)
+        ) {
       #if defined(LOG_TASK_OPTICALFLOW)
         logger->info("CENTERED (RPY)");
       #endif
