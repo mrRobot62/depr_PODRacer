@@ -87,12 +87,17 @@
 
       /** **/
       bool isGimbalCentered(uint8_t ch, bool useRange=true) {
+        bool rc = false;
         uint8_t range (useRange ? CENTER_RANGE : 0);
-        if (isInInterval(getData(ch), GIMBAL_CENTER_POSITION, range)) {
+        rc = isInInterval(getData(ch), GIMBAL_CENTER_POSITION, range);
+        //sprintf(buffer,"ch(%d), v:%d, cRange:%d, range:%d, isCentered:%d", ch, getData(ch), GIMBAL_CENTER_POSITION, range, rc );
+        //Serial.println(buffer);        
+        if (rc) {
           return true;
         }
         return false;
       }
+
 
       /** **/
       bool isGimbalMin(uint8_t ch, bool useRange=true) {

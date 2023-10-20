@@ -30,7 +30,7 @@
 
       /** check if value is in a center postioin range, if not return value, if yes return centerValue **/
       inline int16_t centeredValue(int16_t value, int16_t centerValue, int8_t offset) {
-        if ((value >= centerValue - offset) && (value <= (centerValue+offset))) {
+        if ((value >= (centerValue - offset)) && (value <= (centerValue+offset))) {
           return centerValue;
         }
         return value;

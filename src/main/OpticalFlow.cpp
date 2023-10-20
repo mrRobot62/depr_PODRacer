@@ -32,10 +32,18 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     // PID behaviour
     // rawInX represent the input value which got by sensor
     // The PID controller try to adjust to zero for X/Y (0 means no slip/movements)
-    //
-    pidX = new PID(&slipAdjX, &slip2RollAxis, &setPointSlipX, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
-    pidY = new PID(&slipAdjY, &slip2PitchAxis, &setPointSlipY, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
+    // depends who the sensor is assembled
 
+    if ((direction[0] == 0) || (direction[0] == 2)) { // NORTH or EAST
+      // sensor is assembled in NORTH/SOUTH direction
+        pidX = new PID(&slipAdjX, &slip2RollAxis, &setPointSlipX, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
+        pidY = new PID(&slipAdjY, &slip2PitchAxis, &setPointSlipY, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
+    }
+    else if ((direction[0] == 1) || (direction[0] == 3)) {// WEST or SOUTH
+      // sensor is assembled in NORTH/SOUTH direction
+        pidY = new PID(&slipAdjY, &slip2RollAxis, &setPointSlipY, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
+        pidX = new PID(&slipAdjX, &slip2PitchAxis, &setPointSlipX, kpOpticalFlow, kiOpticalFlow, kdOpticalFlow, P_ON_E, DIRECT);
+    }
 
     if (pidX == nullptr || pidY == nullptr) {
       logger->error("PID controller not initialized");
@@ -71,52 +79,78 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     #endif 
 
     /** if one gimbal is not centered, no optical flow measurement is needed **/
-    if (  (_recv->isGimbalCentered(ROLL) == false)
-          || (_recv->isGimbalCentered(PITCH) == false)
-//          || (_recv->isGimbalCentered(YAW) == false)
-        ) {
-      #if defined(LOG_TASK_OPTICALFLOW)
-        logger->info("CENTERED (RPY)");
-      #endif
+    rpy[0] = _recv->isGimbalCentered(ROLL,true);
+    rpy[1] = _recv->isGimbalCentered(PITCH,true);
+    rpy[2] = _recv->isGimbalCentered(YAW,true);
+    
+    if (_recv->isGimbalCentered(ROLL,true)==false) {
+      //#if defined(LOG_TASK_OPTICALFLOW)
+        sprintf (buffer, "R:%4d - P:%4d - Y:%4d -- RPY:%d-%d-%d -- not centered", 
+        _recv->getData(ROLL), 
+        _recv->getData(PITCH), 
+        _recv->getData(YAW),
+        rpy[0],rpy[1],rpy[2]
+        );
+        logger->info(buffer);
+      //#endif
       return;
     }
-
+    Serial.println("....");
     // count how long the PODRacer slips. If a threshold is reached, system starts with a countermeasure
     flow->readMotionCount(&rawX, &rawY);
-    // we just wait some time if a flow was recognizes
-    // if value is greater than threshold, we try avoid this drift and set channel values for roll/pitch
-    // (BZW only roll/pitch can remove drifting (not yaw!) )
-    //if (flowCounter > FLOW_COUNTER_MAX) {
+      // we just wait some time if a flow was recognizes
+      // if value is greater than threshold, we try avoid this drift and set channel values for roll/pitch
+      // (BZW only roll/pitch can remove drifting (not yaw!) )
       // flow controll algorithm
       // check flow X/Y, PID-Adjustment(X/Y), set new relative channel values
       // PID use double values and return double. so first cast value form sensor
       // remove noice
+
+      // Value hight depends on velocity. As higher velocity as higher value
       rawX = (isInRange(rawX, -PMW3901_ZERO, PMW3901_ZERO))?0:rawX;
       rawY = (isInRange(rawY, -PMW3901_ZERO, PMW3901_ZERO))?0:rawY;
 
-      // cumulate to roll and pitch axis. 
-      slip2RollAxis += (double)rawX;
-      slip2PitchAxis += (double)rawY;
+      rawX = 65;
+      rawY = 50;
 
+      // adjust sensor direction
+      rawX = direction[1] * rawX ;
+      rawY = direction[2] * rawY ;
+
+      // normalize this value in a range from -100..+100
+      //
+      rawXnormalized = map(rawX, -250, 250, -100, 100);
+      rawYnormalized = map(rawY, -250, 250, -100, 100);
+      /*
+      sprintf(buffer, "rX:%d, rY:%d, rXn:%d, rYn:%d", 
+        rawX, rawY,
+        rawXnormalized, rawYnormalized);
+      logger->info(buffer);
+      */
+
+      // cumulate to roll and pitch axis. 
+      slipAdjX += (double)rawXnormalized;
+      slipAdjY += (double)rawYnormalized;
+
+      // note: pidXY result ist stored in slipRollAxis / slipPitchAxis
       pidY->Compute();
       pidX->Compute();
 
-      //
-      // translate x/y to roll/pitch movements
-      // forward drift pitch less (podracer tilts slowly backwards)
-      // backward drift pitch greater (podracer tilts slowly forward)
-      // left drift : roll right
-      // reight drift : roll left
-      // left forwards pitch less, roll right
-      // left backwards pitch greater, roll right
-      // right forwards pitch less, roll left
-      // right backwards pitch greater, roll right
-      
+      // now we have normalized the rawXY values and calculated PID for both axises
+      // next step - we use this normalizes value and multiply this value with an axis-bias value
+
+      //_data.ch[ROLL] = slip2RollAxis * biasRoll;     
+      //_data.ch[PITCH] = slip2PitchAxis * biasPitch;     
 
       //_data[ROLL]
       #if defined(LOG_TASK_OPTICALFLOW)
         #if defined(USE_SERIAL_PLOTTER)
-          sprintf(buffer, "X:%d,Y:%d,Roll:%f,Pitch:%f", rawX, rawY, slip2RollAxis, slip2PitchAxis);
+          sprintf(buffer, "X:%d, Y:%d, Xnorm:%d, Ynorm:%d, sAX:%f, sAY:%f, Roll:%f, Pitch:%f, chR:%d, chP:%d", 
+                rawX, rawY, 
+                rawXnormalized, rawYnormalized, 
+                slipAdjX, slipAdjY,
+                slip2RollAxis, slip2PitchAxis, 
+                _data.ch[ROLL], _data.ch[PITCH]);
           logger->simulate(buffer);
         #else
           sprintf(buffer, "X/Y/Roll/Pitch: <%4d,%4d> <%8f,%8f> CNT(%3d)", rawX, rawY, slipX, slipY);
@@ -126,42 +160,6 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
       flowCounter = 0;
       rawX = rawY = 0;
       slip2RollAxis = slip2PitchAxis = 0.0f;
+      slipAdjX = slipAdjY = 0.0f;
     //}
-/*
-    if (rawX == 0) slipX = 0.0;
-    if (rawY == 0) slipY = 0.0;
-
-    slipX += (double)rawX;
-    slipY += (double)rawY;
-
-    if (isInRange(slipX, -SLIP_RANGE, SLIP_RANGE) == false) {
-      slipX = 0;
-    }
-
-    if (isInRange(slipY, -SLIP_RANGE, SLIP_RANGE) == false) {
-      slipY = 0;
-    }
-
-
-    #if defined (LOG_TASK_OPTICALFLOW) || defined (LOG_TASK_ALL)
-      #if defined (USE_SERIAL_PLOTTER)
-        sprintf(buffer, "rawX:%d, rawY:%d, slipX:%f, slipY:%f, slipAdjX:%f, slipAdjY:%f",
-          rawX, rawY,
-          slipX, slipY,
-          slipAdjX, slipAdjY
-        );
-        logger->simulate(buffer);
-      #elif defined (LOG_TASK_OPTICALFLOW)
-        sprintf(buffer, "rX:%d, rY:%d, sX:%f, sY:%f, sAX:%f, sAY:%f",
-          rawX, rawY,
-          slipX, slipY,
-          slipAdjX, slipAdjY
-        );
-        logger->info(buffer);
-      #endif
-    #endif 
-*/
-
-
-  
   }

@@ -16,10 +16,15 @@
 
     This sensor is used to check if PODRacer is on a movement over ground in +/-X and +/-Y direction
 
-    -X+Y. |.  +X+Y
-    ------|-------
-    -X-Y. |.  +X-Y
- 
+            -Y
+            |
+      +X-Y  |  -X-Y
+    +X -----|-------
+      +X+Y  |  -X+Y 
+            |
+            +Y
+        <SOUTH>
+    wiring-connector
 
     It's normal that the PODRace slip forward/backward/sideways(left/right) due on weather conditions (wind), bad calibrated hardware, flight controler setup bad
     a.s.o
@@ -65,6 +70,7 @@
       // we add this values to the slipping X/Y values
       int16_t rawX, rawY;
       int16_t rawAdjX, rawAdjY;
+      long rawXnormalized, rawYnormalized;
 
       // the slipping value for X and Y direction
       // roll axis - slip to left/right
@@ -73,17 +79,32 @@
 
       // the adjusted slipping value for X/Y
       double slipAdjX, slipAdjY;
-
+      
       // the PID controllyer should try to get this setpoint
       double setPointSlipX, setPointSlipY;
+      double biasRoll = 2.5;
+      double biasPitch = 2.5;
 
       //----- PID Controller for OpticalFlow sensor
-      double kpOpticalFlow = 0.25;
-      double kiOpticalFlow = 0.0;
-      double kdOpticalFlow = 0.25;
+      double kpOpticalFlow = 50;
+      double kiOpticalFlow = 0.9;
+      double kdOpticalFlow = 3.9;
 
       PID *pidX, *pidY;
       uint8_t flowCounter;
+
+      // north = wiring pins are south, north=flight direction
+      //
+      // [0]    direction                 : 0=North, 1=WEST, 2=EAST, 3=SOUTH
+      // [1..4] rawXY multiplier +1/-1    : [1] Multiplier for X [2] Multiplier for Y
+      // Example : NORTH direction        : [0][+1][-1]
+      // Example : WEST direction         : [1][-1][+1]
+      // Example : EAST direction         : [2][+1][-1]
+      // Example : SOUTH direction        : [3][-1][+1]
+
+      int8_t direction[3] = {0, +1, -1};
+      uint8_t rpy[3];
+
   };
 
 #endif
