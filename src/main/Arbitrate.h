@@ -4,6 +4,9 @@
 #include <Arduino.h>
 #include "Task.h"
 #include "Receiver.h"
+#include "OpticalFlow.h"
+#include "SurfaceDistance.h"
+#include "Hover.h"
 #include "constants.h"
 
 
@@ -22,6 +25,10 @@
       bool begin(void);
       void update(void);
 
+      void update(OpticalFlow *obj);
+      void update(SurfaceDistance *obj);
+      void update(Hover *obj);
+
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
@@ -34,6 +41,17 @@
         }
         return false;  
       }
+
+      /** add value to current channel value **/
+      void addChannelValue(uint8_t ch, uint16_t value) {
+        _data.ch[ch] = +value;
+      }
+
+      /** set value current channel value (overwrite) **/
+      void setChannelValue(uint8_t ch, uint16_t value) {
+         _data.ch[ch] = value;
+      }
+
 
       /** get data struct **/
       inline SDATA data() const {return _data;}

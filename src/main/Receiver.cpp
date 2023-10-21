@@ -88,6 +88,7 @@
 
 
   void Receiver::update(void) {
+
     if (sbus_rx->Read()) {
       sbus_data = sbus_rx->data();
       uint16_t v1,v2;
@@ -105,8 +106,8 @@
       _data.lost_frame = sbus_data.lost_frame;
       _data.updated = true;
 
-      #if defined(LOG_TASK_RECEIVER) && defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
+      #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
+        sprintf(buffer, "READ CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
           _data.ch[0],
           _data.ch[1],
           _data.ch[2],
@@ -122,8 +123,13 @@
   }
 
 
-  void setNewData(TDATA *data) {
-
+  /** add value to current sbus_data.ch[ch] value **/
+  void  Receiver::setNewData(uint8_t ch, uint16_t value) {
+    if ( (ch > 0) && (ch < _data.NUM_CH)) {
+      sbus_data.ch[ch] = +value; 
+      /** for safety - take care that value is inside gimbal-range **/
+      sbus_data.ch[ch] = constrain(sbus_data.ch[ch], GIMBAL_MIN, GIMBAL_MAX);
+    }
   }
 
 /*

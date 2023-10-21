@@ -11,6 +11,15 @@ bool Arbitrate::begin(void) {
   return rc;
 }
 
+void Arbitrate::update(OpticalFlow *obj) {
+
+}
+void Arbitrate::update(Hover *obj) {
+
+}
+void Arbitrate::update(SurfaceDistance *obj) {
+
+}
 void Arbitrate::update() {
   if (_recv) {
   _recv->write();

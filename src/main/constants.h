@@ -4,15 +4,17 @@
 #define LOGLEVEL 3  // 3=Info, 4=Debug
 
 //#define LOG_TASK_ALL
+//#define LOG_TASK_RECEIVER_W
+//#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
-//#define LOG_TASK_ARBITRATE
-#define LOG_TASK_OPTICALFLOW
+#define LOG_TASK_ARBITRATE
+//#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
 #define USE_SERIAL_PLOTTER
 
 #define LED_BUILTIN 15
-#define LOOP_TIME 20
+#define LOOP_TIME 10
 #define HB_BLINK_FREQ 250
 #define PIN_PMW3901 5
 
@@ -54,7 +56,6 @@
 #define FLOW_COUNTER_MAX 100
 #define SLIP_RANGE 500
 #define PMW3901_ZERO 1
-#define MIN_PMW -250
-#define MAX_PMW 250
+#define PID_OUTPUT_LIMIT 250
 
 #endif

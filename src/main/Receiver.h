@@ -7,10 +7,6 @@
 #include "Task.h"
 #include "constants.h"
 
-#define MIN_CH_VAL 1000
-#define MAX_CH_VAL 2000
-#define CENTER_CH_VAL 1500
-
 /**
 
   Receiver class
@@ -59,7 +55,7 @@
       void update(void);
 
       /** update internal SbusData struct. This struct will be written back to receiver with write() **/
-      void setNewData(TDATA *data);
+      void setNewData(uint8_t ch, uint16_t value);
 
       /** send data to receiver **/
       void write(void);

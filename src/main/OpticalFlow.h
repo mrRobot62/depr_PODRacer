@@ -82,13 +82,13 @@
       
       // the PID controllyer should try to get this setpoint
       double setPointSlipX, setPointSlipY;
-      double biasRoll = 2.5;
-      double biasPitch = 2.5;
+      double biasRoll = 1.0;
+      double biasPitch = 1.0;
 
       //----- PID Controller for OpticalFlow sensor
-      double kpOpticalFlow = 50;
-      double kiOpticalFlow = 0.9;
-      double kdOpticalFlow = 3.9;
+      double kpOpticalFlow  = 0.5;
+      double kiOpticalFlow  = 0.05;     //0.9
+      double kdOpticalFlow  = 0;     //3.6
 
       PID *pidX, *pidY;
       uint8_t flowCounter;
@@ -105,6 +105,8 @@
       int8_t direction[3] = {0, +1, -1};
       uint8_t rpy[3];
 
+
+      uint8_t cnt;
   };
 
 #endif

@@ -39,7 +39,6 @@ Arbitrate (Priorisierung)
 #include "Hover.h"
 #include "constants.h"
 
-CoopSemaphore taskSema(1,1);
 #define NUMBER_OF_LAYER_TASKS 5
 int taskToken = 1;
 
@@ -51,6 +50,12 @@ CoopTask<void>* hoverCtrlTask = nullptr;
 CoopTask<void>* surfaceDistCtrlTask = nullptr;
 CoopTask<void>* receiverCtrlTask = nullptr;
 CoopTask<void>* arbitrateCtrlTask = nullptr;
+
+/** 
+This semaphore is used to avoid concurrent access to the receives data array during updateing this array
+Receiver.cpp set and reset this semaphore. is set, other task can not read the internal data array via getData()
+**/
+CoopSemaphore taskSema(1, 1);
 
 Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
 
@@ -164,9 +169,10 @@ void ArbitrateControlFunction() {
     logger.error("arbitrate.begin() - no receiver object");
   }
   for(;;) {
-
-    //arbitrate.update();
-
+    if (flow.isUpdated()) {
+      ;
+    }
+    arbitrate.update();
 
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {

@@ -5,6 +5,7 @@
 #include "SimpleLog.cpp"
 #include "constants.h"
 #include <SimpleKalmanFilter.h>
+#include <CoopSemaphore.h>
 
 
 
@@ -12,9 +13,11 @@
 
   class TaskAbstract {
     public:
-      TaskAbstract(uint8_t taskID, SLog *log) {
+//      TaskAbstract(uint8_t taskID, SLog *log, CoopSemaphore *sema) {
+      TaskAbstract(uint8_t taskID, SLog *log, CoopSemaphore *sema=nullptr) {
         logger = log;
         _id = taskID;
+        _sema = sema;
       };
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
@@ -25,6 +28,10 @@
       inline TDATA data(TDATA data) { _data = data;}
 
       uint8_t getID() {return _id;};
+      
+      bool isUpdated() {
+        return _data.updated;
+      }
 
     protected:
 
@@ -71,7 +78,7 @@
       }
       TDATA _data;
       SLog *logger;
-
+      CoopSemaphore *_sema;
 
       //
       // PID-Controller default values
