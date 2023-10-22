@@ -9,12 +9,17 @@
     _recv = receiver;
     if (_recv == nullptr) {
       logger->error("Hover:: no receiver object available");
+      setError(getID());
       return false;
     }
-    logger->info("Hover ready");
+    sprintf(buffer, "HOVER ready | Receiver:%d |", (long)&_recv);
+    logger->info(buffer);
     return true;
   }
 
   void Hover::update(void) {
 
+    // if function to the end, assumption is, that internal data struct was updated
+    setUpdateFlag();
+    resetError();
   }

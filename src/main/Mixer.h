@@ -1,5 +1,5 @@
-#ifndef _ARBITRATE_H_
-#define _ARBITRATE_H_
+#ifndef _MIXER_H_
+#define _MIXER_H_
 
 #include <Arduino.h>
 #include "Task.h"
@@ -19,16 +19,16 @@
     int16_t ch[NUM_CH];        
   }; 
 
-  class Arbitrate: public TaskAbstract {
+  class Mixer: public TaskAbstract {
     public:
-      Arbitrate(uint8_t taskID, SLog *log);
+      Mixer(uint8_t taskID, SLog *log);
       bool begin(void);
       void update(void);
 
       void update(OpticalFlow *obj);
       void update(SurfaceDistance *obj);
       void update(Hover *obj);
-
+  
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;

@@ -10,11 +10,13 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     logger->error("SurfaceDistance:: no receiver object available");
     return false;
   }
-  
-  logger->info("SurfaceDistance ready");
+
+  sprintf(buffer, "SurfaceDistance ready | Receiver:%d |", (long)&_recv);
+  logger->info(buffer);
   return true;
 }
 
 void SurfaceDistance::update(void) {
+
 
 }

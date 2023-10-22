@@ -7,7 +7,7 @@ einer cooperativer Scheduler
 
 Subsumption
 Wiederkehrende Funktionen werden als TASKS definiert.
-Alle tasks werden in einer "arbitrate-Funktion" ausgewertet und priorisiert
+Alle tasks werden in einer "Mixer-Funktion" ausgewertet und priorisiert
 
 Im Prinzip wird die Ausgabe eines geringer priorisierten Tasks durch den nächst
 höheren Task überschrieben
@@ -19,7 +19,7 @@ Task3 = SurfaceDistance1 (kontrolliert die Höhe über Grund mit dem TFMiniLidar
 Task4 = SurfaceDistance2 (kontrolliert die Höhe über Grund mit dem VL53L1)
 Task5 = Receiver - kontrolliert den Empfang von Daten und die Weiterleitung an den FC
 
-Arbitrate (Priorisierung)
+Mixer (Priorisierung)
 
 
 **/
@@ -32,11 +32,13 @@ Arbitrate (Priorisierung)
 #include <BasicCoopTask.h>
 #include <assert.h>
 #include "Receiver.h"
-#include "Arbitrate.h"
+#include "Mixer.h"
 #include "OpticalFlow.h"
 #include "SurfaceDistance.h"
 #include "SimpleLog.cpp"
 #include "Hover.h"
+#include "Steering.h"
+#include "BlinkPattern.h"
 #include "constants.h"
 
 #define NUMBER_OF_LAYER_TASKS 5
@@ -44,12 +46,13 @@ int taskToken = 1;
 
 SLog logger(&Serial, 115200, LOGLEVEL);
 
-CoopTask<void>* heartBeatTask = nullptr;
+CoopTask<void>* blinkpatternTask = nullptr;
 CoopTask<void>* movementCtrlTask = nullptr;
 CoopTask<void>* hoverCtrlTask = nullptr;
+CoopTask<void>* steeringCtrlTask = nullptr;
 CoopTask<void>* surfaceDistCtrlTask = nullptr;
 CoopTask<void>* receiverCtrlTask = nullptr;
-CoopTask<void>* arbitrateCtrlTask = nullptr;
+CoopTask<void>* mixerCtrlTask = nullptr;
 
 /** 
 This semaphore is used to avoid concurrent access to the receives data array during updateing this array
@@ -57,29 +60,29 @@ Receiver.cpp set and reset this semaphore. is set, other task can not read the i
 **/
 CoopSemaphore taskSema(1, 1);
 
-Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
 
+BlinkPattern blinkP(TASK_HB, &logger);
 Hover hover(TASK_HOVER, &logger);
-OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901);
 SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger);
-Arbitrate arbitrate(TASK_ARBITRATE, &logger);
-
+OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901);
+Steering steering(TASK_STEERING, &logger);
+Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
+Mixer mixer(TASK_MIXER, &logger);
 
 //Receiver *receiver;
+uint8_t blink_pattern = 0;
 
 // Task 1 : HeartBeat (1 second)
-void HeartBeatFunction() {
+void BlinkPatternFunction() {
 //  taskSema.wait();
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, HIGH);
+  blinkP.begin(&blink_pattern);
+  char buffer[100];
   for(;;) {
-    //logger.info("blink");
-    yield();
-    digitalWrite(LED_BUILTIN, LOW);
-    delay(HB_BLINK_FREQ);
-    digitalWrite(LED_BUILTIN, HIGH);
-    delay(HB_BLINK_FREQ);
-    //CoopTask<void>::sleep();
+    blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
+    //logger.printBinary("BlinkPatternFunction-Pattern:", blink_pattern);
+    blinkP.update(blink_pattern);
     yield();
   }
 }
@@ -95,13 +98,15 @@ void MovementControlFunction() {
     return;
   }
   for(;;) {
-    //Serial.println("run MovementControlFunction");
-    flow.update();
-    //flow.readMotionCount(&deltaX, &deltaY);
-    if ((millis() - lastMillis) > LOOP_TIME) {
-      yield();
+    if (!flow.hasError()) {
+      //Serial.println("run MovementControlFunction");
+      flow.update();
+      //flow.readMotionCount(&deltaX, &deltaY);
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
     }
-    delay(LOOP_TIME);
   }
 
 }
@@ -116,14 +121,34 @@ void HoverControlFunction() {
     return;
   }
   for(;;) {
-    if ((millis() - lastMillis) > LOOP_TIME) {
-      yield();
+    if (!hover.hasError()) {
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
     }
-    delay(LOOP_TIME);
   }
 
 }
 
+// Steering
+// 
+void SteeringControlFunction() {
+  unsigned long lastMillis = millis();
+  if (steering.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start Steering object");
+    return;
+  }
+  for(;;) {
+    if (!steering.hasError()) {
+      steering.update();
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
+    }
+  }
+}
 
 // 
 void SurfaceDistanceControlFunction() {
@@ -147,32 +172,35 @@ void ReceiverControlFunction() {
     return;
   }
   for(;;) {
-    /** read latest hardware-receiver data into SDATA struct **/
-    receiver.update();
-    if ((millis() - lastMillis) > LOOP_TIME) {
-      lastMillis = millis();
-      yield();
+    if (!receiver.hasError()) {
+      /** read latest hardware-receiver data into SDATA struct **/
+      receiver.update();
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        lastMillis = millis();
+        yield();
+      }
+      delay(LOOP_TIME);
     }
-    delay(LOOP_TIME);
   }
-
 }
-// Task: arbitrate 
-void ArbitrateControlFunction() {
+// Task: Mixer 
+void MixerControlFunction() {
   unsigned long lastMillis = millis();
   if (&receiver) {
-    if (!arbitrate.begin(&receiver)) {
-      logger.error("MAIN : can't start arbitrate object");
+    if (!mixer.begin(&receiver)) {
+      logger.error("MAIN : can't start mixer object");
     }
   }
   else {
-    logger.error("arbitrate.begin() - no receiver object");
+    logger.error("mixer.begin() - no receiver object");
   }
   for(;;) {
-    if (flow.isUpdated()) {
-      ;
+    if (hover.isUpdated()) {
+      mixer.update(&hover);
     }
-    arbitrate.update();
+    if (flow.isUpdated()) {
+      mixer.update(&flow);
+    }
 
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {
@@ -191,12 +219,13 @@ bool SleepCoopFunction() {
   Serial.println("run SleepCoopFunction");
   Serial.flush();
   delay(LOOP_TIME);
-  if (heartBeatTask) heartBeatTask->wakeup();
+  if (blinkpatternTask) blinkpatternTask->wakeup();
   if (hoverCtrlTask) hoverCtrlTask->wakeup();
+  if (steeringCtrlTask) steeringCtrlTask->wakeup();
   if (movementCtrlTask) movementCtrlTask->wakeup();
   if (surfaceDistCtrlTask) surfaceDistCtrlTask->wakeup();
   if (receiverCtrlTask) receiverCtrlTask->wakeup();
-  if (arbitrateCtrlTask) arbitrateCtrlTask->wakeup();
+  if (mixerCtrlTask) mixerCtrlTask->wakeup();
   #if defined (LOG_TASK_ALL)
     logger->debug ("SleepCoopFunction wakeup tasks done");
   #endif
@@ -221,27 +250,26 @@ void setup() {
   //-----------------------------------------
   logger.info("create tasks....");
 
-  heartBeatTask = new CoopTask<void>(F("HeartBeat"),HeartBeatFunction);
+  blinkpatternTask = new CoopTask<void>(F("BlinkPattern"),BlinkPatternFunction);
+  steeringCtrlTask = new CoopTask<void>(F("Steering"),SteeringControlFunction);
   movementCtrlTask = new CoopTask<void>(F("MovementCtrl"), MovementControlFunction);
   hoverCtrlTask = new CoopTask<void>(F("HoverCtrl"), HoverControlFunction);
   surfaceDistCtrlTask= new CoopTask<void>(F("SurfaceDist"), SurfaceDistanceControlFunction);
   receiverCtrlTask = new CoopTask<void>(F("RECEIVER"),ReceiverControlFunction);
-  arbitrateCtrlTask = new CoopTask<void>(F("ARBITRATE"),ArbitrateControlFunction);
+  mixerCtrlTask = new CoopTask<void>(F("MIXER"),MixerControlFunction);
   logger.info("all tasks ready");
 
   //-----------------------------------------
   logger.info("schedule tasks");
-
-Serial.print("heartBeatTask:"); Serial.println((unsigned long)&heartBeatTask);
   runCoopTasks(nullptr, nullptr, SleepCoopFunction);
 
-
-  heartBeatTask->scheduleTask();
+  blinkpatternTask->scheduleTask();
   movementCtrlTask->scheduleTask();
   surfaceDistCtrlTask->scheduleTask();
   hoverCtrlTask->scheduleTask();
+  steeringCtrlTask->scheduleTask();
   receiverCtrlTask->scheduleTask();
-  arbitrateCtrlTask->scheduleTask();
+  mixerCtrlTask->scheduleTask();
   logger.info("all tasks scheduled");
 }
 

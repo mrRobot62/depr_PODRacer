@@ -1,31 +1,52 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY(byte)  \
+  ((byte) & 0x80 ? '1' : '0'), \
+  ((byte) & 0x40 ? '1' : '0'), \
+  ((byte) & 0x20 ? '1' : '0'), \
+  ((byte) & 0x10 ? '1' : '0'), \
+  ((byte) & 0x08 ? '1' : '0'), \
+  ((byte) & 0x04 ? '1' : '0'), \
+  ((byte) & 0x02 ? '1' : '0'), \
+  ((byte) & 0x01 ? '1' : '0') 
+
+
 #define LOGLEVEL 3  // 3=Info, 4=Debug
 
 //#define LOG_TASK_ALL
 //#define LOG_TASK_RECEIVER_W
-//#define LOG_TASK_RECEIVER_R
+#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
-#define LOG_TASK_ARBITRATE
+//#define LOG_TASK_MIXER
 //#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
+//#define LOG_TASK_STEERING
+
 #define USE_SERIAL_PLOTTER
 
-#define LED_BUILTIN 15
+
+//#define TEST_OPTICAL_FLOW
+
+
+
+#define LED1 15
+#define LED_BUILTIN 2
 #define LOOP_TIME 10
 #define HB_BLINK_FREQ 250
 #define PIN_PMW3901 5
 
-// arbitration flag as a 16bit flag
+// TASK_IDs are used to indicate a blink pattern
 #define TASK_HB 0
 #define TASK_HOVER 1
 #define TASK_OPTICALFLOW 2
 #define TASK_SURFACEDISTANCE 3
 #define TASK_FRONTDISTANCE 4
-#define TASK_RECEIVER 10
-#define TASK_ARBITRATE 15
+#define TASK_STEERING 5
+#define TASK_RECEIVER 6
+#define TASK_MIXER 7
 
 // receivers toogle values around 1-5 +/- if nothing done by user activity
 // this avoid false readings inside Receiver-class. As bigger the value is, as less sensitive your PODracer is around center gimbal position
@@ -58,4 +79,8 @@
 #define PMW3901_ZERO 1
 #define PID_OUTPUT_LIMIT 250
 
+// Steering
+#define STEERING_ROLL_BIAS 0.2
+#define STEERING_PITCH_BIAS 0.2
+#define STEEIRNG_MAX_RP 150
 #endif

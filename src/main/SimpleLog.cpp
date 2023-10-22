@@ -2,6 +2,7 @@
 #ifndef _SIMPLELOG_
 #define _SIMPLELOG_
 #include <HardwareSerial.h>
+#include "constants.h"
 
 //namespace podr {
   class SLog {
@@ -56,10 +57,21 @@
 
       void print(const char *text, bool cr=false) {
         if (cr) {
-          _bus->print(text);
+          _bus->println(text);
         }
         else {
-          _bus->println(text);
+          _bus->print(text);
+        }
+      }
+
+      void printBinary(const char *text, const uint8_t v, bool cr=true) {
+        info(text, false);
+        sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
+        if (cr) {
+          _bus->println(buffer);
+        }
+        else {
+          _bus->print(buffer);
         }
       }
 

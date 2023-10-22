@@ -82,8 +82,9 @@
     sbus_rx->Begin();
     sbus_tx->Begin();
     rc = true;
-    logger->info("Receiver ready");
-    return rc;
+    sprintf(buffer, "Receiver ready");
+    logger->info(buffer);
+      return rc;
   }
 
 
@@ -120,6 +121,9 @@
         logger->simulate(buffer);
       #endif
     }
+    // if function to the end, assumption is, that internal data struct was updated
+    setUpdateFlag();
+    resetError();
   }
 
 

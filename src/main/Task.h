@@ -11,6 +11,8 @@
 
 //namespace podr {
 
+
+
   class TaskAbstract {
     public:
 //      TaskAbstract(uint8_t taskID, SLog *log, CoopSemaphore *sema) {
@@ -22,18 +24,44 @@
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
 
+      inline const bool hasError(void) {
+        return (errorCode > 0)?true:false;
+      }
+
+      inline const uint8_t getError(void) {
+        return errorCode;
+      }
+
+      inline void resetError() {
+        errorCode = 0;
+      }
+
       /** get data struct **/
       inline TDATA data() const {return _data;}
       /** set data struct **/
       inline TDATA data(TDATA data) { _data = data;}
 
-      uint8_t getID() {return _id;};
-      
-      bool isUpdated() {
+      inline uint8_t getID() {return _id;};
+
+      inline bool isUpdated() {
         return _data.updated;
       }
 
+      inline void setUpdateFlag() {
+        _data.updated=true;
+      }
+
+      inline void resetUpdateFlag() {
+        _data.updated=false;
+      }
+      
+
     protected:
+
+      inline void setError(uint8_t code) {
+        errorCode = code;
+        resetUpdateFlag();
+      }
 
       /** check if value is in a center postioin range, if not return value, if yes return centerValue **/
       inline int16_t centeredValue(int16_t value, int16_t centerValue, int8_t offset) {
@@ -100,9 +128,10 @@
 
       //-----
       char buffer[100];
-
+      uint8_t _blink_pattern;
     private:
       uint8_t _id;
+      uint8_t errorCode;
   };
 //};
 
