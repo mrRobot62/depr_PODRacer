@@ -59,11 +59,12 @@ This semaphore is used to avoid concurrent access to the receives data array dur
 Receiver.cpp set and reset this semaphore. is set, other task can not read the internal data array via getData()
 **/
 CoopSemaphore taskSema(1, 1);
+HardwareSerial lidarSerial(1);
 
 
 BlinkPattern blinkP(TASK_HB, &logger);
 Hover hover(TASK_HOVER, &logger);
-SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger);
+SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger, &lidarSerial);
 OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901);
 Steering steering(TASK_STEERING, &logger);
 Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
