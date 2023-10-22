@@ -59,11 +59,12 @@ CoopSemaphore taskSema(1, 1);
 
 Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true);
 
+HardwareSerial lidarSerial(1);
+
 Hover hover(TASK_HOVER, &logger);
 OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901);
-SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger);
+SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger, &lidarSerial);
 Arbitrate arbitrate(TASK_ARBITRATE, &logger);
-
 
 //Receiver *receiver;
 
@@ -128,7 +129,14 @@ void HoverControlFunction() {
 // 
 void SurfaceDistanceControlFunction() {
   unsigned long lastMillis = millis();
+  
+  if (distance.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start SurfaceDistance object");
+    return;
+  }
+  
   for(;;) {
+    distance.update();
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
@@ -234,7 +242,6 @@ void setup() {
 
 Serial.print("heartBeatTask:"); Serial.println((unsigned long)&heartBeatTask);
   runCoopTasks(nullptr, nullptr, SleepCoopFunction);
-
 
   heartBeatTask->scheduleTask();
   movementCtrlTask->scheduleTask();

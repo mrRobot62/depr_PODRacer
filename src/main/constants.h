@@ -7,9 +7,9 @@
 //#define LOG_TASK_RECEIVER_W
 //#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
-#define LOG_TASK_ARBITRATE
+//#define LOG_TASK_ARBITRATE
 //#define LOG_TASK_OPTICALFLOW
-//#define LOG_TASK_SURFACE1
+#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
 #define USE_SERIAL_PLOTTER
 
@@ -57,5 +57,9 @@
 #define SLIP_RANGE 500
 #define PMW3901_ZERO 1
 #define PID_OUTPUT_LIMIT 250
+
+// TFMini Serial 1
+#define RX1_PIN 2
+#define TX1_PIN 4
 
 #endif

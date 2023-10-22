@@ -11,7 +11,7 @@
 
 class SurfaceDistance : public TaskAbstract {
   public:
-    SurfaceDistance(uint8_t taskID, SLog *log);
+    SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus);
 
     /** initialize **/
     bool begin(void) {;};
@@ -21,6 +21,7 @@ class SurfaceDistance : public TaskAbstract {
     void update(void);
 
   private:
+    HardwareSerial *_bus;
     TFMPlus *_lidar;
     VL53L1X *_tof;
     Receiver *_recv;
