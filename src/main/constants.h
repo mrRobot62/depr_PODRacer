@@ -21,7 +21,7 @@
 //#define LOG_TASK_RECEIVER
 //#define LOG_TASK_MIXER
 //#define LOG_TASK_OPTICALFLOW
-//#define LOG_TASK_SURFACE1
+#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
 //#define LOG_TASK_STEERING
 
@@ -83,4 +83,8 @@
 #define STEERING_ROLL_BIAS 0.2
 #define STEERING_PITCH_BIAS 0.2
 #define STEEIRNG_MAX_RP 150
+// TFMini Serial 1
+#define RX1_PIN 2
+#define TX1_PIN 4
+
 #endif

@@ -153,7 +153,14 @@ void SteeringControlFunction() {
 // 
 void SurfaceDistanceControlFunction() {
   unsigned long lastMillis = millis();
+  
+  if (distance.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start SurfaceDistance object");
+    return;
+  }
+  
   for(;;) {
+    distance.update();
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
