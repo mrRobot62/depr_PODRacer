@@ -161,14 +161,15 @@ void SurfaceDistanceControlFunction() {
   }
   
   for(;;) {
-    distance.update();
-    //flow.readMotionCount(&deltaX, &deltaY);
-    if ((millis() - lastMillis) > LOOP_TIME) {
-      yield();
+    if (!distance.hasError()) {
+      distance.update();
+      //flow.readMotionCount(&deltaX, &deltaY);
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
     }
-    delay(LOOP_TIME);
   }
-
 }
 
 
