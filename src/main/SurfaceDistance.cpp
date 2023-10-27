@@ -7,18 +7,17 @@ SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus)
 }
 
 bool SurfaceDistance::begin(Receiver *receiver) {
-  _tof = new VL53L1X();
+  _tof = new VL53L0X();
   if (_tof == nullptr) {
-    logger->error("VL53L1X not initialized");
+    logger->error("VL53L0X not initialized");
     setError(getID());
     return false;
   }
   Wire.begin();
-  Wire.setClock(400000); // use 400 kHz I2C
   _tof->setTimeout(500);
   if (!_tof->init())
   {
-    Serial.println("Failed to detect and initialize VL53L1X!");
+    Serial.println("Failed to detect and initialize VL53L0X!");
     setError(getID());
     return false;
   }
@@ -57,17 +56,10 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     return false;
   }
 
-  // Use long distance mode and allow up to 50000 us (50 ms) for a measurement.
-  // You can change these settings to adjust the performance of the sensor, but
-  // the minimum timing budget is 20 ms for short distance mode and 33 ms for
-  // medium and long distance modes. See the VL53L1X datasheet for more
-  // information on range and timing limits.
-  _tof->setDistanceMode(VL53L1X::Long);
-  _tof->setMeasurementTimingBudget(50000);
-
-  // Start continuous readings at a rate of one measurement every 50 ms (the
-  // inter-measurement period). This period should be at least as long as the
-  // timing budget.
+  // Start continuous back-to-back mode (take readings as
+  // fast as possible).  To use continuous timed mode
+  // instead, provide a desired inter-measurement period in
+  // ms (e.g. sensor.startContinuous(100)).
   _tof->startContinuous(50);
 
   logger->info("SurfaceDistance ready");

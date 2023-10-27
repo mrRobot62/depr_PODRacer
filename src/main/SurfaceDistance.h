@@ -7,7 +7,7 @@
 #include <PID_v1.h>
 #include <TFMPlus.h>
 #include <Wire.h>
-#include <VL53L1X.h>
+#include <VL53L0X.h>
 
 class SurfaceDistance : public TaskAbstract {
   public:
@@ -23,7 +23,7 @@ class SurfaceDistance : public TaskAbstract {
   private:
     HardwareSerial *_bus;
     TFMPlus *_lidar;
-    VL53L1X *_tof;
+    VL53L0X *_tof;
     Receiver *_recv;
     SimpleKalmanFilter *skfToF, *skfLidar;
 
