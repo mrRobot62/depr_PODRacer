@@ -8,6 +8,20 @@ SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus,
 }
 
 bool SurfaceDistance::begin(Receiver *receiver) {
+  _tof = new VL53L0X();
+  if (_tof == nullptr) {
+    logger->error("VL53L0X not initialized");
+    setError(getID());
+    return false;
+  }
+  Wire.begin();
+  _tof->setTimeout(500);
+  if (!_tof->init())
+  {
+    Serial.println("Failed to detect and initialize VL53L0X!");
+    setError(getID());
+    return false;
+  }
   _lidar = new TFMPlus();
   if (_lidar == nullptr) {
     logger->error("SurfaceDistance::Lidar not initialized", _tname);
@@ -42,6 +56,7 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   sprintf(buffer, "SurfaceDistance:: ready | Receiver:%d |", (long)&_recv);
   logger->info(buffer, _tname);
 
+
   resetUpdateFlag();
   resetError();
   return true;
@@ -54,16 +69,28 @@ bool SurfaceDistance::begin(Receiver *receiver) {
 void SurfaceDistance::update(void) {
   if (_lidar->getData(tfDist, tfFlux, tfTemp))  // Get data from the device.
   {
+    channelData = _recv->getData(TASK_SURFACEDISTANCE);
 #if defined(LOG_TASK_SURFACE1)
-    sprintf(buffer, "SurfaceDistance:: Dist:%04icm, Flux:%05i", tfDist, tfFlux);
+    sprintf(buffer, "Dist(TFMini):%04icm, Flux:%05i, CHData:%4.0f", tfDist, tfFlux, channelData);
     logger->info(buffer, _tname);
 #endif
-    _bbd.data.ch[THROTTLE] = tfDist;
+    /**** Berechnungen auf Basis TFMini ****/
 #if defined(LOG_TASK_SURFACE1)
+    sprintf(buffer, "Dist(TFMini):CHData(in):%4.0f", channelData);
+    logger->info(buffer);
   } else  // If the command fails...
   {
     logger->info("SurfaceDistance:: getData failed", _tname);
     _lidar->printFrame();  // display the error and HEX data
 #endif
   }
+  tofMm = _tof->readRangeContinuousMillimeters();
+  /**** Berechnungen auf Basis VL53L1X ****/
+#if defined(LOG_TASK_SURFACE1)
+    sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
+    logger->info(buffer);
+#endif  
+  _recv->setNewData(TASK_SURFACEDISTANCE, channelData);
+  setUpdateFlag();
+  resetError();
 }

@@ -7,7 +7,7 @@
 #include <PID_v1.h>
 #include <TFMPlus.h>
 #include <Wire.h>
-#include <VL53L1X.h>
+#include <VL53L0X.h>
 
 class SurfaceDistance : public TaskAbstract {
   public:
@@ -23,13 +23,15 @@ class SurfaceDistance : public TaskAbstract {
   private:
     HardwareSerial *_bus;
     TFMPlus *_lidar;
-    VL53L1X *_tof;
+    VL53L0X *_tof;
     Receiver *_recv;
     SimpleKalmanFilter *skfToF, *skfLidar;
 
     int16_t tfDist = 0;    // Distance to object in centimeters
     int16_t tfFlux = 0;    // Strength or quality of return signal
-    int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip    
+    int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip
+    int16_t tofMm = 0;     // Distance tof to object in millimeters
+    uint16_t channelData;  // Value of the Channel
 };
 
 #endif
