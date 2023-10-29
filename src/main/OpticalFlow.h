@@ -53,9 +53,10 @@
 
 
   **/
+  
   class OpticalFlow : public TaskAbstract {
     public:
-      OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin);
+      OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb=nullptr);
       bool begin(void) {;};
       bool begin(Receiver *recveiver);
       void update(void);

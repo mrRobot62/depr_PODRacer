@@ -1,14 +1,18 @@
 #include "BlinkPattern.h"
 
 
-  BlinkPattern::BlinkPattern(uint8_t taskID, SLog *log) : TaskAbstract(taskID, log)  {
-    logger->info("BlinkPattern initialized");
+  BlinkPattern::BlinkPattern(uint8_t taskID, SLog *log, Blackbox *bb) : TaskAbstract(taskID, log)  {
+    _tname = "BLINK";
+    logger->info("BlinkPattern initialized", _tname);
   }
 
   bool BlinkPattern::begin(uint8_t *blink_pattern) {
     cPattern = 0;
     resetError();
-    logger->info("BlinkPattern ready");
+    for (uint8_t i=0; i < sizeof(pins); i++) {
+      pinMode(pins[i], OUTPUT);
+    }
+    logger->info("BlinkPattern ready", _tname);
     return true;
   }
 
@@ -16,6 +20,7 @@
     uint8_t pin = pattern[cPattern][3];
     uint8_t pos = 0;
     for (uint8_t b=0; b < 8; b++) {
+      
       if (pattern[cPattern][0] & idx[b]) {
         digitalWrite(pin, HIGH);
         delay(pattern[cPattern][1]);

@@ -22,7 +22,7 @@
 **/
 class Steering : public TaskAbstract {
   public:
-    Steering(uint8_t taskID, SLog *log);
+    Steering(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
 
     /** initialize **/
     bool begin(void) {;};

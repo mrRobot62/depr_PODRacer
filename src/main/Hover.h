@@ -10,7 +10,7 @@
 
 class Hover : public TaskAbstract {
   public:
-    Hover(uint8_t taskID, SLog *log);
+    Hover(uint8_t taskID, SLog *log,Blackbox *bb=nullptr);
 
     /** initialize **/
     bool begin(void) {;};

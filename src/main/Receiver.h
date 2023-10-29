@@ -47,7 +47,7 @@
 
   class Receiver : public TaskAbstract {
     public:
-      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap="AETR123H");
+      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, const char *chmap="AETRD23H");
 
       bool begin(void);
 
@@ -67,18 +67,18 @@
 
       /** return channel data from last update **/
       uint16_t getData(int8_t ch) {
-        ch = constrain(ch, 0, _data.NUM_CH-1 );
-        return _data.ch[ch];
+        ch = constrain(ch, 0, NUMBER_CHANNELS-1 );
+        return _bbd.data.ch[ch];
       }
 
       /** return failsafe from last update **/
       bool isFailSave() {
-        return _data.failsafe;
+        return _bbd.data.failsafe;
       }
 
       /** return lostframe from last update **/
       bool isLostFrame() {
-        return _data.lost_frame;
+        return _bbd.data.lost_frame;
       }
 
       /** **/
@@ -120,14 +120,14 @@
 
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
-      bfs::SbusData sbus_data;
+      bfs::SbusData sbus_data, last_data;
 
       // mapping Roll/Pitch/Throttle/Yaw axis to channels
       // default : ch0 = roll, ch1 = pitch, ch2 = throttle, ch3=yaw
       // ch4 and others = aux
       //
-      uint8_t channelMap[8] = {0,1,2,3,4,5,6,7};
-      uint16_t channel_calibration [16][4] = {
+      uint8_t channelMap[NUMBER_CHANNELS] = {0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15};
+      uint16_t channel_calibration [NUMBER_CHANNELS][4] = {
         // calibrations values for 16 channels
         // idx0= SBUS lowes value, idx1=SBUS highest value, idx2+3=calibrated min/max values
         {192, 1800, GIMBAL_MIN, GIMBAL_MAX},

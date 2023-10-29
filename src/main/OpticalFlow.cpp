@@ -2,9 +2,10 @@
 #include "OpticalFlow.h"
 
 
-OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstract(taskID, log) {
+OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb) : TaskAbstract(taskID, log, bb) {
     _cs = cs_pin;
-    logger->info("OpticalFlow initialized");
+    _tname = "OFLOW";
+    logger->info("initialized", _tname);
   }
 
 
@@ -12,12 +13,12 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     flow = new Bitcraze_PMW3901(_cs);
     _recv = receiver;
     if (_recv == nullptr) {
-      logger->error("OpticalFlow:: no receiver object available");
+      logger->error("OpticalFlow:: no receiver object available", _tname);
       setError(getID());
       return false;
     }
     if (flow == nullptr) {
-      logger->error("PMW3901 not initialized");
+      logger->error("OpticalFlow::PMW3901 not initialized", _tname);
       setError(getID());
       return false;
     }
@@ -49,7 +50,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     }
 
     if (pidX == nullptr || pidY == nullptr) {
-      logger->error("PID controller not initialized");
+      logger->error("PID controller not initialized", _tname);
       setError(getID());
       return false;
     }
@@ -62,17 +63,17 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     pidY->SetSampleTime(LOOP_TIME);
 
     if (flow->begin() == false) {
-      logger->error("Initialization flow sensor failed");
+      logger->error("OpticalFlow::Initialization flow sensor failed");
       setError(getID());
-      logger->printBinary("Error:", getID());
+      logger->printBinary("Error:", _tname, getID());
       //logger->error("Error:", false);
       //sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(getError()));
       //logger->print(buffer, true);
       return false;
     }
 
-    sprintf(buffer, "FLOW ready | Receiver:%d | PMW3901:%d", (long)&_recv, (long)flow);
-    logger->info(buffer);
+    sprintf(buffer, "OpticalFlow::FLOW ready | Receiver:%d | PMW3901:%d", (long)&_recv, (long)flow);
+    logger->info(buffer, _tname);
     cnt = 0;
 
     resetError();
@@ -94,20 +95,20 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
     // only roll/pitch can remove drifting (not yaw!)
     if ((rpy[0] == false) || (rpy[1] == false)) {
       #if defined(LOG_TASK_OPTICALFLOW)
-        sprintf (buffer, "xx R:%4d - P:%4d - Y:%4d -- RPY:%d-%d-%d -- not centered", 
+        sprintf (buffer, "=> R:%4d - P:%4d - Y:%4d -- RPY:%d-%d-%d -- not centered", 
         _recv->getData(ROLL), 
         _recv->getData(PITCH), 
         _recv->getData(YAW),
         rpy[0],rpy[1],rpy[2]
         );
-        logger->info(buffer);
+        logger->info(buffer, _tname);
         #if defined(TEST_OPTICAL_FLOW)
           cnt=0;
           rawX = 100;
           rawY = 100;
         #endif
       #endif
-      _data.updated = false;
+      _bbd.data.updated = false;
       return;
     }
 
@@ -146,8 +147,8 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
 
     // based on slipAdjX/Y (cumulated rawX/Y values) the PID controller calculate a 
     // new adjustable value. this value is mapped is in range ob PID-Limits (SetOutputLimits(-PID_OUTPUT_LIMIT, PID_OUTPUT_LIMIT);)
-    _data.ch[ROLL]  = (int16_t)slip2RollAxis;
-    _data.ch[PITCH] = (int16_t)slip2PitchAxis;
+    _bbd.data.ch[ROLL]  = (int16_t)slip2RollAxis;
+    _bbd.data.ch[PITCH] = (int16_t)slip2PitchAxis;
 
     //_data[ROLL]
     #if defined(LOG_TASK_OPTICALFLOW)
@@ -158,10 +159,10 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin) : TaskAbstra
               rawXnormalized, rawYnormalized, 
               slip2RollAxis, slip2PitchAxis,
               _data.ch[ROLL], _data.ch[PITCH]);
-        logger->simulate(buffer);
+        logger->simulate(buffer, _tname);
       #else
         sprintf(buffer, "X/Y/Roll/Pitch: <%4d,%4d> <%8f,%8f> CNT(%3d)", rawX, rawY, slipX, slipY);
-        logger->info(buffer);
+        logger->info(buffer, _tname);
       #endif
     #endif
 

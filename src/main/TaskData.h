@@ -10,7 +10,6 @@
   the task tdata struct is used to calculate the
   data for the mixer
 
-**/
 typedef struct tdata TDATA;  
 struct tdata {
   uint8_t id;
@@ -23,5 +22,45 @@ struct tdata {
   int16_t ch[NUM_CH];
         
 };
+**/
+
+
+/**
+  every task use a copy of this struct and
+  set specific data calculated by this task
+
+  During mixing depending on the priority
+  the task tdata struct is used to calculate the
+  data for the mixer
+
+  This struct can be stored as debug data onto SDCard
+**/
+
+#define NUMBER_CHANNELS 16
+#define DATA_SIZE 8
+
+typedef struct {
+  uint16_t header;
+  long millis;                          // milliseconds
+  // data
+  uint8_t task_id;                      // produces by task-id
+  bool updated;                         // set by tasks
+  bool failsafe;                        // set by receiver
+  bool lost_frame;                      // set by receiver
+  bool armingState;                     // true=armed, false=disarmed
+  uint8_t groupA;                       // can be used to group data 1. order
+  uint8_t groupB;                       // can be used to group data 2. order
+  uint16_t ch[NUMBER_CHANNELS];         // channel data (0=ch1, 1=ch2, 2=ch3, ...)
+  //uint16_t ch_w[NUMBER_CHANNELS];       // channel data (0=ch1, 1=ch2, 2=ch3, ...) WRITE 
+  long ldata[DATA_SIZE];          // an be used for long values  
+  double fdata[DATA_SIZE];        // can be used for float values
+  double pid_rpyth[DATA_SIZE];    //(R/P/Y/T/H);
+  uint16_t crc;
+} BlackBoxStruct;
+
+typedef union {
+  BlackBoxStruct data;
+  byte bytes [sizeof(BlackBoxStruct)];
+} BBD;
 
 #endif

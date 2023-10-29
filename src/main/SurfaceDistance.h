@@ -11,7 +11,7 @@
 
 class SurfaceDistance : public TaskAbstract {
   public:
-    SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus);
+    SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb=nullptr);
 
     /** initialize **/
     bool begin(void) {;};

@@ -9,7 +9,7 @@
 
 class BlinkPattern : public TaskAbstract {
   public:
-    BlinkPattern(uint8_t taskID, SLog *log);
+    BlinkPattern(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
 
     /** initialize **/
     bool begin(void) {;};
@@ -38,9 +38,10 @@ class BlinkPattern : public TaskAbstract {
     **/
     uint8_t cPattern, defaultPattern;
     uint8_t idx[8] = {1,2,4,8,16,32,64,128};
+    uint8_t pins[2] = {2,15};
     uint16_t pattern[MAX_PATTERN][4] = {
-      {0b00000001, 100, 400, 2}, // 0 TASK_HB (blink 1x in 3secs (7xoff with 400ms + 1xON with 100ms+100ms(internal)))
-      {0b00000001, 500, 200, 2}, // 1 TASK_HOVER
+      {0b00000001, 500, 200, 15}, // 0 TASK_HB (blink 1x in 2secs (7xoff with 200ms =1400ms + 1xON with 500ms = 1900ms +100ms(internal) = 2000ms blink))
+      {0b00010001, 100, 200, 15}, // 1 TASK_HOVER
       {0b00001011, 500, 200, 2}, // 2 TASK_OPTICALFLOW
       {0b00000000, 250, 250, 2}, // 3 TASK_SURFACEDISTANCE
       {0b00000000, 250, 250, 2}, // 4 TASK_FRONTDISTANCE

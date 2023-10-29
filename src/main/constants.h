@@ -16,15 +16,16 @@
 #define LOGLEVEL 3  // 3=Info, 4=Debug
 
 //#define LOG_TASK_ALL
-//#define LOG_TASK_RECEIVER_W
-#define LOG_TASK_RECEIVER_R
-//#define LOG_TASK_RECEIVER
+#define LOG_TASK_RECEIVER_W
+//#define LOG_TASK_RECEIVER_R
+#define LOG_TASK_RECEIVER
 //#define LOG_TASK_MIXER
+#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
-#define LOG_TASK_SURFACE1
+//#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
 //#define LOG_TASK_STEERING
-
+//#define LOG_FILE_LOGGER
 #define USE_SERIAL_PLOTTER
 
 
@@ -59,18 +60,26 @@
 
 #define ROLL  0  // internal channel mapping set A(Roll) on position 0
 #define PITCH 1  // dito for E(Pitch)
-#define THROTTLE 2  // dito for T(Throttle)
+#define THRUST 2  // dito for T(Throttle) -> forward THRUST ESC -> we used the throttle gimbal for flying forward
 #define YAW 3       // dito for R(Yaw)
+#define ARMING 4   // ch4 for arming/disarming
 #define AUX1 4
 #define AUX2 5
 #define AUX3 6
-#define HOVER 7
+#define THROTTLE 7     // hovering -> all 4 motors Throttle - flight controller manage this
 
 // range interval around centerpositoin for A/E/Y
 // this is used by sensors like OpticalFlow. All Values between value-CENTER_RANGE and value+CENTER_RANGE are used as "CENTER"
 // this avoid very sensible gimbal movements. For a PODRacer this is ok, for real quad copters a totally NO_GO ;-)
 // value is used for isGimbalMin/Max
 #define CENTER_RANGE 50 
+
+// Hovering
+#define HOVER_ROLL GIMBAL_CENTER_POSITION   // default ch1
+#define HOVER_PITCH GIMBAL_CENTER_POSITION  // default ch2
+#define HOVER_YAW GIMBAL_CENTER_POSITION    // default ch4
+#define HOVER_THROTTLE 1300                 // ch3 poti Hovering
+#define HOVER_THRUST GIMBAL_MIN             // ch8 forward mapped used for ESC for EDF thrust nozzle
 
 //
 // OpticalFlow
@@ -87,4 +96,6 @@
 #define RX1_PIN 2
 #define TX1_PIN 4
 
+// Blackbox
+#define BLACKBOX_CS_PIN 32
 #endif

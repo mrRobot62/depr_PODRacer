@@ -7,6 +7,7 @@
 #include "OpticalFlow.h"
 #include "SurfaceDistance.h"
 #include "Hover.h"
+#include "Steering.h"
 #include "constants.h"
 
 
@@ -21,23 +22,23 @@
 
   class Mixer: public TaskAbstract {
     public:
-      Mixer(uint8_t taskID, SLog *log);
+      Mixer(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
       bool begin(void);
       void update(void);
 
       void update(OpticalFlow *obj);
       void update(SurfaceDistance *obj);
       void update(Hover *obj);
-  
+      void update(Steering *obj);
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
-          logger->info("Arbitrate.begin(receiver) started, receiver: ", false);
+          logger->info("begin(receiver) started, receiver: ", _tname);
           logger->print((long)&_recv, true);
           return true;
         }
         else {
-          logger->error("Arbitrate.begin(receiver) failed");
+          logger->error("Arbitrate.begin(receiver) failed", _tname);
         }
         return false;  
       }

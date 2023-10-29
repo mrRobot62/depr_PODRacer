@@ -4,10 +4,9 @@
 #include "TaskData.h"
 #include "SimpleLog.cpp"
 #include "constants.h"
+#include "Blackbox.h"
 #include <SimpleKalmanFilter.h>
 #include <CoopSemaphore.h>
-
-
 
 //namespace podr {
 
@@ -15,14 +14,22 @@
 
   class TaskAbstract {
     public:
-//      TaskAbstract(uint8_t taskID, SLog *log, CoopSemaphore *sema) {
-      TaskAbstract(uint8_t taskID, SLog *log, CoopSemaphore *sema=nullptr) {
+      TaskAbstract(uint8_t taskID, SLog *log, Blackbox *bb=nullptr, CoopSemaphore *sema=nullptr) {
         logger = log;
         _id = taskID;
         _sema = sema;
+        _blackbox = bb;
+        _tname = "?";
       };
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
+      virtual void taskName(char *tname) {
+        _tname = tname;
+      };
+
+      inline const char* tName(void) {
+        return _tname;
+      }
 
       inline const bool hasError(void) {
         return (errorCode > 0)?true:false;
@@ -37,27 +44,27 @@
       }
 
       /** get data struct **/
-      inline TDATA data() const {return _data;}
+      inline BBD data() const {return _bbd;}
       /** set data struct **/
-      inline TDATA data(TDATA data) { _data = data;}
+      inline BBD data(BBD data) { _bbd = data;}
 
       inline uint8_t getID() {return _id;};
 
       inline bool isUpdated() {
-        return _data.updated;
+        return _bbd.data.updated;
       }
 
       inline void setUpdateFlag() {
-        _data.updated=true;
+        _bbd.data.updated=true;
       }
 
       inline void resetUpdateFlag() {
-        _data.updated=false;
+        _bbd.data.updated=false;
       }
       
 
     protected:
-
+      char *_tname;
       inline void setError(uint8_t code) {
         errorCode = code;
         resetUpdateFlag();
@@ -104,8 +111,9 @@
         }
         return true;
       }
-      TDATA _data;
-      SLog *logger;
+      BBD _bbd;        // Blackbox Data Struct
+      Blackbox *_blackbox;
+      SLog *logger;   
       CoopSemaphore *_sema;
 
       //
@@ -129,8 +137,8 @@
       //-----
       char buffer[100];
       uint8_t _blink_pattern;
-    private:
       uint8_t _id;
+    private:
       uint8_t errorCode;
   };
 //};
