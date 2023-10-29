@@ -26,9 +26,9 @@
           #endif
         }
         else if (chmap[c] == 'T') {
-          channelMap[THROTTLE] = c;
+          channelMap[THRUST] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::THROTTLE CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THROTTLE);
+            sprintf(buffer, "Receiver::THRUST CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THRUST);
           #endif
         }
         else if (chmap[c] == 'R') {
@@ -62,9 +62,9 @@
           #endif
         }
         else if (chmap[c] == 'H') {
-          channelMap[THRUST] = c;
+          channelMap[HOVERING] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::THRUST   CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THRUST);
+            sprintf(buffer, "Receiver::HOVERING CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], HOVERING);
           #endif
         }
         #if defined(LOG_TASK_RECEIVER)
@@ -94,6 +94,22 @@
       return rc;
   }
 
+  bool Receiver::readyForArming() {
+    _preventArming = true;
+    if (
+      !isGimbalCentered(ROLL) &&
+      !isGimbalCentered(PITCH) &&
+      !isGimbalCentered(YAW) &&
+      isGimbalMin(THRUST) &&
+      isGimbalMin(HOVERING)
+    ) {
+      _preventArming = false;
+    }
+    #if defined(LOG_TASK_RECEIVER)
+      logger->debug("prevent arming");
+    #endif
+    return _preventArming;
+  }
 
   void Receiver::update(void) {
 
@@ -118,6 +134,14 @@
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
+      _bbd.data.armingState = false;
+      if (_bbd.data.ch[ARMING] > 1500) {
+        if ( readyForArming()) {
+          _bbd.data.armingState = true;
+        }
+      } else {
+        _logStates[ARMING] = false;
+      }
       _bbd.data.updated = true;
 
       #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
@@ -134,6 +158,16 @@
         logger->simulate(buffer, _tname);
       #endif
     }
+    #if defined(LOG_TASK_RECEIVER)
+      // _logState is only used to prevent log overkill during arming ;-)
+      //sprintf(buffer, "ArmingStage: %d - logState: %d", _bbd.data.armingState,_logStates[ARMING] );
+      //logger->info(buffer);
+      if (_bbd.data.armingState && _logStates[ARMING] == false){
+        logger->warn("PODRacer IS ARMED", _tname);
+        _logStates[ARMING] = true;
+      }
+
+    #endif
     // if function to the end, assumption is, that internal data struct was updated
     setUpdateFlag();
     resetError();

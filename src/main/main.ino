@@ -99,7 +99,7 @@ void BlinkPatternFunction() {
 // Task: use PMW3901 optical flow sensor
 void MovementControlFunction() {
 //  taskSema.wait();
-/*
+
   unsigned long lastMillis = millis();
   int16_t deltaX,deltaY;
   if (flow.begin(&receiver) == false) {
@@ -109,7 +109,7 @@ void MovementControlFunction() {
   for(;;) {
     if (!flow.hasError()) {
       //Serial.println("run MovementControlFunction");
-      //flow.update();
+      flow.update();
       //flow.readMotionCount(&deltaX, &deltaY);
       if ((millis() - lastMillis) > LOOP_TIME) {
         yield();
@@ -117,14 +117,14 @@ void MovementControlFunction() {
       delay(LOOP_TIME);
     }
   }
-*/
+
 }
 
 
 // Primary Task Hovering is the base functionality of the complete PODRacer System
 // 
 void HoverControlFunction() {
-/*
+
   unsigned long lastMillis = millis();
   if (hover.begin(&receiver) == false ) {
     logger.error("MAIN : can't start Hover object", _tname);
@@ -139,13 +139,13 @@ void HoverControlFunction() {
       delay(LOOP_TIME);
     }
   }
-*/
+
 }
 
 // Steering
 // 
 void SteeringControlFunction() {
-/*
+
   unsigned long lastMillis = millis();
   if (steering.begin(&receiver) == false ) {
     logger.error("MAIN : can't start Steering object", _tname);
@@ -160,7 +160,7 @@ void SteeringControlFunction() {
       delay(LOOP_TIME);
     }
   }
-*/
+
 }
 
 // 
@@ -175,7 +175,6 @@ void SurfaceDistanceControlFunction() {
   for(;;) {
     if (!distance.hasError()) {
       distance.update();
-      //flow.readMotionCount(&deltaX, &deltaY);
       if ((millis() - lastMillis) > LOOP_TIME) {
         yield();
       }
@@ -209,7 +208,7 @@ void ReceiverControlFunction() {
 }
 // Task: Mixer 
 void MixerControlFunction() {
-/*
+
   unsigned long lastMillis = millis();
   if (&receiver) {
     if (!mixer.begin(&receiver)) {
@@ -219,8 +218,7 @@ void MixerControlFunction() {
   else {
     logger.error("mixer.begin() - no receiver object", _tname);
   }
-*/
-/*
+
   for(;;) {
     // hovering is the base function of the podrace
     if (hover.isUpdated()) {
@@ -246,7 +244,6 @@ void MixerControlFunction() {
     }
     delay(LOOP_TIME);
   }
-*/
   
 }
 

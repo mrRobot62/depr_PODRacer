@@ -22,6 +22,7 @@ class Hover : public TaskAbstract {
   private:
     Receiver *_recv;
     SimpleKalmanFilter *skfHover;
+    long last_value;
 };
 
 #endif

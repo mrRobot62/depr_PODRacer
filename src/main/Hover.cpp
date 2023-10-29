@@ -20,16 +20,38 @@
 
   void Hover::update(void) {
 
-    _bbd.data.task_id = _id;
-    _bbd.data.millis = millis();
-    _bbd.data.updated = true;
-    _bbd.data.ch[ROLL] = HOVER_ROLL;
-    _bbd.data.ch[PITCH] = HOVER_PITCH;
-    _bbd.data.ch[THROTTLE] = HOVER_THROTTLE;
-    _bbd.data.ch[THRUST] = HOVER_THRUST;
-    _bbd.data.ch[YAW] = HOVER_YAW;
-    _blackbox->update(&_bbd);
+    if (_recv->isArmed()) {
+      _bbd.data.task_id = _id;
+      _bbd.data.millis = millis();
+      _bbd.data.updated = true;
+      _bbd.data.ch[ROLL] = HOVER_ROLL;
+      _bbd.data.ch[PITCH] = HOVER_PITCH;
+      _bbd.data.ch[HOVERING] = _recv->getData(HOVERING);
+      _bbd.data.ch[THRUST] = HOVER_THRUST;
+      _bbd.data.ch[YAW] = HOVER_YAW;
+      _blackbox->update(&_bbd);
 
+      #if defined(LOG_TASK_HOVER) || defined(LOG_TASK_ALL)
+        if (_bbd.data.ch[HOVERING] != last_value) {          
+          sprintf(buffer, "R:%4d P:%4d T:%4d H:%4d Y:%4d",
+            _bbd.data.ch[ROLL],
+            _bbd.data.ch[PITCH],
+            _bbd.data.ch[THRUST],
+            _bbd.data.ch[HOVERING],
+            _bbd.data.ch[YAW]
+          );
+          logger->debug(buffer, _tname);
+          sprintf(buffer, "H:%4d",
+            _bbd.data.ch[HOVERING]
+          );
+          logger->info(buffer, _tname);  
+          last_value = _bbd.data.ch[HOVERING]; 
+        }
+      #endif
+    }
+    else {
+      last_value = 0;
+    }
     // if function to the end, assumption is, that internal data struct was updated
     // and written to flight controller
     resetError();

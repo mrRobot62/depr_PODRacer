@@ -60,13 +60,13 @@
 
 #define ROLL  0  // internal channel mapping set A(Roll) on position 0
 #define PITCH 1  // dito for E(Pitch)
-#define THRUST 2  // dito for T(Throttle) -> forward THRUST ESC -> we used the throttle gimbal for flying forward
-#define YAW 3       // dito for R(Yaw)
-#define ARMING 4   // ch4 for arming/disarming
+#define THRUST 7  // dito for T(Throttle) -> forward THRUST ESC -> we used the throttle gimbal for flying forward
+#define YAW 3      // dito for R(Yaw)
+#define ARMING 4   // ch5 for arming/disarming
 #define AUX1 4
 #define AUX2 5
 #define AUX3 6
-#define THROTTLE 7     // hovering -> all 4 motors Throttle - flight controller manage this
+#define HOVERING 2     // hovering -> all 4 motors Throttle - flight controller manage this
 
 // range interval around centerpositoin for A/E/Y
 // this is used by sensors like OpticalFlow. All Values between value-CENTER_RANGE and value+CENTER_RANGE are used as "CENTER"
@@ -78,7 +78,7 @@
 #define HOVER_ROLL GIMBAL_CENTER_POSITION   // default ch1
 #define HOVER_PITCH GIMBAL_CENTER_POSITION  // default ch2
 #define HOVER_YAW GIMBAL_CENTER_POSITION    // default ch4
-#define HOVER_THROTTLE 1300                 // ch3 poti Hovering
+#define HOVER_HOVER 1300                    // ch3 poti Hovering
 #define HOVER_THRUST GIMBAL_MIN             // ch8 forward mapped used for ESC for EDF thrust nozzle
 
 //

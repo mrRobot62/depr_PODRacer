@@ -47,7 +47,7 @@
 
   class Receiver : public TaskAbstract {
     public:
-      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, const char *chmap="AETRD23H");
+      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, const char *chmap="AEHRD23T");
 
       bool begin(void);
 
@@ -65,6 +65,9 @@
         
       }
 
+      /** check if arming is possible **/
+      bool readyForArming();
+
       /** return channel data from last update **/
       uint16_t getData(int8_t ch) {
         ch = constrain(ch, 0, NUMBER_CHANNELS-1 );
@@ -81,6 +84,10 @@
         return _bbd.data.lost_frame;
       }
 
+      /** return current arming state **/
+      bool isArmed() {
+        return _bbd.data.armingState;
+      }
       /** **/
       bool isGimbalCentered(uint8_t ch, bool useRange=true) {
         bool rc = false;
@@ -117,7 +124,9 @@
       HardwareSerial *_bus;
       uint8_t _txpin, _rxpin;
       bool _invert;
-
+      bool _logStates[NUMBER_CHANNELS] = {false};
+      long _lastChannels[NUMBER_CHANNELS] = {0};
+      bool _preventArming = true;
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
       bfs::SbusData sbus_data, last_data;
