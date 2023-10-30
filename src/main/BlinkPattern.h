@@ -7,6 +7,8 @@
 
 #define MAX_PATTERN 10
 
+#define PATTERN_PREVENTARMING 9
+
 class BlinkPattern : public TaskAbstract {
   public:
     BlinkPattern(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
@@ -49,7 +51,7 @@ class BlinkPattern : public TaskAbstract {
       {0b00000000, 250, 250, 2}, // 6 TASK_ARBITRATE
       {0b00000000, 250, 250, 2}, // 7 free
       {0b00000000, 250, 250, 2}, // 8 free
-      {0b00000000, 250, 250, 2}  // 9 free
+      {0b11111111, 100, 100, 15}  // 9 preventArming !
     };
  
 };

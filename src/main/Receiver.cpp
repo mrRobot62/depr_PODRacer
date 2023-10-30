@@ -80,7 +80,7 @@
     bool rc = false;
     sbus_rx = new bfs::SbusRx(_bus, _rxpin, _txpin, _invert);
     sbus_tx = new bfs::SbusTx(_bus, _rxpin, _txpin, _invert);
-
+    _lastArmingState = false;
     if (sbus_rx == NULL || sbus_tx == NULL) {
       logger->error("can't create a SBus rx/tx object", _tname);
       rc = false;
@@ -91,24 +91,27 @@
     rc = true;
     sprintf(buffer, "ready");
     logger->info(buffer, _tname);
-      return rc;
+    _lastArmingState = false;
+    return rc;
   }
 
   bool Receiver::readyForArming() {
     _preventArming = true;
     if (
-      !isGimbalCentered(ROLL) &&
-      !isGimbalCentered(PITCH) &&
-      !isGimbalCentered(YAW) &&
-      isGimbalMin(THRUST) &&
-      isGimbalMin(HOVERING)
+      isGimbalCentered(ROLL) &&      //  centered
+      isGimbalCentered(PITCH) &&     //  centered
+      isGimbalCentered(YAW) &&       //  centered
+      isGimbalMin(THRUST) &&         //  MIN   
+      isGimbalMin(HOVERING)          //  MIN
     ) {
       _preventArming = false;
     }
     #if defined(LOG_TASK_RECEIVER)
-      logger->debug("prevent arming");
+      if (_preventArming) {
+        logger->debug("prevent arming");
+      }
     #endif
-    return _preventArming;
+    return !_preventArming;
   }
 
   void Receiver::update(void) {
@@ -135,12 +138,24 @@
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
       _bbd.data.armingState = false;
+
+      // if last arming state is false (disarmed) and the arming channel is set > 1500 (user switch to armed)
+      // than we have to check if the PODRacer is ready for arming 
+      // readyForArming checks if ROLL/PITCH/YAW gimbals are centeres, Throttel & THRUST must be on MIN Position
       if (_bbd.data.ch[ARMING] > 1500) {
-        if ( readyForArming()) {
-          _bbd.data.armingState = true;
+        if (_lastArmingState == false) {        // check readyForArming only if we switch from disarmed to armed
+          if ( readyForArming()) {              // arming allowed only if readyForArming is true
+            _bbd.data.armingState = true;
+            _lastArmingState = true;
+            _preventArming = false;
+          }
+          else {
+            _preventArming = true;
+          }
         }
       } else {
         _logStates[ARMING] = false;
+        _lastArmingState = false;
       }
       _bbd.data.updated = true;
 
@@ -158,16 +173,30 @@
         logger->simulate(buffer, _tname);
       #endif
     }
+
+    // _logState is only used to prevent log overkill during arming ;-)
     #if defined(LOG_TASK_RECEIVER)
-      // _logState is only used to prevent log overkill during arming ;-)
-      //sprintf(buffer, "ArmingStage: %d - logState: %d", _bbd.data.armingState,_logStates[ARMING] );
+      sprintf(buffer, "PODRacer ArmingStage: %d - logState: %d", _bbd.data.armingState,_logStates[ARMING] );
       //logger->info(buffer);
+      if (_bbd.data.armingState && _logStates[ARMING] == false) {
+        if (isPreventArming()) {
+          logger->warn("PODRacer IS DIARMED due to preventArming", _tname);
+          _logStates[ARMING] = true;          
+        }
+        else {
+          logger->warn("PODRacer IS ARMED", _tname);
+          _logStates[ARMING] = true;          
+        }
+      }
+      /*
       if (_bbd.data.armingState && _logStates[ARMING] == false){
         logger->warn("PODRacer IS ARMED", _tname);
         _logStates[ARMING] = true;
       }
-
+      */
     #endif
+
+
     // if function to the end, assumption is, that internal data struct was updated
     setUpdateFlag();
     resetError();

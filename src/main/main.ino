@@ -88,10 +88,14 @@ void BlinkPatternFunction() {
   blinkP.begin(&blink_pattern);
   char buffer[100];
   for(;;) {
-    blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
+    blink_pattern = 0;
+    //blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
+    if (receiver.isPreventArming()) {
+      blink_pattern = PATTERN_PREVENTARMING;
+    }
     //logger.printBinary("BlinkPatternFunction-Pattern:", blink_pattern);
     //blinkP.update(blink_pattern);
-    blinkP.update(0);
+    blinkP.update(blink_pattern);
     yield();
   }
 }

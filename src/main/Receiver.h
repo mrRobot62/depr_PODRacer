@@ -68,6 +68,10 @@
       /** check if arming is possible **/
       bool readyForArming();
 
+      /** isPreventArming - if true, PODRacer can not be armed **/
+      bool isPreventArming() {
+        return _preventArming;
+      }
       /** return channel data from last update **/
       uint16_t getData(int8_t ch) {
         ch = constrain(ch, 0, NUMBER_CHANNELS-1 );
@@ -127,6 +131,7 @@
       bool _logStates[NUMBER_CHANNELS] = {false};
       long _lastChannels[NUMBER_CHANNELS] = {0};
       bool _preventArming = true;
+      bool _lastArmingState = false;
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
       bfs::SbusData sbus_data, last_data;
