@@ -70,21 +70,21 @@ WICHIG: der Byte-Dump ist als Little-Endian gespeichert. Das heißt eine uint16_
 
 #### BBD Detail-Informationen
 
-- updated
+* updated
   - muss von jedem Task gesetzt werden, wenn es updates in der ch-Liste setzt. Sonst ignoriert der Mixer das
-- armingState
+* armingState
   - sehr wichtig für Tasks nur wenn der State TRUE ist, darf der Task Daten anpassen und updated auf TRUE setzen !
-- groupA & groupB
+* groupA & groupB
   - kann verwendet werden, wenn man seine Daten strukturieren möchte. Kann später ggf. über den Log-Analyzer gefiltert werden
-- double pid_rpyth[DATA_SIZE]
+* double pid_rpyth[DATA_SIZE]
   - hier können TASKs ihre PID Werte reinschreiben insgesamt stehen 8 freie Plätze zur Verfügung
-- uint16_t ch[NUMBER_CHANNELS]
+* uint16_t ch[NUMBER_CHANNELS]
   - hier schreiben die TASK ihre geänderten (in der Regel relative) Abweichungen zur CenterPoint (1500) rein. Ausnahme HOVER dieser Task schreibt absolute Werte
-- long ldata[DATA_SIZE]
+* long ldata[DATA_SIZE]
   - TASK spezifische Werte (falls notwendig), die auch geloggt werden können. 8 unterschiedliche Long-Werte können pro Task gespeichert werden
-- double fdata[DATA_SIZE]
+* double fdata[DATA_SIZE]
   - dito zu ldata allerdings für Dezimal-Zahlen
-- faile_safe & lost_frames
+* faile_safe & lost_frames
   - wird durch Receiver gesetzt
 
 ### Arming
