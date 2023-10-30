@@ -70,27 +70,29 @@ WICHIG: der Byte-Dump ist als Little-Endian gespeichert. Das heißt eine uint16_
 
 #### BBD Detail-Informationen
 
-* updated
-  - muss von jedem Task gesetzt werden, wenn es updates in der ch-Liste setzt. Sonst ignoriert der Mixer das
-* armingState
-  - sehr wichtig für Tasks nur wenn der State TRUE ist, darf der Task Daten anpassen und updated auf TRUE setzen !
-* groupA & groupB
-  - kann verwendet werden, wenn man seine Daten strukturieren möchte. Kann später ggf. über den Log-Analyzer gefiltert werden
-* double pid_rpyth[DATA_SIZE]
-  - hier können TASKs ihre PID Werte reinschreiben insgesamt stehen 8 freie Plätze zur Verfügung
-* uint16_t ch[NUMBER_CHANNELS]
-  - hier schreiben die TASK ihre geänderten (in der Regel relative) Abweichungen zur CenterPoint (1500) rein. Ausnahme HOVER dieser Task schreibt absolute Werte
-* long ldata[DATA_SIZE]
-  - TASK spezifische Werte (falls notwendig), die auch geloggt werden können. 8 unterschiedliche Long-Werte können pro Task gespeichert werden
-* double fdata[DATA_SIZE]
-  - dito zu ldata allerdings für Dezimal-Zahlen
-* faile_safe & lost_frames
-  - wird durch Receiver gesetzt
+* `uint16_t header`
+	* ist immer 0xFEEF und dient als "Satz-Anfangs-kennzeichen"
+* `bool updated`
+	* **muss** von jedem Task gesetzt werden, wenn es updates in der ch-Liste setzt.Sonst ignoriert der Mixer das
+* `bool armingState`
+	* **sehr wichtig** für Tasks nur wenn der State TRUE ist, darf der Task Daten anpassen und updated auf TRUE setzen !
+* `uint8_t groupA & groupB`
+	* kann verwendet werden, wenn man seine Daten strukturieren möchte. Kann später ggf. über den Log-Analyzer gefiltert werden
+* `double pid_rpyth[DATA_SIZE]`
+	* hier können TASKs ihre PID Werte reinschreiben insgesamt stehen 8 freie Plätze zur Verfügung. In der Regel benötigt man 3-4 (ROLL;PITCH;YAW;?)
+* `uint16_t ch[NUMBER_CHANNELS]`
+	* hier schreiben die TASK ihre geänderten (in der Regel relative) Abweichungen zur CenterPoint (1500) rein. Ausnahme HOVER dieser Task schreibt absolute Werte. Aktuell nutzen wir nur CH1-CH8
+* `long ldata[DATA_SIZE]`
+	* TASK spezifische Werte (falls notwendig), die auch geloggt werden können. 8 unterschiedliche Long-Werte können pro Task gespeichert werden
+* `double fdata[DATA_SIZE]`
+	* dito zu ldata allerdings für Dezimal-Zahlen (3.1415)
+* `bool fail_safe & lost_frames`
+	* wird durch Receiver gesetzt
 
 ### Arming
 Es ist wichtig, das das Ganze nur dann läuft, wenn der PODRacer auch „scharf“ geschaltet ist (ARMING) - mit dem roten Schalter. Wenn OFF, passiert nix, wenn ON, dann drehen die Rotoren etc.
 
-Wichtig beim ARMEN ist das ein Check gemacht wird, das die Gimbals im Center sind, Throttel auf MIN und THRUST auch auf MIN stehen, erst dann darf gearmt werden.
+Wichtig beim ARMEN ist das ein Check gemacht wird, das die Gimbals im Center sind, Throttel auf MIN und THRUST auch auf MIN stehen, erst dann darf gearmt werden ansonsten könnte es passieren, das de PODRacer direkt los brettert sobald man den Arming-Switch setzt :-O
 
 Ich habe damit exemplarisch begonnen aber das klappt noch nicht perfekt. Hört sich einfach an aber in einem Task-Umfeld wo jeder Task unabhängig läuft ist das etwas tricky.
 
@@ -98,3 +100,10 @@ Ich habe damit exemplarisch begonnen aber das klappt noch nicht perfekt. Hört s
 Beim Logging kann man jetzt auch den TASK-Namen mit angeben, dann wird im Log auch angezeigt von wem der Logeintrag kommt. Alle tasks haben im Constructor eine Variable _tname = „xxxxx“ stehen, der kann jetzt bei logger->info(„text“,_tname) als zweiter Parameter mit gegeben werden. Macht man das nicht erscheint ein „?“ in der Logausgabe zu diesem Logeintrag.
 Commit
 Ich habe Deine Änderungen gemerged aber ich befürchte da ist mir ein Fehler unterlaufen
+
+`logger->info(buffer, _tname);`
+Hier ein Bespiel es wird der Buffer ausgegeben und `_tname` im Log entsprechend ausgegeben
+`10642| INFO|HOVER|H:1000` (hier HOVER)
+
+`10642| INFO|    ?|H:1000` (wenn man _tname vergessen hat)
+
