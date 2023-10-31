@@ -1,4 +1,4 @@
-# Implemntierungs Hinweise
+# Implementierungs Hinweise
 
 
 ## 30.10.2023 BK
