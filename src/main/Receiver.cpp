@@ -1,3 +1,4 @@
+#include "Arduino.h"
 #include "Receiver.h"
 
 
@@ -80,7 +81,6 @@
     bool rc = false;
     sbus_rx = new bfs::SbusRx(_bus, _rxpin, _txpin, _invert);
     sbus_tx = new bfs::SbusTx(_bus, _rxpin, _txpin, _invert);
-    _lastArmingState = false;
     if (sbus_rx == NULL || sbus_tx == NULL) {
       logger->error("can't create a SBus rx/tx object", _tname);
       rc = false;
@@ -91,27 +91,24 @@
     rc = true;
     sprintf(buffer, "ready");
     logger->info(buffer, _tname);
-    _lastArmingState = false;
+    _bbd.data.isArmed = false;
+    armingMask = 0b00000000;
+    _armSwitchOn = false;
     return rc;
   }
 
-  bool Receiver::readyForArming() {
-    _preventArming = true;
-    if (
+  bool Receiver::sticksInArmingPos() {
+    _sticksInArmingPos = false;
+   if (
       isGimbalCentered(ROLL) &&      //  centered
       isGimbalCentered(PITCH) &&     //  centered
       isGimbalCentered(YAW) &&       //  centered
       isGimbalMin(THRUST) &&         //  MIN   
       isGimbalMin(HOVERING)          //  MIN
     ) {
-      _preventArming = false;
+        _sticksInArmingPos = true;
     }
-    #if defined(LOG_TASK_RECEIVER)
-      if (_preventArming) {
-        logger->debug("prevent arming");
-      }
-    #endif
-    return !_preventArming;
+    return _sticksInArmingPos;
   }
 
   void Receiver::update(void) {
@@ -134,69 +131,70 @@
         // if a gimbal is "around" center position, set this with a +/- noice value
         _bbd.data.ch[i] = centeredValue(_bbd.data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
+      _armSwitchOn = (_bbd.data.ch[ARMING] > 1500)?true:false;
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
-      _bbd.data.armingState = false;
+      _bbd.data.isArmed = false;
+      // ------------------------------------------------------------------------
+      // initial armingMask = 0b0000 0000
+      // arming only allowed if 0b0000 1010
+      // bit 0 = initial set (in begin()) 0b0000 0000 , 
+      //         set if arm Switch OFF, reset if arm switch ON
+      // bit 1 = set to 1 if Sticks in center pos else 0
+      // bit 2 = unused
+      // bit 3 = set to 1 if armSwitch ON else 0
+      // ------------------------------------------------------------------------
+      if (_armSwitchOn == false) {    // ---------- arm switch = OFF ------------
+        bitSet(armingMask, 0);        // 0b---- ---1
+        bitClear(armingMask, 3);      // 0b---- 0---
 
-      // if last arming state is false (disarmed) and the arming channel is set > 1500 (user switch to armed)
-      // than we have to check if the PODRacer is ready for arming 
-      // readyForArming checks if ROLL/PITCH/YAW gimbals are centeres, Throttel & THRUST must be on MIN Position
-      if (_bbd.data.ch[ARMING] > 1500) {
-        if (_lastArmingState == false) {        // check readyForArming only if we switch from disarmed to armed
-          if ( readyForArming()) {              // arming allowed only if readyForArming is true
-            _bbd.data.armingState = true;
-            _lastArmingState = true;
-            _preventArming = false;
-          }
-          else {
-            _preventArming = true;
-          }
-        }
-      } else {
-        _logStates[ARMING] = false;
-        _lastArmingState = false;
-      }
-      _bbd.data.updated = true;
-
-      #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "READ CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
-          _bbd.data.ch[0],
-          _bbd.data.ch[1],
-          _bbd.data.ch[2],
-          _bbd.data.ch[3],
-          _bbd.data.ch[4],
-          _bbd.data.ch[5],        
-          _bbd.data.ch[6],        
-          _bbd.data.ch[7]     
-        );
-        logger->simulate(buffer, _tname);
-      #endif
-    }
-
-    // _logState is only used to prevent log overkill during arming ;-)
-    #if defined(LOG_TASK_RECEIVER)
-      sprintf(buffer, "PODRacer ArmingStage: %d - logState: %d", _bbd.data.armingState,_logStates[ARMING] );
-      //logger->info(buffer);
-      if (_bbd.data.armingState && _logStates[ARMING] == false) {
-        if (isPreventArming()) {
-          logger->warn("PODRacer IS DIARMED due to preventArming", _tname);
-          _logStates[ARMING] = true;          
+        if (sticksInArmingPos()) {
+          bitSet(armingMask,1);       // 0b---- --1-
         }
         else {
-          logger->warn("PODRacer IS ARMED", _tname);
-          _logStates[ARMING] = true;          
+          bitClear(armingMask,1);     // 0b---- --0-
         }
       }
-      /*
-      if (_bbd.data.armingState && _logStates[ARMING] == false){
-        logger->warn("PODRacer IS ARMED", _tname);
-        _logStates[ARMING] = true;
+      else {  //------ arm switch = ON --------
+        bitSet(armingMask, 3);        // 0b---- 1---
+        bitClear(armingMask, 0);      // 0b---- ---0
       }
-      */
+
+      //logger->printBinary("armingMask =>", _tname, armingMask);
+
+      uint8_t armState = (armingMask & armingOKMask);
+      if ( armState == armingOKMask) {
+        #if defined(LOG_TASK_RECEIVER)
+          logger->printBinary("armState =>", _tname, armState, false);
+          logger->print(" - PODRacer ARMED", true);
+        #endif
+        _isPreventArming = false;
+        _bbd.data.isArmed = true;
+      }
+      else {
+        #if defined(LOG_TASK_RECEIVER)
+          logger->printBinary("armState =>", _tname, armState, false);
+          logger->print(" - PODRacer DISARMED", true);
+        #endif
+        _isPreventArming = true;
+      }
+    }
+
+    _bbd.data.updated = true;
+    #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
+      sprintf(buffer, "READ CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
+        _bbd.data.ch[0],
+        _bbd.data.ch[1],
+        _bbd.data.ch[2],
+        _bbd.data.ch[3],
+        _bbd.data.ch[4],
+        _bbd.data.ch[5],        
+        _bbd.data.ch[6],        
+        _bbd.data.ch[7]     
+      );
+      logger->debug(buffer, _tname);
     #endif
-
-
     // if function to the end, assumption is, that internal data struct was updated
     setUpdateFlag();
     resetError();

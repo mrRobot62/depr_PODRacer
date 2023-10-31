@@ -109,7 +109,7 @@
         if ((value >= (compareValue+min)) && (value <= (compareValue+max))) {
           return true;
         }
-        return true;
+        return false;
       }
       BBD _bbd;        // Blackbox Data Struct
       Blackbox *_blackbox;

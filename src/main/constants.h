@@ -17,7 +17,7 @@
 
 //#define LOG_TASK_ALL
 #define LOG_TASK_RECEIVER_W
-//#define LOG_TASK_RECEIVER_R
+#define LOG_TASK_RECEIVER_R
 #define LOG_TASK_RECEIVER
 //#define LOG_TASK_MIXER
 #define LOG_TASK_HOVER
@@ -78,7 +78,6 @@
 #define HOVER_ROLL GIMBAL_CENTER_POSITION   // default ch1
 #define HOVER_PITCH GIMBAL_CENTER_POSITION  // default ch2
 #define HOVER_YAW GIMBAL_CENTER_POSITION    // default ch4
-#define HOVER_HOVER 1300                    // ch3 poti Hovering
 #define HOVER_THRUST GIMBAL_MIN             // ch8 forward mapped used for ESC for EDF thrust nozzle
 
 //

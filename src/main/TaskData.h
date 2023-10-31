@@ -47,7 +47,7 @@ typedef struct {
   bool updated;                         // set by tasks
   bool failsafe;                        // set by receiver
   bool lost_frame;                      // set by receiver
-  bool armingState;                     // true=armed, false=disarmed
+  bool isArmed;                         // true=armed, false=disarmed
   uint8_t groupA;                       // can be used to group data 1. order
   uint8_t groupB;                       // can be used to group data 2. order
   uint16_t ch[NUMBER_CHANNELS];         // channel data (0=ch1, 1=ch2, 2=ch3, ...)

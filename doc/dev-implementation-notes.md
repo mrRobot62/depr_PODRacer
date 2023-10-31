@@ -3,6 +3,47 @@
 
 ## 30.10.2023 BK
 
+### PreventArming - BitMasking
+Arming ist nur erlaubt wenn eine definierter Status vorhanden ist.
+Es darf nur dann gearmed werden wenn:
+* R/P/Y in CenterPosition
+* Throttle & Thrust auf MIN-Position sind
+* Wurde einmal erfolgreich gearmt und es wird disarmed dann muss anschließend wieder alles auf Center und Min stehen sonst ist kein arming möglich
+  
+> Vermutlich ist der Throttle-Poti oder der Thrust-Stick meistens nicht in der MIN-Position, das ist der Grund warum es 
+so wichtig ist, das man nur armen kann, wenn es ungefährlich ist.
+
+**Lösung:**
+Verwendet wird eine armingMask. Hier werden nur die unteren 4Bits verwendet
+
+* armingMask   0b0000 0000 (hier werden die Bits gesetzt)
+* armingOKMask 0b0000 1010 (vergleich gegen dieses Muster)
+
+**Kürzel**
+
+- **ASO** = ArmingSwitchOFF
+- **AS1** = ArmingSwitchON
+- **SP1** = RPY=CP, T&H = MIN
+- **SP0** = ein Stick/Poti ist nicht in CP oder MIN 
+
+#### Beispiel 1 : Disarmed und Sticks in CP bzw. MIN, Ideal-Zustand
+|Beispiel|Bit 3|Bit 2|Bit 1|Bit 0|Info|Maskierung|Arming|
+|---|:-:|:-:|:-:|:-:|---|:-:|--:|
+|-|0|0|0|0|intial|nein|nein|
+|AS0+SP1|0|0|1|1|AS0 setzt B0, SP1 setzt B1|0011 & 1010 = 0011|nein|
+|AS0+SP0|0|0|0|1|B0 bleibt, SP0+AS0 => B3=0 B1=0|0001 & 1010 =0001|nein|
+|AS1+SP1|1|0|1|0|B3 durch AS1, SP1 setzt B2, AS1 reset B0|1010 & 1010=1010|ja|
+
+#### Beispiel 2 : PODRacer war gearmed wird nun disarmed, Throttle nicht auf MIN 
+|Beispiel|Bit 3|Bit 2|Bit 1|Bit 0|Info|Maskierung|Arming|
+|---|:-:|:-:|:-:|:-:|---|:-:|--:|
+|-|1|0|1|0|Arming aktiv|-|ja|
+|AS0+SP0|0|0|0|1|wird disarmed, AS0 setzt B0|0001 & 1010 = 0001|nein|
+|AS1+SP0|1|0|0|1|arming, AS1 setzt B3, SP0 reset B1, B0 unverändert|1001 & 1010 = 1001|nein|
+|AS1+SP1|1|0|1|1|arming, AS1 setzt B3, SP1 set B1, B0 unverändert|1011 & 1010 = 1011|nein|
+|AS0+SP1|0|0|1|0|disarming B3=0, reset B0, SP1 set B1|0010 & 1010 = 0010|nein|
+|AS1+SP1|1|0|1|0|arming B3=1, SP1 set B1|0010 & 1010 = 0010|ja|
+
 ## 29.10.2023 BK
 
 ### Klasse Blackbox
