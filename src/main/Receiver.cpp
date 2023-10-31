@@ -227,22 +227,38 @@
     
     // copy data.ch array to sbus_data.ch array
     memcpy(sbus_data.ch, _bbd.data.ch, sizeof(sbus_data.ch));;
+    if (!_bbd.data.isArmed) {
+      return;
+    }
     //sbus_data.failsafe = _data.failsafe;
     //sbus_data.lost_frame = _data.lost_frame
     sbus_tx->data(sbus_data);
 
-    #if defined(LOG_TASK_RECEIVER_W) || defined (USE_SERIAL_PLOTTER)
-      sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d>", 
-        sbus_data.ch[0],
-        sbus_data.ch[1],
-        sbus_data.ch[2],
-        sbus_data.ch[3],
-        sbus_data.ch[4],
-        sbus_data.ch[5],
-        sbus_data.ch[6],
-        sbus_data.ch[7]
-      );
-      logger->info(buffer, _tname);
+    #if defined(LOG_TASK_RECEIVER_W)
+      #if defined(USE_SERIAL_PLOTTER)
+        sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d", 
+          sbus_data.ch[0],
+          sbus_data.ch[1],
+          sbus_data.ch[2],
+          sbus_data.ch[3],
+          sbus_data.ch[4],
+          sbus_data.ch[5],
+          sbus_data.ch[6],
+          sbus_data.ch[7]
+        );        
+      #else
+        sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d (RECEIVER)", 
+          sbus_data.ch[0],
+          sbus_data.ch[1],
+          sbus_data.ch[2],
+          sbus_data.ch[3],
+          sbus_data.ch[4],
+          sbus_data.ch[5],
+          sbus_data.ch[6],
+          sbus_data.ch[7]
+        );        
+      #endif
+      logger->info("buffer", _tname);
     #endif
     sbus_tx->Write();
     last_data = sbus_data;

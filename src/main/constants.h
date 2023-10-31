@@ -26,7 +26,7 @@
 //#define LOG_TASK_SURFACE2
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
-#define USE_SERIAL_PLOTTER
+//#define USE_SERIAL_PLOTTER
 
 
 //#define TEST_OPTICAL_FLOW

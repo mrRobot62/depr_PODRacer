@@ -38,6 +38,7 @@
       else {
         _bbd.data.updated = false;
       }
+        _bbd.data.updated = true;
 
       #if defined(LOG_TASK_HOVER)
         if (_bbd.data.updated) {          
@@ -48,11 +49,10 @@
             _bbd.data.ch[HOVERING],
             _bbd.data.ch[YAW]
           );
-          logger->debug(buffer, _tname);
+          logger->info(buffer, _tname);
           sprintf(buffer, "H:%4d",
-            _bbd.data.ch[HOVERING]
+          _bbd.data.ch[HOVERING]
           );
-          logger->info(buffer, _tname);  
         }
       #endif
     }

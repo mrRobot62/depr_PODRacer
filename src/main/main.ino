@@ -92,6 +92,8 @@ void BlinkPatternFunction() {
     //blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
     if (receiver.isPreventArming()) {
       blink_pattern = PATTERN_PREVENTARMING;
+    } else if (!receiver.isArmed()) {
+      blink_pattern = PATTERN_DISARMED;
     }
     //logger.printBinary("BlinkPatternFunction-Pattern:", blink_pattern);
     //blinkP.update(blink_pattern);
@@ -226,7 +228,7 @@ void MixerControlFunction() {
   for(;;) {
     // hovering is the base function of the podrace
     if (hover.isUpdated()) {
-      logger.info("hover-update",_tname);
+      //logger.info("hover-update",_tname);
       mixer.update(&hover);
     }
     // SurfaceDistance is the next higher level. The sensor set the height for the podrace
