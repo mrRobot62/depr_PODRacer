@@ -60,11 +60,6 @@
       /** send data to receiver **/
       void write(void);
 
-
-      uint16_t getRoll() {
-        
-      }
-
       /** return true, if R & P & Y=CenterPos && T & H in MIN Pos **/
       bool sticksInArmingPos();
 
@@ -127,8 +122,8 @@
     private:
       HardwareSerial *_bus;
       uint8_t _txpin, _rxpin;
-      uint8_t armingMask;                 // 0b----XXXX, bit 0=initialBit, 1=stickBasePos, 2=free, 3=armSwitch, 4-7=0
-      uint8_t armingOKMask = 0b00001010;  // b3 = arming ON (1), b2=0, b1=stickCP (1), b0=initial(0) => 1010
+      uint8_t armingMask;                     // 0b----XXXX, bit 0=initialBit, 1=stickBasePos, 2=free, 3=armSwitch, 4-7=0
+      uint8_t armingOKMask = 0b00001010;      // b3 = arming ON (1), b2=0, b1=stickCP (1), b0=initial(0) => 1010
       bool _invert;
       bool _sticksInArmingPos = false;
       bool _isPreventArming = true;

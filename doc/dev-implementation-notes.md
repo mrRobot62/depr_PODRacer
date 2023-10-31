@@ -2,6 +2,15 @@
 
 
 ## 30.10.2023 BK
+### Mixer leitet jetzt Hover Data zum Receiver durch
+Wichtiger Schritt geschafft. Aus der Main-Methode, wird kann der Mixer nun den HoverTask "abfragen" und seine daten an den Receiver weiterleiten. Das ist ein wichtiger Schritt.
+
+### Hovering-Task
+setzt `_bbd.data.ch[HOVERING]` auf den POTI-Wert ist der Wert, ändert sich der Wert zum vorherigen mal, dann wird
+`_bbd.data.updated` auf `true` gesetzt. Serial-Plotout zeigt nur geänderte Werte um ein Output-Overkill zu vermeiden
+
+### PreventArming - Blinking-Pattern
+Wenn _isPreventArming = true, dann wird ein schnell blinkendes Muster angezeigt. Das deutet dann darauf hin, das einer der Sticks oder Poti nicht korrekt sind und somit das Arming nicht möglich ist.
 
 ### PreventArming - BitMasking
 Arming ist nur erlaubt wenn eine definierter Status vorhanden ist.

@@ -226,6 +226,7 @@ void MixerControlFunction() {
   for(;;) {
     // hovering is the base function of the podrace
     if (hover.isUpdated()) {
+      logger.info("hover-update",_tname);
       mixer.update(&hover);
     }
     // SurfaceDistance is the next higher level. The sensor set the height for the podrace

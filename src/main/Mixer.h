@@ -26,10 +26,11 @@
       bool begin(void);
       void update(void);
 
-      void update(OpticalFlow *obj);
-      void update(SurfaceDistance *obj);
-      void update(Hover *obj);
-      void update(Steering *obj);
+      void update(OpticalFlow *obj) {_flow = obj; update();};
+      void update(SurfaceDistance *obj) {_sdist = obj;update();}
+      void update(Hover *obj) {_hover = obj;update();}
+      void update(Steering *obj) {_steer = obj;update();}
+
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
@@ -43,25 +44,16 @@
         return false;  
       }
 
-      /** add value to current channel value **/
-      void addChannelValue(uint8_t ch, uint16_t value) {
-        _data.ch[ch] = +value;
-      }
-
-      /** set value current channel value (overwrite) **/
-      void setChannelValue(uint8_t ch, uint16_t value) {
-         _data.ch[ch] = value;
-      }
-
-
-      /** get data struct **/
-      inline SDATA data() const {return _data;}
-      inline void data(SDATA data) {_data = data;}
 
     private: 
       char buffer[100];
-      SDATA _data;
+      //SDATA _data;
       Receiver *_recv;
+      OpticalFlow *_flow;
+      Hover *_hover;
+      SurfaceDistance *_sdist;
+      Steering *_steer;
+
   };
 
 #endif

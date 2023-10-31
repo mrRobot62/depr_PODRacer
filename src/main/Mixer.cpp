@@ -11,21 +11,25 @@ bool Mixer::begin(void) {
   return true;
 }
 
-void Mixer::update(OpticalFlow *obj) {
-
-}
-void Mixer::update(Hover *obj) {
-
-}
-void Mixer::update(SurfaceDistance *obj) {
-
-}
-void Mixer::update(Steering *obj) {
-
-}
-
 void Mixer::update() {
   if (_recv) {
+    if (_hover->isUpdated()) {  
+      #if defined(TASK_MIXER)    
+        sprintf(buffer, "hover updated - R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d",
+          _hover->data().data.ch[0],
+          _hover->data().data.ch[1],
+          _hover->data().data.ch[2],
+          _hover->data().data.ch[3],
+          _hover->data().data.ch[4],
+          _hover->data().data.ch[7]
+        );
+        logger->info(buffer,_tname);
+      #endif
+      memcpy(_bbd.data.ch, _hover->data().data.ch, sizeof(_bbd.data.ch));
+    }
+
+  // move(ref) mixer data struct to receiver and write back to flight controller 
+  memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
   _recv->write();
   }
   else {

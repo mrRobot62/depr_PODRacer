@@ -132,6 +132,7 @@
         _bbd.data.ch[i] = centeredValue(_bbd.data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
       _armSwitchOn = (_bbd.data.ch[ARMING] > 1500)?true:false;
+      //_isPreventArming = false;
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
@@ -154,6 +155,7 @@
         }
         else {
           bitClear(armingMask,1);     // 0b---- --0-
+          _isPreventArming = true;
         }
       }
       else {  //------ arm switch = ON --------
@@ -177,7 +179,12 @@
           logger->printBinary("armState =>", _tname, armState, false);
           logger->print(" - PODRacer DISARMED", true);
         #endif
-        _isPreventArming = true;
+        if (armingMask & 0x02 == 0x02) { // bit is set
+          _isPreventArming = false;
+        }
+        else {
+          _isPreventArming = true;    // bit not set
+        }
       }
     }
 
@@ -217,17 +224,15 @@
 */
 
   void Receiver::write(void) {
-    /*
-    memcpy(sbus_data.ch, _data.ch, sizeof(sbus_data.ch));;
-    sbus_data.failsafe = _data.failsafe;
-    sbus_data.lost_frame = _data.lost_frame
-    */
+    
+    // copy data.ch array to sbus_data.ch array
+    memcpy(sbus_data.ch, _bbd.data.ch, sizeof(sbus_data.ch));;
+    //sbus_data.failsafe = _data.failsafe;
+    //sbus_data.lost_frame = _data.lost_frame
     sbus_tx->data(sbus_data);
 
     #if defined(LOG_TASK_RECEIVER_W) || defined (USE_SERIAL_PLOTTER)
-
-    #elif defined(LOG_TASK_RECEIVER_W) || defined(LOG_TASK_ALL) 
-      sprintf(buffer, "write sbus_data CH:<%4d, %4d, %4d, %4d> AUX:<%4d, %4d, %4d, %4d>", 
+      sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d>", 
         sbus_data.ch[0],
         sbus_data.ch[1],
         sbus_data.ch[2],
@@ -237,7 +242,7 @@
         sbus_data.ch[6],
         sbus_data.ch[7]
       );
-      logger->debug(buffer, _tname);
+      logger->info(buffer, _tname);
     #endif
     sbus_tx->Write();
     last_data = sbus_data;
