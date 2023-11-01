@@ -1,7 +1,14 @@
 # Implementierungs Hinweise
 
+## 01.11.2023 BK
+MIXER gesplittet in _HoverMixer und _RPYMixer. In der update() Funktion von Mixer.cpp.
+Zuerst wird _HoverMixer aufgerufen. Dieser Mixer nutzt die Daten aus HoverTask & SurfaceDistance
+Anschließnd wird _RPYMixer aufgerufen.
+Dieser Mixer wird entweder von FlowTask oder von SteeringTask genutzt.
 
-## 30.10.2023 BK
+Sind beide Sub-Mixer abgearbeitet werden die Daten in das zentralen Mixer-Struct kopiert und dem Receiver übergeben.
+
+## 31.10.2023 BK
 ### Mixer leitet jetzt Hover Data zum Receiver durch
 Wichtiger Schritt geschafft. Aus der Main-Methode, wird kann der Mixer nun den HoverTask "abfragen" und seine daten an den Receiver weiterleiten. Das ist ein wichtiger Schritt.
 

@@ -4,7 +4,7 @@ SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus,
   : TaskAbstract(taskID, log,bb) {
   _bus = bus;
   _tname = "SDIST";
-  logger->info("SurfaceDistance::initialized", _tname);
+  logger->info("initialized", _tname);
 }
 
 bool SurfaceDistance::begin(Receiver *receiver) {
@@ -24,11 +24,11 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   }
   _lidar = new TFMPlus();
   if (_lidar == nullptr) {
-    logger->error("SurfaceDistance::Lidar not initialized", _tname);
+    logger->error("Lidar not initialized", _tname);
     return false;
   }
   if (_bus == nullptr) {
-    logger->error("SurfaceDistance::Lidar-SerialPort not initialized", _tname);
+    logger->error("Lidar-SerialPort not initialized", _tname);
     return false;
   }
 
@@ -38,18 +38,18 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   */
   _bus->begin(BAUD_115200, SERIAL_8N1, RX1_PIN, TX1_PIN);
   if (_lidar->begin(_bus) == false) {
-    logger->error("SurfaceDistance::Initialization lidar sensor failed", _tname);
+    logger->error("Initialization lidar sensor failed", _tname);
     return false;
   }
   delay(500);
 #if defined(LOG_TASK_SURFACE1)
-  sprintf(buffer, "SurfaceDistance::Lidar FW: %1u.%1u.%1u", _lidar->version[0], _lidar->version[1], _lidar->version[2]);
+  sprintf(buffer, "Lidar FW: %1u.%1u.%1u", _lidar->version[0], _lidar->version[1], _lidar->version[2]);
   logger->info(buffer, _tname);
 #endif
 
   _recv = receiver;
   if (_recv == nullptr) {
-    logger->error("SurfaceDistance:: no receiver object available", _tname);
+    logger->error("no receiver object available", _tname);
     return false;
   }
 
@@ -61,7 +61,7 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   // <tbd> set to 50ms, normal a task run in 10ms 
   _tof->startContinuous(50);
 
-  sprintf(buffer, "SurfaceDistance:: ready | Receiver:%d |", (long)&_recv);
+  sprintf(buffer, "ready | Receiver:%d |", (long)&_recv);
   logger->info(buffer, _tname);
 
 
@@ -88,7 +88,7 @@ void SurfaceDistance::update(void) {
     logger->info(buffer);
   } else  // If the command fails...
   {
-    logger->info("SurfaceDistance:: getData failed", _tname);
+    logger->info("getData failed", _tname);
     _lidar->printFrame();  // display the error and HEX data
 #endif
   }

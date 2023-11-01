@@ -44,6 +44,9 @@
         return false;  
       }
 
+    private:
+      void _HoverMixer(void);
+      void _RPYMixer(void);
 
     private: 
       char buffer[100];
