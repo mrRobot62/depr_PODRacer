@@ -1,5 +1,18 @@
 # Implementierungs Hinweise
 
+## 02.11.2023 BK
+EmergencyTask implementiert (aber noch nicht getestet). Dieser Task wird in Main innerhalb der BlinkPatternFunction() aufgerufen um ein BlinkPattern zu setzen.
+
+```
+    if (emergency.isEmergencyStop()) {
+      blink_pattern = PATTERN_EMERGENCY;
+    } else if (receiver.isPreventArming() || emergency.isPreventArming()) {
+      blink_pattern = PATTERN_PREVENTARMING;
+    } else if (!receiver.isArmed() || emergency.isArmed()) {
+      blink_pattern = PATTERN_DISARMED;
+    }
+```
+
 ## 01.11.2023 BK
 MIXER gesplittet in _HoverMixer und _RPYMixer. In der update() Funktion von Mixer.cpp.
 Zuerst wird _HoverMixer aufgerufen. Dieser Mixer nutzt die Daten aus HoverTask & SurfaceDistance

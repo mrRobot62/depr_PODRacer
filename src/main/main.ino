@@ -40,6 +40,7 @@ Mixer (Priorisierung)
 #include "Steering.h"
 #include "BlinkPattern.h"
 #include "Blackbox.h"
+#include "Emergency.h"
 #include "constants.h"
 
 #define NUMBER_OF_LAYER_TASKS 5
@@ -58,6 +59,7 @@ CoopTask<void>* surfaceDistCtrlTask = nullptr;
 CoopTask<void>* receiverCtrlTask = nullptr;
 CoopTask<void>* mixerCtrlTask = nullptr;
 CoopTask<void>* blackboxCtrlTask = nullptr;
+CoopTask<void>* emergencyCtrlTask = nullptr;
 
 /** 
 This semaphore is used to avoid concurrent access to the receives data array during updateing this array
@@ -74,6 +76,7 @@ OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901, &bb);
 Steering steering(TASK_STEERING, &logger, &bb);
 Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true, &bb);
 Mixer mixer(TASK_MIXER, &logger, &bb);
+Emergency emergency(TASK_EMERGENCY, &logger, &bb);
 //Blackbox bb(TASK_MIXER, &logger, CS_PIN);
 
 //Receiver *receiver;
@@ -90,13 +93,13 @@ void BlinkPatternFunction() {
   for(;;) {
     blink_pattern = 0;
     //blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
-    if (receiver.isPreventArming()) {
+    if (emergency.isEmergencyStop()) {
+      blink_pattern = PATTERN_EMERGENCY;
+    } else if (receiver.isPreventArming() || emergency.isPreventArming()) {
       blink_pattern = PATTERN_PREVENTARMING;
-    } else if (!receiver.isArmed()) {
+    } else if (!receiver.isArmed() || emergency.isArmed()) {
       blink_pattern = PATTERN_DISARMED;
     }
-    //logger.printBinary("BlinkPatternFunction-Pattern:", blink_pattern);
-    //blinkP.update(blink_pattern);
     blinkP.update(blink_pattern);
     yield();
   }
@@ -144,6 +147,25 @@ void HoverControlFunction() {
       }
       delay(LOOP_TIME);
     }
+  }
+
+}
+
+// Primary Task Hovering is the base functionality of the complete PODRacer System
+// 
+void EmergencyControlFunction() {
+
+  unsigned long lastMillis = millis();
+  if (emergency.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start Emergency object", _tname);
+    return;
+  }
+  for(;;) {
+    emergency.update();         /** this is an empty function **/
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
   }
 
 }
@@ -271,6 +293,8 @@ bool SleepCoopFunction() {
   if (receiverCtrlTask) receiverCtrlTask->wakeup();
   if (mixerCtrlTask) mixerCtrlTask->wakeup();
   if (blackboxCtrlTask) blackboxCtrlTask->wakeup();
+  if (emergencyCtrlTask) blackboxCtrlTask->wakeup();
+
   #if defined (LOG_TASK_ALL)
     logger->debug ("SleepCoopFunction wakeup tasks done", _tname);
   #endif
@@ -303,6 +327,7 @@ void setup() {
   surfaceDistCtrlTask= new CoopTask<void>(F("SURFD"), SurfaceDistanceControlFunction);
   receiverCtrlTask = new CoopTask<void>(F("RECV"),ReceiverControlFunction);
   mixerCtrlTask = new CoopTask<void>(F("MIXER"),MixerControlFunction);
+  emergencyCtrlTask = new CoopTask<void>(F("EMGCY"),EmergencyControlFunction);
   logger.info("all tasks ready", _tname);
 
   //-----------------------------------------
@@ -316,6 +341,7 @@ void setup() {
   steeringCtrlTask->scheduleTask();
   receiverCtrlTask->scheduleTask();
   mixerCtrlTask->scheduleTask();
+  emergencyCtrlTask->scheduleTask();
   logger.info("all tasks scheduled", _tname);
 
   //<todo> should be moved if armed=true

@@ -48,6 +48,7 @@
 #define TASK_STEERING 5
 #define TASK_RECEIVER 6
 #define TASK_MIXER 7
+#define TASK_EMERGENCY 8
 
 // receivers toogle values around 1-5 +/- if nothing done by user activity
 // this avoid false readings inside Receiver-class. As bigger the value is, as less sensitive your PODracer is around center gimbal position
