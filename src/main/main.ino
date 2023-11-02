@@ -248,6 +248,10 @@ void MixerControlFunction() {
   }
 
   for(;;) {
+
+    if (emergency.isEmergencyStop() || emergency.isDisarmed()) {
+      yield();
+    }
     // hovering is the base function of the podrace
     if (hover.isUpdated()) {
       //logger.info("hover-update",_tname);
