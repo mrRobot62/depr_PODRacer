@@ -12,16 +12,21 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
   bool OpticalFlow::begin(Receiver *receiver) {
     flow = new Bitcraze_PMW3901(_cs);
     _recv = receiver;
+
+
     if (_recv == nullptr) {
-      logger->error("OpticalFlow:: no receiver object available", _tname);
+      logger->error("no receiver object available", _tname);
       setError(getID());
       return false;
     }
     if (flow == nullptr) {
-      logger->error("OpticalFlow::PMW3901 not initialized", _tname);
+      logger->error("PMW3901 not available", _tname);
       setError(getID());
       return false;
     }
+
+    sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
+    logger->info(buffer, _tname);
 
     slip2RollAxis = 0.0;
     slip2RollAxis = 0.0;
@@ -63,7 +68,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
     pidY->SetSampleTime(LOOP_TIME);
 
     if (flow->begin() == false) {
-      logger->error("OpticalFlow::Initialization flow sensor failed");
+      logger->error("flow->begin() failed", _tname);
       setError(getID());
       logger->printBinary("Error:", _tname, getID());
       //logger->error("Error:", false);
@@ -72,7 +77,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
       return false;
     }
 
-    sprintf(buffer, "OpticalFlow::FLOW ready | Receiver:%d | PMW3901:%d", (long)&_recv, (long)flow);
+    sprintf(buffer, "OpticalFlow ready | Receiver:%d | PMW3901:%d", (long)&receiver, (long)&flow);
     logger->info(buffer, _tname);
     cnt = 0;
 

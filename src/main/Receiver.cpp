@@ -227,9 +227,9 @@
     
     // copy data.ch array to sbus_data.ch array
     memcpy(sbus_data.ch, _bbd.data.ch, sizeof(sbus_data.ch));;
-    if (!_bbd.data.isArmed) {
-      return;
-    }
+    //if (!_bbd.data.isArmed) {
+    //  return;
+    //}
     //sbus_data.failsafe = _data.failsafe;
     //sbus_data.lost_frame = _data.lost_frame
     sbus_tx->data(sbus_data);

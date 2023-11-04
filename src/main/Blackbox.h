@@ -31,6 +31,10 @@ class Blackbox {
     /** reset BBD struct, can set task_id, groupA, groupB if set**/
     void clearStruct(BBD *bbd, uint8_t task_id=0, uint8_t groupA=0, uint8_t groupB=0);
 
+    char *FWVersioin(void) {
+      return fw;
+    }
+
   private:
     SLog *logger; 
     uint8_t _cs;
@@ -40,6 +44,7 @@ class Blackbox {
     char *_tname;
     char buffer[50];
     char cfgFile[14] = "/blackbox.txt";  // please note \0 is added to the string
+    char fw[10] = {0};
 
     /** return file handle for "path-file". Default as READ-ONLY **/
     fs::File open(fs::FS &fs, const char *path, const char* mode = FILE_READ, const bool create = false);

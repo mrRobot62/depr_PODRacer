@@ -17,6 +17,13 @@ Blackbox::Blackbox(SLog *log, uint8_t cs) {
   blackboxAvailable = false;
   fOpen = false;
   _tname = "BBOX";
+
+  sprintf(fw, FW_VERSION_PATTERN,
+    FW_VERSION_MAJOR,
+    FW_VERSION_MINOR,
+    FW_VERSION_PATCH
+  );
+
 }
 
 void Blackbox::clearStruct(BBD *bbd, uint8_t task_id, uint8_t groupA, uint8_t groupB) {
@@ -32,6 +39,8 @@ bool Blackbox::begin(void) {
   if (!SD.begin(_cs)) {
     // return true, because if no SD card attached, we can't store 
     // blackbox data, but we can fly :-)
+
+
     logger->error("Blackbox::Card mount failed", _tname);
     return true;
   }
@@ -92,9 +101,12 @@ void Blackbox::update(void) {
 
 }
 
+void setFWVersion(BBD *data) {
+}
 
 void Blackbox::update(BBD *data){
   if (bbf) {
+    memcpy(data->data.fwversion, fw, sizeof(data->data.fwversion));
     bbf.write(data->bytes, sizeof(BlackBoxStruct));
     bbf.flush();
   }

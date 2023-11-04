@@ -34,14 +34,15 @@
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
-          logger->info("begin(receiver) started, receiver: ", _tname);
-          logger->print((long)&_recv, true);
-          return true;
         }
         else {
           logger->error("Arbitrate.begin(receiver) failed", _tname);
+          return false;
         }
-        return false;  
+
+        sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
+        logger->info(buffer, _tname);
+        return true;  
       }
 
     private:

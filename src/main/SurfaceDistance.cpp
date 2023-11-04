@@ -18,7 +18,7 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   _tof->setTimeout(500);
   if (!_tof->init())
   {
-    Serial.println("Failed to detect and initialize VL53L0X!"), _tname;
+    logger->error("Failed to detect and initialize VL53L0X!", _tname);
     setError(getID());
     return false;
   }
@@ -47,26 +47,26 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   logger->info(buffer, _tname);
 #endif
 
-  _recv = receiver;
-  if (_recv == nullptr) {
-    logger->error("no receiver object available", _tname);
-    return false;
-  }
 
   // Start continuous back-to-back mode (take readings as
   // fast as possible).  To use continuous timed mode
   // instead, provide a desired inter-measurement period in
   // ms (e.g. sensor.startContinuous(100)).
 
+  _recv = receiver;
+  if (_recv == nullptr) {
+    logger->error("no receiver object available", _tname);
+    return false;
+  }
+  sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
+  logger->info(buffer, _tname);
+    
   // <tbd> set to 50ms, normal a task run in 10ms 
   _tof->startContinuous(50);
-
-  sprintf(buffer, "ready | Receiver:%d |", (long)&_recv);
-  logger->info(buffer, _tname);
-
-
   resetUpdateFlag();
   resetError();
+
+
   return true;
 }
 

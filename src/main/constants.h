@@ -1,6 +1,11 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#define FW_VERSION_PATTERN "%02d.%02d.%02d"
+#define FW_VERSION_MAJOR 0
+#define FW_VERSION_MINOR 1
+#define FW_VERSION_PATCH 0
+
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
@@ -20,7 +25,7 @@
 //#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
 #define LOG_TASK_MIXER
-#define LOG_TASK_HOVER
+//#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2

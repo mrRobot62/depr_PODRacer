@@ -42,6 +42,8 @@ struct tdata {
 typedef struct {
   uint16_t header;
   long millis;                          // milliseconds
+  char fwversion[10];                   // versionnumber
+
   // data
   uint8_t task_id;                      // produces by task-id
   bool updated;                         // set by tasks

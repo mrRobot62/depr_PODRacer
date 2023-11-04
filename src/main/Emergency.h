@@ -1,23 +1,16 @@
 #include <Arduino.h>
 #include "Task.h"
 #include "Receiver.h"
+#include "constants.h"
 
 
 class Emergency : public TaskAbstract {
   public:
-    Emergency(uint8_t taskID, SLog *log, Blackbox *bb=nullptr): TaskAbstract(taskID, log, bb) {
-      _tname = "EMGCY";
-      logger->info("initialized", _tname);
-    }
+    Emergency(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
 
     /** initialize **/
     bool begin(void) {;};
-    bool begin(Receiver *receiver) {
-      _recvOk = false;
-      if (receiver != nullptr) {
-        _recvOk = true;
-      }
-    }
+    bool begin(Receiver *receiver);
 
     /** return true if lost_frame or fail_safe **/
     bool isEmergencyStop(void) {
