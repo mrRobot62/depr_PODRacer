@@ -94,7 +94,7 @@ void SurfaceDistance::update(void) {
   }
   tofMm = _tof->readRangeContinuousMillimeters();
   /**** Berechnungen auf Basis VL53L1X ****/
-#if defined(LOG_TASK_SURFACE1)
+#if defined(LOG_TASK_SURFACE2)
     sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
     logger->info(buffer);
 #endif  

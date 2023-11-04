@@ -1,4 +1,4 @@
-# Implemntierungs Hinweise
+# Implementierungs Hinweise
 
 
 ## 30.10.2023 BK
@@ -73,7 +73,7 @@ WICHIG: der Byte-Dump ist als Little-Endian gespeichert. Das heißt eine uint16_
 * `uint16_t header`
 	* ist immer 0xFEEF und dient als "Satz-Anfangs-kennzeichen"
 * `bool updated`
-	* **muss** von jedem Task gesetzt werden, wenn es updates in der ch-Liste setzt.Sonst ignoriert der Mixer das
+	* **muss** von jedem Task gesetzt werden, wenn es updates in der ch-Liste setzt. Sonst ignoriert der Mixer das
 * `bool armingState`
 	* **sehr wichtig** für Tasks nur wenn der State TRUE ist, darf der Task Daten anpassen und updated auf TRUE setzen !
 * `uint8_t groupA & groupB`
@@ -92,7 +92,7 @@ WICHIG: der Byte-Dump ist als Little-Endian gespeichert. Das heißt eine uint16_
 ### Arming
 Es ist wichtig, das das Ganze nur dann läuft, wenn der PODRacer auch „scharf“ geschaltet ist (ARMING) - mit dem roten Schalter. Wenn OFF, passiert nix, wenn ON, dann drehen die Rotoren etc.
 
-Wichtig beim ARMEN ist das ein Check gemacht wird, das die Gimbals im Center sind, Throttel auf MIN und THRUST auch auf MIN stehen, erst dann darf gearmt werden ansonsten könnte es passieren, das de PODRacer direkt los brettert sobald man den Arming-Switch setzt :-O
+Wichtig beim ARMEN ist das ein Check gemacht wird, das die Gimbals im Center sind, Throttel auf MIN und THRUST auch auf MIN stehen, erst dann darf gearmt werden ansonsten könnte es passieren, das der PODRacer direkt los brettert sobald man den Arming-Switch setzt :-O
 
 Ich habe damit exemplarisch begonnen aber das klappt noch nicht perfekt. Hört sich einfach an aber in einem Task-Umfeld wo jeder Task unabhängig läuft ist das etwas tricky.
 
