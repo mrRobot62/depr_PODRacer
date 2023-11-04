@@ -26,42 +26,38 @@
       bool begin(void);
       void update(void);
 
-      void update(OpticalFlow *obj);
-      void update(SurfaceDistance *obj);
-      void update(Hover *obj);
-      void update(Steering *obj);
+      void update(OpticalFlow *obj) {_flow = obj; update();};
+      void update(SurfaceDistance *obj) {_sdist = obj;update();}
+      void update(Hover *obj) {_hover = obj;update();}
+      void update(Steering *obj) {_steer = obj;update();}
+
       inline bool begin(Receiver *receiver) {
         if (receiver) {
           _recv = receiver;
-          logger->info("begin(receiver) started, receiver: ", _tname);
-          logger->print((long)&_recv, true);
-          return true;
         }
         else {
           logger->error("Arbitrate.begin(receiver) failed", _tname);
+          return false;
         }
-        return false;  
+
+        sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
+        logger->info(buffer, _tname);
+        return true;  
       }
 
-      /** add value to current channel value **/
-      void addChannelValue(uint8_t ch, uint16_t value) {
-        _data.ch[ch] = +value;
-      }
-
-      /** set value current channel value (overwrite) **/
-      void setChannelValue(uint8_t ch, uint16_t value) {
-         _data.ch[ch] = value;
-      }
-
-
-      /** get data struct **/
-      inline SDATA data() const {return _data;}
-      inline void data(SDATA data) {_data = data;}
+    private:
+      void _HoverMixer(void);
+      void _RPYMixer(void);
 
     private: 
       char buffer[100];
-      SDATA _data;
+      //SDATA _data;
       Receiver *_recv;
+      OpticalFlow *_flow;
+      Hover *_hover;
+      SurfaceDistance *_sdist;
+      Steering *_steer;
+
   };
 
 #endif

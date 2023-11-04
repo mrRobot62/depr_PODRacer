@@ -12,7 +12,8 @@
     for (uint8_t i=0; i < sizeof(pins); i++) {
       pinMode(pins[i], OUTPUT);
     }
-    logger->info("BlinkPattern ready", _tname);
+    sprintf(buffer, "begin() - ready | no Receiver needed |");
+    logger->info(buffer, _tname);
     return true;
   }
 

@@ -8,6 +8,8 @@
 #define MAX_PATTERN 10
 
 #define PATTERN_PREVENTARMING 9
+#define PATTERN_DISARMED 8
+#define PATTERN_EMERGENCY 7
 
 class BlinkPattern : public TaskAbstract {
   public:
@@ -43,15 +45,15 @@ class BlinkPattern : public TaskAbstract {
     uint8_t pins[2] = {2,15};
     uint16_t pattern[MAX_PATTERN][4] = {
       {0b00000001, 500, 200, 15}, // 0 TASK_HB (blink 1x in 2secs (7xoff with 200ms =1400ms + 1xON with 500ms = 1900ms +100ms(internal) = 2000ms blink))
-      {0b00010001, 100, 200, 15}, // 1 TASK_HOVER
-      {0b00001011, 500, 200, 2}, // 2 TASK_OPTICALFLOW
-      {0b00000000, 250, 250, 2}, // 3 TASK_SURFACEDISTANCE
-      {0b00000000, 250, 250, 2}, // 4 TASK_FRONTDISTANCE
-      {0b01010101, 100,  50, 2}, // 5 TASK_RECEIVER
-      {0b00000000, 250, 250, 2}, // 6 TASK_ARBITRATE
-      {0b00000000, 250, 250, 2}, // 7 free
-      {0b00000000, 250, 250, 2}, // 8 free
-      {0b11111111, 100, 100, 15}  // 9 preventArming !
+      {0b00000000, 100, 200, 15}, // 1 
+      {0b00000000, 500, 200, 15}, // 2 
+      {0b00000000, 250, 250, 15}, // 3 
+      {0b00000000, 250, 250, 15}, // 4 
+      {0b00000000, 100,  50, 15}, // 5 
+      {0b00000000, 250, 250, 15}, // 6 
+      {0b11111111,  75,  50, 15}, // 7 Emergency - very fast blinking
+      {0b00110011, 250, 100, 15}, // 8 disarmed
+      {0b11111111, 150, 100, 15}  // 9 preventArming !
     };
  
 };

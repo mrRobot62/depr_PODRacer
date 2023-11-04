@@ -40,6 +40,7 @@ Mixer (Priorisierung)
 #include "Steering.h"
 #include "BlinkPattern.h"
 #include "Blackbox.h"
+#include "Emergency.h"
 #include "constants.h"
 
 #define NUMBER_OF_LAYER_TASKS 5
@@ -51,11 +52,12 @@ SLog logger(&Serial, 115200, LOGLEVEL);
 Blackbox bb(&logger, BLACKBOX_CS_PIN);
 
 CoopTask<void>* blinkpatternTask = nullptr;
+CoopTask<void>* receiverCtrlTask = nullptr;
 CoopTask<void>* movementCtrlTask = nullptr;
+CoopTask<void>* emergencyCtrlTask = nullptr;
 CoopTask<void>* hoverCtrlTask = nullptr;
 CoopTask<void>* steeringCtrlTask = nullptr;
 CoopTask<void>* surfaceDistCtrlTask = nullptr;
-CoopTask<void>* receiverCtrlTask = nullptr;
 CoopTask<void>* mixerCtrlTask = nullptr;
 CoopTask<void>* blackboxCtrlTask = nullptr;
 
@@ -74,6 +76,8 @@ OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901, &bb);
 Steering steering(TASK_STEERING, &logger, &bb);
 Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true, &bb);
 Mixer mixer(TASK_MIXER, &logger, &bb);
+Emergency emergency(TASK_EMERGENCY, &logger, &bb);
+
 //Blackbox bb(TASK_MIXER, &logger, CS_PIN);
 
 //Receiver *receiver;
@@ -90,11 +94,21 @@ void BlinkPatternFunction() {
   for(;;) {
     blink_pattern = 0;
     //blink_pattern = hover.getError() | flow.getError() | steering.getError() | receiver.getError();
+    /*
+    if (emergency.isEmergencyStop()) {
+      blink_pattern = PATTERN_EMERGENCY;
+    } else 
+    if (receiver.isPreventArming() || emergency.isPreventArming()) {
+      blink_pattern = PATTERN_PREVENTARMING;
+    } else if (!receiver.isArmed() || emergency.isArmed()) {
+      blink_pattern = PATTERN_DISARMED;
+    }
+    */
     if (receiver.isPreventArming()) {
       blink_pattern = PATTERN_PREVENTARMING;
+    } else if (!receiver.isArmed()) {
+      blink_pattern = PATTERN_DISARMED;
     }
-    //logger.printBinary("BlinkPatternFunction-Pattern:", blink_pattern);
-    //blinkP.update(blink_pattern);
     blinkP.update(blink_pattern);
     yield();
   }
@@ -145,6 +159,27 @@ void HoverControlFunction() {
   }
 
 }
+
+// Primary Task Hovering is the base functionality of the complete PODRacer System
+// 
+
+void EmergencyControlFunction() {
+  unsigned long lastMillis = millis();
+  if (emergency.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start Emergency object", _tname);
+    return;
+  }
+
+  for(;;) {
+    emergency.update();         // this is an empty function 
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
+  }
+
+}
+
 
 // Steering
 // 
@@ -212,7 +247,7 @@ void ReceiverControlFunction() {
 }
 // Task: Mixer 
 void MixerControlFunction() {
-
+  char buffer[100];
   unsigned long lastMillis = millis();
   if (&receiver) {
     if (!mixer.begin(&receiver)) {
@@ -224,8 +259,24 @@ void MixerControlFunction() {
   }
 
   for(;;) {
+
+    if (&emergency) {
+      bool ees = emergency.isEmergencyStop();
+      bool eid = emergency.isDisarmed();
+
+      // warum auch immer hier stürzt das System ab
+
+      //sprintf(buffer, "EES: %d, EID: %d", ees,eid);
+      //logger.info(buffer);
+  
+      if (emergency.isEmergencyStop() || emergency.isDisarmed()) {
+        yield();
+      }
+  
+
     // hovering is the base function of the podrace
     if (hover.isUpdated()) {
+      //logger.info("hover-update",_tname);
       mixer.update(&hover);
     }
     // SurfaceDistance is the next higher level. The sensor set the height for the podrace
@@ -241,7 +292,10 @@ void MixerControlFunction() {
       mixer.update(&flow);
     }  
 
-
+    }
+    else {
+      logger.info("EmergencyTask not avialable", _tname);
+    }
     //flow.readMotionCount(&deltaX, &deltaY);
     if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
@@ -261,13 +315,15 @@ bool SleepCoopFunction() {
   Serial.flush();
   delay(LOOP_TIME);
   if (blinkpatternTask) blinkpatternTask->wakeup();
+  if (receiverCtrlTask) receiverCtrlTask->wakeup();
+  if (emergencyCtrlTask) emergencyCtrlTask->wakeup();
   if (hoverCtrlTask) hoverCtrlTask->wakeup();
   if (steeringCtrlTask) steeringCtrlTask->wakeup();
   if (movementCtrlTask) movementCtrlTask->wakeup();
   if (surfaceDistCtrlTask) surfaceDistCtrlTask->wakeup();
-  if (receiverCtrlTask) receiverCtrlTask->wakeup();
   if (mixerCtrlTask) mixerCtrlTask->wakeup();
   if (blackboxCtrlTask) blackboxCtrlTask->wakeup();
+
   #if defined (LOG_TASK_ALL)
     logger->debug ("SleepCoopFunction wakeup tasks done", _tname);
   #endif
@@ -294,11 +350,12 @@ void setup() {
   logger.info("create tasks....", _tname);
 
   blinkpatternTask = new CoopTask<void>(F("BLINK"),BlinkPatternFunction);
+  receiverCtrlTask = new CoopTask<void>(F("RECV"),ReceiverControlFunction);
+  emergencyCtrlTask = new CoopTask<void>(F("EMGCY"),EmergencyControlFunction);
   steeringCtrlTask = new CoopTask<void>(F("STEER"),SteeringControlFunction);
   movementCtrlTask = new CoopTask<void>(F("OFLOW"), MovementControlFunction);
   hoverCtrlTask = new CoopTask<void>(F("HOVER"), HoverControlFunction);
   surfaceDistCtrlTask= new CoopTask<void>(F("SURFD"), SurfaceDistanceControlFunction);
-  receiverCtrlTask = new CoopTask<void>(F("RECV"),ReceiverControlFunction);
   mixerCtrlTask = new CoopTask<void>(F("MIXER"),MixerControlFunction);
   logger.info("all tasks ready", _tname);
 
@@ -307,16 +364,21 @@ void setup() {
   runCoopTasks(nullptr, nullptr, SleepCoopFunction);
 
   blinkpatternTask->scheduleTask();
+  receiverCtrlTask->scheduleTask();
+  emergencyCtrlTask->scheduleTask();
   movementCtrlTask->scheduleTask();
   surfaceDistCtrlTask->scheduleTask();
   hoverCtrlTask->scheduleTask();
   steeringCtrlTask->scheduleTask();
-  receiverCtrlTask->scheduleTask();
   mixerCtrlTask->scheduleTask();
   logger.info("all tasks scheduled", _tname);
 
   //<todo> should be moved if armed=true
   bb.begin();
+
+  char buffer[30];
+  sprintf(buffer, "FWVersion: %s", bb.FWVersioin());
+  logger.info(buffer, _tname);
 }
 
 

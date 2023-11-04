@@ -60,17 +60,12 @@
       /** send data to receiver **/
       void write(void);
 
+      /** return true, if R & P & Y=CenterPos && T & H in MIN Pos **/
+      bool sticksInArmingPos();
 
-      uint16_t getRoll() {
-        
-      }
-
-      /** check if arming is possible **/
-      bool readyForArming();
-
-      /** isPreventArming - if true, PODRacer can not be armed **/
+      /** if return true, arming not possible. Used by tasks (eg BlinkTask) to set a task behaviour **/
       bool isPreventArming() {
-        return _preventArming;
+        return _isPreventArming;
       }
       /** return channel data from last update **/
       uint16_t getData(int8_t ch) {
@@ -90,7 +85,7 @@
 
       /** return current arming state **/
       bool isArmed() {
-        return _bbd.data.armingState;
+        return _bbd.data.isArmed;
       }
       /** **/
       bool isGimbalCentered(uint8_t ch, bool useRange=true) {
@@ -106,19 +101,19 @@
       }
 
 
-      /** **/
+      /** check if ch is at MIN. If useRange is true, use a range from MIN to MIN+range **/
       bool isGimbalMin(uint8_t ch, bool useRange=true) {
         uint8_t range (useRange ? CENTER_RANGE : 0);
-        if (isInInterval(getData(ch), GIMBAL_MIN, 0, range)) {
+        if (isInInterval(getData(ch), GIMBAL_MIN, range)) {
           return true;
         }
         return false;
       }
 
-      /** **/
+      /** check if ch is at MAX. If useRange is true, use a range from MAX to MAX-range **/
       bool isGimbalMax(uint8_t ch, bool useRange=true) {
         uint8_t range (useRange ? CENTER_RANGE : 0);
-        if (isInInterval(getData(ch), GIMBAL_MAX, range, 0)) {
+        if (isInInterval(getData(ch), GIMBAL_MAX, range)) {
           return true;
         }
         return false;
@@ -127,11 +122,12 @@
     private:
       HardwareSerial *_bus;
       uint8_t _txpin, _rxpin;
+      uint8_t armingMask;                     // 0b----XXXX, bit 0=initialBit, 1=stickBasePos, 2=free, 3=armSwitch, 4-7=0
+      uint8_t armingOKMask = 0b00001010;      // b3 = arming ON (1), b2=0, b1=stickCP (1), b0=initial(0) => 1010
       bool _invert;
-      bool _logStates[NUMBER_CHANNELS] = {false};
-      long _lastChannels[NUMBER_CHANNELS] = {0};
-      bool _preventArming = true;
-      bool _lastArmingState = false;
+      bool _sticksInArmingPos = false;
+      bool _isPreventArming = true;
+      bool _armSwitchOn = false;
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
       bfs::SbusData sbus_data, last_data;

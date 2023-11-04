@@ -1,6 +1,11 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#define FW_VERSION_PATTERN "%02d.%02d.%02d"
+#define FW_VERSION_MAJOR 0
+#define FW_VERSION_MINOR 1
+#define FW_VERSION_PATCH 0
+
 #define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
@@ -18,15 +23,15 @@
 //#define LOG_TASK_ALL
 #define LOG_TASK_RECEIVER_W
 //#define LOG_TASK_RECEIVER_R
-#define LOG_TASK_RECEIVER
-//#define LOG_TASK_MIXER
-#define LOG_TASK_HOVER
+//#define LOG_TASK_RECEIVER
+#define LOG_TASK_MIXER
+//#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
 #define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
-#define USE_SERIAL_PLOTTER
+//#define USE_SERIAL_PLOTTER
 
 
 //#define TEST_OPTICAL_FLOW
@@ -48,6 +53,7 @@
 #define TASK_STEERING 5
 #define TASK_RECEIVER 6
 #define TASK_MIXER 7
+#define TASK_EMERGENCY 8
 
 // receivers toogle values around 1-5 +/- if nothing done by user activity
 // this avoid false readings inside Receiver-class. As bigger the value is, as less sensitive your PODracer is around center gimbal position
@@ -78,7 +84,6 @@
 #define HOVER_ROLL GIMBAL_CENTER_POSITION   // default ch1
 #define HOVER_PITCH GIMBAL_CENTER_POSITION  // default ch2
 #define HOVER_YAW GIMBAL_CENTER_POSITION    // default ch4
-#define HOVER_HOVER 1300                    // ch3 poti Hovering
 #define HOVER_THRUST GIMBAL_MIN             // ch8 forward mapped used for ESC for EDF thrust nozzle
 
 //

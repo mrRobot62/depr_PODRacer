@@ -13,7 +13,7 @@
       setError(getID());
       return false;
     }
-    sprintf(buffer, "Steering:: ready | Receiver:%d |", (long)&_recv);
+    sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
     logger->info(buffer, _tname);
     return true;
   }
