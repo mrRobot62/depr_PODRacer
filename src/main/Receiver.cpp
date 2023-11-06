@@ -13,59 +13,60 @@
       sprintf(buffer, "Receiver::Wrong ChannelMap settings (%s) - sizeof(%d)", chmap, sizeof(chmap));
       logger->error(buffer, _tname );
     }
+    logger->info("ChMap => ", _tname, false) ; logger->print(chmap, true);
     for (uint8_t c=0; c < strlen(chmap); c++) {
         if (chmap[c] == 'A') {
           channelMap[ROLL] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::ROLL     CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], ROLL);
+            sprintf(buffer, "ChMap => ROLL\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], ROLL);
           #endif
         }
         else if (chmap[c] == 'E') {
           channelMap[PITCH] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::PITCH    CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], PITCH);
+            sprintf(buffer, "ChMap => PITCH\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], PITCH);
           #endif
         }
         else if (chmap[c] == 'T') {
           channelMap[THRUST] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::THRUST CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THRUST);
+            sprintf(buffer, "ChMap => THRUST\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], THRUST);
           #endif
         }
         else if (chmap[c] == 'R') {
           channelMap[YAW] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::YAW      CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], YAW);
+            sprintf(buffer, "ChMap => YAW\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], YAW);
           #endif
         }
         else if (chmap[c] == 'D') {
           channelMap[ARMING] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::ARMING   CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], ARMING);
+            sprintf(buffer, "ChMap => ARMING\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], ARMING);
           #endif
         }
         else if (chmap[c] == '1') {
           channelMap[AUX1] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::AUX1     CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX1);
+            sprintf(buffer, "ChMap => AUX1\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX1);
           #endif
         }
         else if (chmap[c] == '2') {
           channelMap[AUX2] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::AUX1     CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX2);
+            sprintf(buffer, "ChMap => AUX1\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX2);
           #endif
         }
         else if (chmap[c] == '3') {
           channelMap[AUX3] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::AUX1     CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX3);
+            sprintf(buffer, "ChMap => AUX1\t\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], AUX3);
           #endif
         }
         else if (chmap[c] == 'H') {
           channelMap[HOVERING] = c;
           #if defined(LOG_TASK_RECEIVER)
-            sprintf(buffer, "Receiver::HOVERING CH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], HOVERING);
+            sprintf(buffer, "ChMap => HOVERING\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], HOVERING);
           #endif
         }
         #if defined(LOG_TASK_RECEIVER)
@@ -73,7 +74,6 @@
         #endif
 
     }
-    logger->info("Channel mapping: ", _tname, false) ; logger->print(chmap, true);
     logger->info("initialized", _tname);
   }
 
@@ -94,6 +94,12 @@
     _bbd.data.isArmed = false;
     armingMask = 0b00000000;
     _armSwitchOn = false;
+/*
+    for (uint8_t i=15;i--;) {
+      channel_calibration[i][0] = GIMBAL_MAX;      // set MIN to a high number
+      channel_calibration[i][1] = GIMBAL_MIN;      // set MAX to a low number
+    }
+*/
     return rc;
   }
 
@@ -116,6 +122,31 @@
     if (sbus_rx->Read()) {
       // read data from sbus-receiver
       sbus_data = sbus_rx->data();
+      for (uint8_t i=15;i--;) {
+        channel_calibration[i][0] = (sbus_data.ch[i] < channel_calibration[i][0])?sbus_data.ch[i]:channel_calibration[i][0]; 
+        channel_calibration[i][1] = (sbus_data.ch[i] > channel_calibration[i][1])?sbus_data.ch[i]:channel_calibration[i][1]; 
+        // sprintf(buffer, "%2d ch_calibration: %04d, %04d, %04d, %04d", 
+        //   i,
+        //   channel_calibration[i][0],
+        //   channel_calibration[i][1],
+        //   channel_calibration[i][2],
+        //   channel_calibration[i][3]
+        // );
+        // logger->info(buffer);
+      }
+      #if defined(LOG_TASK_RECEIVER_RRAW)
+        sprintf(buffer,"RAW1:%4d, RAW:% 4d, RAW3:%4d, RAW4:%4d, RAW5:%4d, RAW6:%4d, RAW7:%4d, RAW8:%4d",
+          sbus_data.ch[0],
+          sbus_data.ch[1],
+          sbus_data.ch[2],
+          sbus_data.ch[3],
+          sbus_data.ch[4],
+          sbus_data.ch[5],        
+          sbus_data.ch[6],        
+          sbus_data.ch[7]
+        );
+        logger->info(buffer, "RECVR");      
+      #endif
       uint16_t v1,v2;
       _blackbox->clearStruct(&_bbd, TASK_RECEIVER);
 
@@ -131,7 +162,7 @@
         // if a gimbal is "around" center position, set this with a +/- noice value
         _bbd.data.ch[i] = centeredValue(_bbd.data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
-      _armSwitchOn = (_bbd.data.ch[ARMING] > 1500)?true:false;
+      _armSwitchOn = (_bbd.data.ch[ARMING] > ARMING_VALUE)?true:false;
       //_isPreventArming = false;
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
@@ -190,7 +221,7 @@
 
     _bbd.data.updated = true;
     #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
-      sprintf(buffer, "READ CH1:%d, CH2:%d, CH3:%d, CH4:%d, CH5:%d, CH6:%d, CH7:%d, CH8:%d",
+      sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
         _bbd.data.ch[0],
         _bbd.data.ch[1],
         _bbd.data.ch[2],
@@ -198,9 +229,9 @@
         _bbd.data.ch[4],
         _bbd.data.ch[5],        
         _bbd.data.ch[6],        
-        _bbd.data.ch[7]     
+        _bbd.data.ch[7]
       );
-      logger->debug(buffer, _tname);
+      logger->info(buffer, "RECVR");
     #endif
     // if function to the end, assumption is, that internal data struct was updated
     setUpdateFlag();
@@ -208,57 +239,36 @@
   }
 
 
-  /** add value to current sbus_data.ch[ch] value **/
-  void  Receiver::setNewData(uint8_t ch, uint16_t value) {
-    if ( (ch > 0) && (ch < NUMBER_CHANNELS)) {
-      sbus_data.ch[ch] = +value; 
-      /** for safety - take care that value is inside gimbal-range **/
-      sbus_data.ch[ch] = constrain(sbus_data.ch[ch], GIMBAL_MIN, GIMBAL_MAX);
-    }
-  }
-
-/*
-  void Receiver::write(TDATA *data) {
-
-  }
-*/
-
   void Receiver::write(void) {
     
     // copy data.ch array to sbus_data.ch array
     memcpy(sbus_data.ch, _bbd.data.ch, sizeof(sbus_data.ch));;
+    for (uint8_t i=15;i--;) {
+      sbus_data.ch[i] = map(sbus_data.ch[i],
+        channel_calibration[i][2],  // mapping to a range from 1000 to 2000
+        channel_calibration[i][3],  // mapping to a range from 1000 to 2000
+        channel_calibration[i][0],  // mapping to a range from ~170 to 1800
+        channel_calibration[i][1]   // mapping to a range from ~170 to 1800
+      );
+    }
     //if (!_bbd.data.isArmed) {
     //  return;
     //}
     //sbus_data.failsafe = _data.failsafe;
     //sbus_data.lost_frame = _data.lost_frame
     sbus_tx->data(sbus_data);
-
     #if defined(LOG_TASK_RECEIVER_W)
-      #if defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d", 
-          sbus_data.ch[0],
-          sbus_data.ch[1],
-          sbus_data.ch[2],
-          sbus_data.ch[3],
-          sbus_data.ch[4],
-          sbus_data.ch[5],
-          sbus_data.ch[6],
-          sbus_data.ch[7]
-        );        
-      #else
-        sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, ARM:%4d, AUX2:%4d, AUX3:%4d, THR:%4d (RECEIVER)", 
-          sbus_data.ch[0],
-          sbus_data.ch[1],
-          sbus_data.ch[2],
-          sbus_data.ch[3],
-          sbus_data.ch[4],
-          sbus_data.ch[5],
-          sbus_data.ch[6],
-          sbus_data.ch[7]
-        );        
-      #endif
-      logger->info("buffer", _tname);
+      sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
+        sbus_data.ch[0],
+        sbus_data.ch[1],
+        sbus_data.ch[2],
+        sbus_data.ch[3],
+        sbus_data.ch[4],
+        sbus_data.ch[5],
+        sbus_data.ch[6],
+        sbus_data.ch[7]
+      );            
+      logger->info(buffer, "RECVW");
     #endif
     sbus_tx->Write();
     last_data = sbus_data;

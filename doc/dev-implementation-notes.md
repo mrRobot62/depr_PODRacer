@@ -1,5 +1,27 @@
 # Implementierungs Hinweise
 
+## 06.11.2023 BK
+setError(), erweitert umd einen Parameter taskID & code.
+Ein Fehler besteht nun aus zwei Teilen Bit0-Bit3 enthält den Code und Bit4-Bit7 die TaskID.
+Somit können wir später in einer Auswertung deutlich einfacher Fehlercodes auswerten
+Pro Tasks können 15 verschiedene ErrorCodes definiert werden
+Insgesamt 16 Tasks können genutzt werden 
+
+Beispiel: 
+01010100  => Task 5 & Code 4
+00010011  => Task 1, Code 3
+
+
+## 05.11.2023 BK
+Nachdem es mehrere Probleme mit Abstürzen gab, habe ich aktuell nur HOVERING/MIXER/RECEIVER aktiviert. Das primäre Problem mit Abstürzen lag an einem zu kleinen buffer innerhalb von SimpleLOG. Dieser intere Buffer habe ich auf 200 erhöht.
+
+Durchstich gelungen ! Man kann nun sowohl in der Logausgabe als auch in Betaflight sehen, das sich der copter dreht/bewegt sobald man gearmt hat und mit dem Gimbal steuerbefehle sendet. Zum Versenden der Daten über SBUS muss zwingend wieder ein Mapping auf die 
+channel_calibration Werte durchgeführt werden. Die Liste enthält
+{MIN_SBUS, MAX_SBUS, GIMBAL_MIN, GIMBAL_MAX}
+READ liest nun die SBUS signale und mapped diese auf GIMBAL_xxxxx.
+WRITE macht es genau umgekehrt mapped von GIMBAL zurück auf SBUS
+und dann funktioniert es auch mit BetaFlight :-) 
+
 ## 02.11.2023 BK
 EmergencyTask implementiert (aber noch nicht getestet). Dieser Task wird in Main innerhalb der BlinkPatternFunction() aufgerufen um ein BlinkPattern zu setzen.
 

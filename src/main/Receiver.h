@@ -55,7 +55,7 @@
       void update(void);
 
       /** update internal SbusData struct. This struct will be written back to receiver with write() **/
-      void setNewData(uint8_t ch, uint16_t value);
+      //void setNewData(uint8_t ch, uint16_t value);
 
       /** send data to receiver **/
       void write(void);
@@ -71,6 +71,11 @@
       uint16_t getData(int8_t ch) {
         ch = constrain(ch, 0, NUMBER_CHANNELS-1 );
         return _bbd.data.ch[ch];
+      }
+
+      /** return true if faile save or lost frames detected **/
+      bool isEmergencyStop() {
+        return isFailSave() || isLostFrame();
       }
 
       /** return failsafe from last update **/
@@ -156,6 +161,22 @@
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX}
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
+        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX}
       };
   };
 

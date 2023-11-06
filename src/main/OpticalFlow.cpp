@@ -16,12 +16,12 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
 
     if (_recv == nullptr) {
       logger->error("no receiver object available", _tname);
-      setError(getID());
+      setError(getID(), 0x01);
       return false;
     }
     if (flow == nullptr) {
       logger->error("PMW3901 not available", _tname);
-      setError(getID());
+      setError(getID(), 0x02);
       return false;
     }
 
@@ -56,7 +56,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
 
     if (pidX == nullptr || pidY == nullptr) {
       logger->error("PID controller not initialized", _tname);
-      setError(getID());
+      setError(getID(), 0x03);
       return false;
     }
 
@@ -69,7 +69,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
 
     if (flow->begin() == false) {
       logger->error("flow->begin() failed", _tname);
-      setError(getID());
+      setError(getID(), 0x04);
       logger->printBinary("Error:", _tname, getID());
       //logger->error("Error:", false);
       //sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(getError()));

@@ -22,6 +22,7 @@
 
 //#define LOG_TASK_ALL
 #define LOG_TASK_RECEIVER_W
+//#define LOG_TASK_RECEIVER_RRAW
 //#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
 #define LOG_TASK_MIXER
@@ -31,7 +32,17 @@
 //#define LOG_TASK_SURFACE2
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
-//#define USE_SERIAL_PLOTTER
+#define USE_SERIAL_PLOTTER
+
+#define RUN_HOVER
+//#define RUN_OPTICALFLOW
+#define RUN_SDIST
+#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+//#define RUN_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
+//#define RUN_SDIST_TFMINI
+
+//#define RUN_STEERING
+#define RUN_MIXER
 
 
 //#define TEST_OPTICAL_FLOW
@@ -45,7 +56,7 @@
 #define PIN_PMW3901 5
 
 // TASK_IDs are used to indicate a blink pattern
-#define TASK_HB 0
+#define TASK_HB 0xFF
 #define TASK_HOVER 1
 #define TASK_OPTICALFLOW 2
 #define TASK_SURFACEDISTANCE 3
@@ -63,6 +74,8 @@
 #define GIMBAL_CENTER_POSITION (int16_t)1500
 #define GIMBAL_MIN (int16_t)1000
 #define GIMBAL_MAX (int16_t)2000
+
+#define ARMING_VALUE 1600     // everything above this value is armed
 
 #define ROLL  0  // internal channel mapping set A(Roll) on position 0
 #define PITCH 1  // dito for E(Pitch)

@@ -10,7 +10,7 @@
     _recv = receiver;
     if (_recv == nullptr) {
       logger->error("no receiver object available", _tname);
-      setError(getID());
+      setError(getID(),0x01);
       return false;
     }
     sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
@@ -38,11 +38,10 @@
       else {
         _bbd.data.updated = false;
       }
-        _bbd.data.updated = true;
 
       #if defined(LOG_TASK_HOVER)
         if (_bbd.data.updated) {          
-          sprintf(buffer, "R:%4d P:%4d T:%4d H:%4d Y:%4d",
+          sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, T:%4d, ",
             _bbd.data.ch[ROLL],
             _bbd.data.ch[PITCH],
             _bbd.data.ch[THRUST],
@@ -50,9 +49,6 @@
             _bbd.data.ch[YAW]
           );
           logger->info(buffer, _tname);
-          sprintf(buffer, "H:%4d",
-          _bbd.data.ch[HOVERING]
-          );
         }
       #endif
     }

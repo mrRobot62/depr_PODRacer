@@ -65,8 +65,12 @@
 
     protected:
       char *_tname;
-      inline void setError(uint8_t code) {
-        errorCode = code;
+
+      /** an error contain two parts. B7-B4 = TaskID, B3-B0 error code **/
+      inline void setError(uint8_t taskID, uint8_t code) {
+        taskID = constrain(taskID,1,15);      // no TaskID 0
+        code = constrain(code,1,15);          // no ErrorCode 0
+        errorCode = (taskID << 4) | code;
         resetUpdateFlag();
       }
 

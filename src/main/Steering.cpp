@@ -10,7 +10,7 @@
     _recv = receiver;
     if (_recv == nullptr) {
       logger->error("Steering:: no receiver object available", _tname);
-      setError(getID());
+      setError(getID(),0x01);
       return false;
     }
     sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);

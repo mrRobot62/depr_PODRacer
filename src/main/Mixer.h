@@ -36,7 +36,7 @@
           _recv = receiver;
         }
         else {
-          logger->error("Arbitrate.begin(receiver) failed", _tname);
+          logger->error("begin() - failed - receiver missing");
           return false;
         }
 
@@ -46,11 +46,13 @@
       }
 
     private:
-      void _HoverMixer(void);
+      void _HoverMixer(uint8_t taskId);
       void _RPYMixer(void);
 
     private: 
       char buffer[100];
+      char _hs = 0x00;
+
       //SDATA _data;
       Receiver *_recv;
       OpticalFlow *_flow;
