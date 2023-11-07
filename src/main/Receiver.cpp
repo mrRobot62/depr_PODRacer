@@ -84,14 +84,14 @@
     if (sbus_rx == NULL || sbus_tx == NULL) {
       logger->error("can't create a SBus rx/tx object", _tname);
       rc = false;
+      setError(getID(), 0x02);
       return rc;
     }
+    Serial.println("RECV before sbus_rx/tx.Begin()");
     sbus_rx->Begin();   // pin from SBUS-RECEIVER -> ESP32(RX)
     sbus_tx->Begin();   // pin from ESP32(TX) -> FlightController
-    rc = true;
-    sprintf(buffer, "ready");
-    logger->info(buffer, _tname);
     _bbd.data.isArmed = false;
+    Serial.println("RECV after sbus_rx/tx.Begin()");
     armingMask = 0b00000000;
     _armSwitchOn = false;
 /*
@@ -100,6 +100,9 @@
       channel_calibration[i][1] = GIMBAL_MIN;      // set MAX to a low number
     }
 */
+    sprintf(buffer, "ready");
+    logger->info(buffer, _tname);
+    rc = true;
     return rc;
   }
 
@@ -162,12 +165,13 @@
         // if a gimbal is "around" center position, set this with a +/- noice value
         _bbd.data.ch[i] = centeredValue(_bbd.data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
       }
+      // only a local state for arming, this is later used to 
+      // check some security mechanism and calculate a result if arming is allowed
       _armSwitchOn = (_bbd.data.ch[ARMING] > ARMING_VALUE)?true:false;
-      //_isPreventArming = false;
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
-      _bbd.data.isArmed = false;
+      _bbd.data.isArmed = false;    // for safety set to disarmed. This variable is set to true due to several security meachanisms
       // ------------------------------------------------------------------------
       // initial armingMask = 0b0000 0000
       // arming only allowed if 0b0000 1010
@@ -217,22 +221,25 @@
           _isPreventArming = true;    // bit not set
         }
       }
+      _bbd.data.updated = true;
+      #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
+        sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
+          _bbd.data.ch[0],
+          _bbd.data.ch[1],
+          _bbd.data.ch[2],
+          _bbd.data.ch[3],
+          _bbd.data.ch[4],
+          _bbd.data.ch[5],        
+          _bbd.data.ch[6],        
+          _bbd.data.ch[7]
+        );
+        logger->info(buffer, "RECVR");
+      #endif
+    }
+    else {
+      setError(getID(),0x03);
     }
 
-    _bbd.data.updated = true;
-    #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
-      sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
-        _bbd.data.ch[0],
-        _bbd.data.ch[1],
-        _bbd.data.ch[2],
-        _bbd.data.ch[3],
-        _bbd.data.ch[4],
-        _bbd.data.ch[5],        
-        _bbd.data.ch[6],        
-        _bbd.data.ch[7]
-      );
-      logger->info(buffer, "RECVR");
-    #endif
     // if function to the end, assumption is, that internal data struct was updated
     setUpdateFlag();
     resetError();

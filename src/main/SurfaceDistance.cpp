@@ -17,10 +17,12 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
   logger->info(buffer, _tname);
 
+  #if defined(RUN_SDIST_VL53L0) | defined(RUN_SDIST_VL53L1)
+
   #if defined(RUN_SDIST_VL53L0)
     _tof = new VL53L0X();
   #elif defined(RUN_SDIST_VL53L1)
-    _tof = new VL53L1X();
+    //_tof = new VL53L1X();
   #endif
 
   if (_tof == nullptr) {
@@ -29,13 +31,14 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     return false;
   }
   Wire.begin();
-  _tof->setTimeout(500);
+  // please note: if no device is attached a call of _tof->init() will crash system (reboot)
   if (!_tof->init())
   {
     logger->error("Failed to detect and initialize VL53L0/1X!", _tname);
     setError(getID(),0x03);
     return false;
   }
+  _tof->setTimeout(500);
 
   /*
   _lidar = new TFMPlus();
@@ -78,6 +81,8 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   // ms (e.g. sensor.startContinuous(100)).
     
   // <tbd> set to 50ms, normal a task run in 10ms 
+
+  #endif // RUN_SDIST_VL53L0 | RUN_SDIST_VL53L1
   resetUpdateFlag();
   resetError();
   return true;

@@ -6,7 +6,8 @@
 #define FW_VERSION_MINOR 1
 #define FW_VERSION_PATCH 0
 
-#define BYTE_TO_BINARY_PATTERN "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY_PATTERN  "%c%c%c%c%c%c%c%c"
+#define BYTE_TO_BINARY_PATTERN2 "%c%c%c%c% c%c%c%c"
 #define BYTE_TO_BINARY(byte)  \
   ((byte) & 0x80 ? '1' : '0'), \
   ((byte) & 0x40 ? '1' : '0'), \
@@ -34,13 +35,13 @@
 //#define LOG_FILE_LOGGER
 #define USE_SERIAL_PLOTTER
 
-#define RUN_HOVER
+//#define RUN_HOVER
 //#define RUN_OPTICALFLOW
-#define RUN_SDIST
-#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+//#define RUN_SDIST
+//#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
 //#define RUN_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
 //#define RUN_SDIST_TFMINI
-
+//
 //#define RUN_STEERING
 #define RUN_MIXER
 

@@ -20,6 +20,10 @@ void Mixer::update() {
 
   **/
   if (_recv) {
+    logger->info("before setArmed", _tname);
+    _recv->setArmed(true);
+    logger->info("after setArmed", _tname);
+
     if (_recv->isArmed()) {
       _hs = 0;
       #if defined(RUN_HOVER)
@@ -52,7 +56,9 @@ void Mixer::update() {
       #endif
       // 
       // move(ref) mixer data struct to receiver and write back to flight controller 
+      logger->info("memcpy to recv", _tname);
       memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
+      logger->info("write sbus");
       _recv->write();
     }
     else {

@@ -49,13 +49,11 @@
     public:
       Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, const char *chmap="AEHRD23T");
 
+      /** starting the receiver **/
       bool begin(void);
 
       /** read data from receiver and update internal SDATA struct **/
       void update(void);
-
-      /** update internal SbusData struct. This struct will be written back to receiver with write() **/
-      //void setNewData(uint8_t ch, uint16_t value);
 
       /** send data to receiver **/
       void write(void);
@@ -92,7 +90,13 @@
       bool isArmed() {
         return _bbd.data.isArmed;
       }
-      /** **/
+
+      /** DO NOT USE THIS setting - maybe it's override your real arming state !!!!! Using only for tests **/
+      bool setArmed(bool armed=false) {
+        _bbd.data.isArmed = armed;
+      }
+
+      /** check if channel ch is in center positioin **/
       bool isGimbalCentered(uint8_t ch, bool useRange=true) {
         bool rc = false;
         uint8_t range (useRange ? CENTER_RANGE : 0);

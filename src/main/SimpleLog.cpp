@@ -74,6 +74,21 @@
         }
       }
 
+      /** convert v into a bit buffer array **/
+      char* getBinary(const uint8_t v, uint8_t pattern=1) {
+        switch(pattern) {
+          case 0:
+            sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
+            break;
+          case 1:
+            sprintf(buffer, BYTE_TO_BINARY_PATTERN2, BYTE_TO_BINARY(v));
+            break;
+          default:
+            sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
+        }
+        return buffer;
+      }
+
       void debug(const long v, const char *tname="?", bool cr=true) {
         sprintf(buffer, "%d", v);
         debug(buffer,tname, cr);

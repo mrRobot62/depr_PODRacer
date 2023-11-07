@@ -262,6 +262,7 @@ void ReceiverControlFunction() {
     logger.error("MAIN : can't start Receiver object", _tname);
     return;
   }
+  char buffer[100];
   for(;;) {
     if (!receiver.hasError()) {
       /** read latest hardware-receiver data into SDATA struct **/
@@ -273,7 +274,8 @@ void ReceiverControlFunction() {
       delay(LOOP_TIME);
     }
     else {
-      logger.error("Receiver has Error", _tname);
+      sprintf(buffer, "Receiver has error 0b%s", logger.getBinary(receiver.getError()));
+      logger.error(buffer, _tname);
     }
   }
 }
