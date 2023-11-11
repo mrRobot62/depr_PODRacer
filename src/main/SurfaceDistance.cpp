@@ -39,7 +39,7 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     return false;
   }
   _tof->setTimeout(500);
-
+  _tof->startContinuous(25);
   /*
   _lidar = new TFMPlus();
   if (_lidar == nullptr) {
@@ -72,7 +72,7 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   logger->info(buffer, _tname);
 #endif
 
-  _tof->startContinuous(50);
+  
 
 */
   // Start continuous back-to-back mode (take readings as
@@ -107,7 +107,7 @@ void SurfaceDistance::update(void) {
     /**** Berechnungen auf Basis TFMini ****/
 
 /*
-#if defined(LOG_TASK_SURFACE1)
+#if defined(LOG_TASK_SURFACE_LIDAR)
     sprintf(buffer, "Dist(TFMini):CHData(in):%4.0f", channelData);
     logger->info(buffer);
   } else  // If the command fails...
@@ -116,18 +116,18 @@ void SurfaceDistance::update(void) {
     _lidar->printFrame();  // display the error and HEX data
 #endif
   }
-  tofMm = _tof->readRangeContinuousMillimeters();
-
 */
+
+ tofMm = _tof->readRangeContinuousMillimeters();
+
   /**** Berechnungen auf Basis VL53L1X ****/
 
-/*
-#if defined(LOG_TASK_SURFACE1)
+
+#if defined(LOG_TASK_SURFACE_TOF)
     sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
     logger->info(buffer);
 #endif  
-  //_recv->setNewData(TASK_SURFACEDISTANCE, channelData);
-*/
+
   setUpdateFlag();
   resetError();
 }

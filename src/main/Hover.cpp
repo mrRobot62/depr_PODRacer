@@ -39,6 +39,9 @@
       _bbd.data.ch[HOVERING] = _recv->getData(HOVERING);
       _bbd.data.ch[THRUST] = HOVER_THRUST;
       _bbd.data.ch[YAW] = HOVER_YAW;
+      _bbd.data.ch[AUX2] = GIMBAL_MIN;
+      _bbd.data.ch[AUX3] = GIMBAL_MIN;
+      
       _blackbox->update(&_bbd);
       #if defined (RUN_HOVER)
         _bbd.data.updated = true;

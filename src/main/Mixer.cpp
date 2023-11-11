@@ -5,12 +5,6 @@ Mixer::Mixer(uint8_t taskID, SLog *logger, Blackbox *bb) : TaskAbstract(taskID, 
   _tname = "MIXER";
 }
 
-bool Mixer::begin(void) {
-  bool rc = false;
-  resetError();
-  return true;
-}
-
 void Mixer::update() {
   /** 
     Hovering is the absolutely base task and can't be deactivated in the case that the object is not available.
@@ -26,7 +20,7 @@ void Mixer::update() {
   if (_recv) {
     if (_recv->isArmed()) {
       _hs = 0;
-      logger->info("RUN_HOVER", _tname);
+      logger->debug("RUN_HOVER", _tname);
       _HoverMixer(TASK_HOVER);
       #if defined(RUN_SDIST)
         logger->info("RUN_SDIST", _tname);
@@ -56,10 +50,41 @@ void Mixer::update() {
       #endif
       // 
       // move(ref) mixer data struct to receiver and write back to flight controller 
-      logger->info("memcpy to recv", _tname);
-      memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
-      logger->debug("write sbus", _tname);
-      _recv->write();
+      #if defined(LOG_TASK_MIXER)
+        logger->info("memcpy to recv", _tname);
+      #endif
+    #if defined(LOG_TASK_MIXER) | defined(LOG_TASK_HOVER)
+      sprintf(buffer, "MIXER DATA R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+        _bbd.data.ch[0],
+        _bbd.data.ch[1],
+        _bbd.data.ch[2],
+        _bbd.data.ch[3],
+        _bbd.data.ch[4],
+        _bbd.data.ch[7]
+      );
+      logger->info(buffer,_tname);
+    #endif       
+    //memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
+    /*
+    #if defined(LOG_TASK_MIXER) | defined(TASK_HOVER)
+      logger->info("after memcpy");
+//      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
+      sprintf(buffer, "SBUS DATA R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+        _recv->data().data.ch[0],
+        _recv->data().data.ch[1],
+        _recv->data().data.ch[2],
+        _recv->data().data.ch[3],
+        _recv->data().data.ch[4],
+        _recv->data().data.ch[7] //,
+        //_hover->data().data.ch[HOVERING],
+        //_sdist->data().data.ch[HOVERING]
+      );
+      logger->info(buffer,_tname);
+    #endif      #endif
+    */
+      logger->info("before _recv->write");
+      _recv->write(&_bbd);
+      logger->info("after _recv->write");
     }
     else {
       #if defined(LOG_TASK_MIXER)
@@ -76,12 +101,12 @@ void Mixer::update() {
 
 /** used by HoverTask & SurfaceDistanceTask **/
 void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
-  Serial.println("_HoverMixer - 1 - ");
+//  Serial.println("_HoverMixer - 1 - ");
     memcpy(_bbd.data.ch, _hover->data().data.ch, sizeof(_bbd.data.ch));
-  Serial.println("_HoverMixer - 2 - ");
-    #if defined(TASK_MIXER)    
+//  Serial.println("_HoverMixer - 2 - ");
+    #if defined(LOG_TASK_MIXER) | defined(LOG_TASK_HOVER)
 //      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
-      sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+      sprintf(buffer, "HOVER/SDIST R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
         _bbd.data.ch[0],
         _bbd.data.ch[1],
         _bbd.data.ch[2],
@@ -97,7 +122,7 @@ void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
     // the current HOVERING value.
     // adding a value means PODRacer to low over ground
     // substract a value means PODRacer to high over ground
-    #if defined(TASK_SURFACEDISTANCE)
+    #if defined(LOG_TASK_MIXER)
       if (taskId == TASK_SURFACEDISTANCE) {
         _bbd.data.ch[HOVERING] += _sdist->data().data.ch[HOVERING];
       }
