@@ -1,3 +1,4 @@
+#include "HardwareSerial.h"
 #include "SurfaceDistance.h"
 
 SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb)
@@ -71,10 +72,9 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   sprintf(buffer, "Lidar FW: %1u.%1u.%1u", _lidar->version[0], _lidar->version[1], _lidar->version[2]);
   logger->info(buffer, _tname);
 #endif
-
+*/
   _tof->startContinuous(50);
 
-*/
   // Start continuous back-to-back mode (take readings as
   // fast as possible).  To use continuous timed mode
   // instead, provide a desired inter-measurement period in
@@ -101,7 +101,6 @@ void SurfaceDistance::update(void) {
     sprintf(buffer, "Dist(TFMini):%04icm, Flux:%05i, CHData:%4.0f", tfDist, tfFlux, channelData);
     logger->info(buffer, _tname);
 #endif
-
 */
 
     /**** Berechnungen auf Basis TFMini ****/
@@ -116,18 +115,19 @@ void SurfaceDistance::update(void) {
     _lidar->printFrame();  // display the error and HEX data
 #endif
   }
+*/
   tofMm = _tof->readRangeContinuousMillimeters();
 
-*/
   /**** Berechnungen auf Basis VL53L1X ****/
 
-/*
 #if defined(LOG_TASK_SURFACE1)
-    sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
-    logger->info(buffer);
+    //sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
+    sprintf(buffer, "Dist(Tof):%05imm", tofMm);
+    logger->info(buffer, _tname);
 #endif  
   //_recv->setNewData(TASK_SURFACEDISTANCE, channelData);
-*/
+  Serial.println("-1-");
   setUpdateFlag();
   resetError();
+  Serial.println("-2-");
 }
