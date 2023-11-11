@@ -42,7 +42,6 @@ Mixer (Priorisierung)
 #include "Blackbox.h"
 #include "constants.h"
 
-#define NUMBER_OF_LAYER_TASKS 5
 char * _tname = "MAIN";
 int taskToken = 1;
 
@@ -133,26 +132,21 @@ void MovementControlFunction() {
 // 
 void HoverControlFunction() {
   unsigned long lastMillis = millis();
-  #if defined(RUN_HOVER)
-    if (hover.begin(&receiver) == false ) {
-      logger.error("MAIN : can't start Hover object", _tname);
-      return;
-    }
-  #else
-    logger.warn("HOVER-TASK deactivted", _tname);
+  if (hover.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start Hover object", _tname);
+    return;
+  }
+  #if !defined(RUN_HOVER)
+    logger.warn("HOVERING deactivted", _tname);
   #endif
   for(;;) {
-    #if defined(RUN_HOVER)
-      if (!hover.hasError()) {
-        hover.update();
-        if ((millis() - lastMillis) > LOOP_TIME) {
-          yield();
-        }
-        delay(LOOP_TIME);
+    if (!hover.hasError()) {
+      hover.update();
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
       }
-    #else
-      yield();
-    #endif
+      delay(LOOP_TIME);
+    }
   }
 }
 
@@ -275,7 +269,7 @@ void ReceiverControlFunction() {
     }
     else {
       sprintf(buffer, "Receiver has error 0b%s", logger.getBinary(receiver.getError()));
-      logger.error(buffer, _tname);
+      //logger.error(buffer, _tname);
     }
   }
 }
@@ -319,6 +313,12 @@ void setup() {
 
   //Serial.println("setup.....");
   logger.info("setup...", _tname);
+  //<todo> should be moved if armed=true
+  bb.begin();
+
+  char buffer[30];
+  sprintf(buffer, "FWVersion: %s", bb.FWVersioin());
+  logger.info(buffer, _tname);
 
   //-----------------------------------------
   logger.info("create tasks....", _tname);
@@ -345,12 +345,8 @@ void setup() {
   mixerCtrlTask->scheduleTask();
   logger.info("all tasks scheduled", _tname);
 
-  //<todo> should be moved if armed=true
-  bb.begin();
 
-  char buffer[30];
-  sprintf(buffer, "FWVersion: %s", bb.FWVersioin());
-  logger.info(buffer, _tname);
+
 }
 
 

@@ -62,6 +62,11 @@
         _bbd.data.updated=false;
       }
       
+      /** can be used to reset the current task data structure. Attribute task_id is set to current task_id **/
+      inline void clearStruct() {
+        memset (&_bbd, 0, sizeof(_bbd));
+        _bbd.data.task_id = _id;     
+      }
 
     protected:
       char *_tname;

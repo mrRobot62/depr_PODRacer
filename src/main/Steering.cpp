@@ -30,7 +30,9 @@
     rpy[1] = GIMBAL_CENTER_POSITION - _recv->getData(PITCH);
     rpy[2] = GIMBAL_CENTER_POSITION - _recv->getData(YAW);
 
-    /** yaw not centered and roll&pitch is centered, than we adjust roll/pitch to get a bette performance **/
+    /** if RPY centered set channels to center because, we have to 
+
+    /** yaw not centered and roll&pitch is centered, than we adjust roll/pitch to get a better performance **/
     if ( !centered[2] && centered[0] && centered[1] ) {
       _bbd.data.ch[ROLL] = rpy[2] * STEERING_ROLL_BIAS;
       _bbd.data.ch[PITCH] = rpy[2] * STEERING_PITCH_BIAS;
