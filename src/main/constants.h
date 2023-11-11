@@ -25,9 +25,9 @@
 #define LOG_TASK_RECEIVER_W
 //#define LOG_TASK_RECEIVER_RRAW
 //#define LOG_TASK_RECEIVER_R
-//#define LOG_TASK_RECEIVER
-#define LOG_TASK_MIXER
-//#define LOG_TASK_HOVER
+#define LOG_TASK_RECEIVER
+//#define LOG_TASK_MIXER
+#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
 #define LOG_TASK_SURFACE1
 //#define LOG_TASK_SURFACE2
@@ -35,10 +35,10 @@
 //#define LOG_FILE_LOGGER
 #define USE_SERIAL_PLOTTER
 
-//#define RUN_HOVER
+#define RUN_HOVER
 //#define RUN_OPTICALFLOW
-//#define RUN_SDIST
-//#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+#define RUN_SDIST
+#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
 //#define RUN_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
 //#define RUN_SDIST_TFMINI
 //
@@ -53,7 +53,6 @@
 #define LED1 15
 #define LED_BUILTIN 2
 #define LOOP_TIME 10
-#define HB_BLINK_FREQ 250
 #define PIN_PMW3901 5
 
 // TASK_IDs are used to indicate a blink pattern
@@ -108,9 +107,9 @@
 #define PID_OUTPUT_LIMIT 250
 
 // Steering
-#define STEERING_ROLL_BIAS 0.2
-#define STEERING_PITCH_BIAS 0.2
-#define STEEIRNG_MAX_RP 150
+#define STEERING_ROLL_BIAS 0.1      // adjust this if during steering, this bias is not high enough (or is to high) - roll & pitch must not be the same
+#define STEERING_PITCH_BIAS 0.1     // adjust this if during steering, this bias is not high enough (or is to high) - roll & pitch must not be the same
+#define STEEIRNG_MAX_RP 150         // adjust this, if the maximum compensation is not optimal, as higher as more pitch/roll follow up the yaw steering
 // TFMini Serial 1
 #define RX1_PIN 2
 #define TX1_PIN 4

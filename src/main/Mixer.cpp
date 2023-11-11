@@ -13,25 +13,23 @@ bool Mixer::begin(void) {
 
 void Mixer::update() {
   /** 
-    Hovering is the absolutely base task. In this case Hovering is always updated and the complete channels are
-    copied into the mixer struct (absolute values)
+    Hovering is the absolutely base task and can't be deactivated in the case that the object is not available.
+    The hovering object must be allways available. If RUN_HOVERING is not set, than the update flag inside Hover-Class is
+    set to false. As a base task after hovering the data struct is allways filled with absolute values.
 
     All other tasks works only with relativ values. These values are added or subtracted to the absolute values
 
   **/
-  if (_recv) {
-    logger->info("before setArmed", _tname);
-    _recv->setArmed(true);
-    logger->info("after setArmed", _tname);
 
+  //Serial.println((long)&_recv);
+
+  if (_recv) {
     if (_recv->isArmed()) {
       _hs = 0;
-      #if defined(RUN_HOVER)
-        if (_hover->isUpdated()) {
-          _HoverMixer(TASK_HOVER);
-        }
-      #endif
+      logger->info("RUN_HOVER", _tname);
+      _HoverMixer(TASK_HOVER);
       #if defined(RUN_SDIST)
+        logger->info("RUN_SDIST", _tname);
         if (_sdist->isUpdated()) {
           _HoverMixer(TASK_SURFACEDISTANCE);
         }
@@ -42,12 +40,14 @@ void Mixer::update() {
         IF FlowTask is updated, SteeringTask is ignored
       **/
       #if defined(RUN_OPTICALFLOW)
+        logger->info("RUN_OPTICALFLOW", _tname);
         if (_flow->isUpdated()) {
           _RPYMixer();
         } 
         else {
       #endif
-      #if defined(LOG_TASK_STEERING)
+      #if defined(RUN_STEERING)
+        logger->info("RUN_STEERING", _tname);
         if (_steer->isUpdated()){
           _RPYMixer();
         #endif
@@ -58,7 +58,7 @@ void Mixer::update() {
       // move(ref) mixer data struct to receiver and write back to flight controller 
       logger->info("memcpy to recv", _tname);
       memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
-      logger->info("write sbus");
+      logger->debug("write sbus", _tname);
       _recv->write();
     }
     else {
@@ -76,7 +76,9 @@ void Mixer::update() {
 
 /** used by HoverTask & SurfaceDistanceTask **/
 void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
+  Serial.println("_HoverMixer - 1 - ");
     memcpy(_bbd.data.ch, _hover->data().data.ch, sizeof(_bbd.data.ch));
+  Serial.println("_HoverMixer - 2 - ");
     #if defined(TASK_MIXER)    
 //      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
       sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",

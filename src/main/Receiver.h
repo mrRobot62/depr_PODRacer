@@ -92,8 +92,8 @@
       }
 
       /** DO NOT USE THIS setting - maybe it's override your real arming state !!!!! Using only for tests **/
-      bool setArmed(bool armed=false) {
-        _bbd.data.isArmed = armed;
+      bool setArmed() {
+        _bbd.data.isArmed = true;
       }
 
       /** check if channel ch is in center positioin **/

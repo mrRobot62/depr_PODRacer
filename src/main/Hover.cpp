@@ -15,6 +15,15 @@
     }
     sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
     logger->info(buffer, _tname);
+    clearStruct();
+    sprintf(buffer, "reset hover buffer: FW: %s, TaskID:%d, Armed:%d, ch[0]:%d", 
+      _bbd.data.fwversion,
+      _bbd.data.task_id,
+      _bbd.data.isArmed,
+      _bbd.data.ch[0]
+    );
+    logger->info(buffer, _tname);
+
     last_value = 0;
     return true;
   }
@@ -31,17 +40,16 @@
       _bbd.data.ch[THRUST] = HOVER_THRUST;
       _bbd.data.ch[YAW] = HOVER_YAW;
       _blackbox->update(&_bbd);
-      if (_bbd.data.ch[HOVERING] != last_value) {
+      #if defined (RUN_HOVER)
         _bbd.data.updated = true;
-        last_value = _bbd.data.ch[HOVERING]; 
-      }
-      else {
+      #else
+        // note: if Hovering is deaktivated, all input from Receiver is send 1:1 back to all other 
+        //        tasks. This is NOT A PODRacer behaviour, because RPY is not handeld by hovering
         _bbd.data.updated = false;
-      }
-
-      #if defined(LOG_TASK_HOVER)
+      #endif
+      #if defined(LOG_TASK_HOVER) &  !defined(RUN_HOVER)
         if (_bbd.data.updated) {          
-          sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, T:%4d, ",
+          sprintf(buffer, "NO HOVERING => R:%4d, P:%4d, H:%4d, Y:%4d, T:%4d, ",
             _bbd.data.ch[ROLL],
             _bbd.data.ch[PITCH],
             _bbd.data.ch[THRUST],
@@ -50,6 +58,18 @@
           );
           logger->info(buffer, _tname);
         }
+      #endif
+      #if defined(LOG_TASK_HOVER)
+        if (_bbd.data.updated) {          
+          sprintf(buffer, "RUNNING => R:%4d, P:%4d, H:%4d, Y:%4d, T:%4d, ",
+            _bbd.data.ch[ROLL],
+            _bbd.data.ch[PITCH],
+            _bbd.data.ch[THRUST],
+            _bbd.data.ch[HOVERING],
+            _bbd.data.ch[YAW]
+          );
+          logger->info(buffer, _tname); 
+        }       
       #endif
     }
     else {
