@@ -23,9 +23,12 @@
   class Mixer: public TaskAbstract {
     public:
       Mixer(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
-      bool begin(void);
+      bool begin(void) {
+        bool rc = false;
+        resetError();
+        return true;        
+      };
       void update(void);
-
       void update(OpticalFlow *obj) {_flow = obj; update();};
       void update(SurfaceDistance *obj) {_sdist = obj;update();}
       void update(Hover *obj) {_hover = obj;update();}

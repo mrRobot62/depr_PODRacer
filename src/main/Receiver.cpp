@@ -223,7 +223,7 @@
       }
       _bbd.data.updated = true;
       #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
+        sprintf(buffer,"RCH1:%4d, RCH2:%4d, RCH3:%4d, RCH4:%4d, RCH5:%4d, RCH6:%4d, RCH7:%4d, RCH8:%4d",
           _bbd.data.ch[0],
           _bbd.data.ch[1],
           _bbd.data.ch[2],
@@ -245,38 +245,35 @@
     resetError();
   }
 
-
   void Receiver::write(void) {
+    logger->warn("do not use this write-function");
+  }
+
+  void Receiver::write(BBD *data) {
     
     // copy data.ch array to sbus_data.ch array
-    memcpy(sbus_data.ch, _bbd.data.ch, sizeof(sbus_data.ch));;
+    memcpy(write_data.ch, data->data.ch, sizeof(sbus_data.ch));;
     for (uint8_t i=15;i--;) {
-      sbus_data.ch[i] = map(sbus_data.ch[i],
+      write_data.ch[i] = map(write_data.ch[i],
         channel_calibration[i][2],  // mapping to a range from 1000 to 2000
         channel_calibration[i][3],  // mapping to a range from 1000 to 2000
         channel_calibration[i][0],  // mapping to a range from ~170 to 1800
         channel_calibration[i][1]   // mapping to a range from ~170 to 1800
       );
     }
-    //if (!_bbd.data.isArmed) {
-    //  return;
-    //}
-    //sbus_data.failsafe = _data.failsafe;
-    //sbus_data.lost_frame = _data.lost_frame
-    sbus_tx->data(sbus_data);
+    sbus_tx->data(write_data);
     #if defined(LOG_TASK_RECEIVER_W)
-      sprintf(buffer,"CH1:%4d, CH2:%4d, CH3:%4d, CH4:%4d, CH5:%4d, CH6:%4d, CH7:%4d, CH8:%4d",
-        sbus_data.ch[0],
-        sbus_data.ch[1],
-        sbus_data.ch[2],
-        sbus_data.ch[3],
-        sbus_data.ch[4],
-        sbus_data.ch[5],
-        sbus_data.ch[6],
-        sbus_data.ch[7]
+      sprintf(buffer,"WCH1:%4d, WCH2:%4d, WCH3:%4d, WCH4:%4d, WCH5:%4d, WCH6:%4d, WCH7:%4d, WCH8:%4d",
+        write_data.ch[0],
+        write_data.ch[1],
+        write_data.ch[2],
+        write_data.ch[3],
+        write_data.ch[4],
+        write_data.ch[5],
+        write_data.ch[6],
+        write_data.ch[7]
       );            
       logger->info(buffer, "RECVW");
     #endif
     sbus_tx->Write();
-    last_data = sbus_data;
   }

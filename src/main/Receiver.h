@@ -57,7 +57,7 @@
 
       /** send data to receiver **/
       void write(void);
-
+      void write(BBD *data);
       /** return true, if R & P & Y=CenterPos && T & H in MIN Pos **/
       bool sticksInArmingPos();
 
@@ -128,6 +128,8 @@
         return false;
       }
 
+
+
     private:
       HardwareSerial *_bus;
       uint8_t _txpin, _rxpin;
@@ -139,7 +141,7 @@
       bool _armSwitchOn = false;
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
-      bfs::SbusData sbus_data, last_data;
+      bfs::SbusData sbus_data, write_data, last_data;
 
       // mapping Roll/Pitch/Throttle/Yaw axis to channels
       // default : ch0 = roll, ch1 = pitch, ch2 = throttle, ch3=yaw
@@ -165,22 +167,6 @@
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX},
         {173, 1810, GIMBAL_MIN, GIMBAL_MAX}
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX},
-        // {GIMBAL_MAX, GIMBAL_MIN, GIMBAL_MIN, GIMBAL_MAX}
       };
   };
 
