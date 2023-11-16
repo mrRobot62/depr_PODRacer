@@ -29,10 +29,10 @@
         return true;        
       };
       void update(void);
-      void update(OpticalFlow *obj) {_flow = obj; update();};
-      void update(SurfaceDistance *obj) {_sdist = obj;update();}
-      void update(Hover *obj) {_hover = obj;update();}
-      void update(Steering *obj) {_steer = obj;update();}
+      void update(OpticalFlow *obj);
+      void update(SurfaceDistance *obj);
+      void update(Hover *obj);
+      void update(Steering *obj);
 
       inline bool begin(Receiver *receiver) {
         if (receiver) {

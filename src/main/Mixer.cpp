@@ -5,34 +5,74 @@ Mixer::Mixer(uint8_t taskID, SLog *logger, Blackbox *bb) : TaskAbstract(taskID, 
   _tname = "MIXER";
 }
 
-void Mixer::update() {
-  /** 
-    Hovering is the absolutely base task and can't be deactivated in the case that the object is not available.
-    The hovering object must be allways available. If RUN_HOVERING is not set, than the update flag inside Hover-Class is
-    set to false. As a base task after hovering the data struct is allways filled with absolute values.
 
+void Mixer::update(Hover *obj) {
+  /** 
+    Hovering is the absolutely base task. If RUN_HOVERING is not set, than the update flag inside Hover-Class is
+    set to false. As a base task after hovering the data struct is allways filled with absolute values.
     All other tasks works only with relativ values. These values are added or subtracted to the absolute values
 
   **/
+  _hover = obj;
+  if (_recv->isArmed()) {
+      _HoverMixer(TASK_HOVER);
+  }
+  else {
+    #if defined(LOG_TASK_MIXER)
+      logger->warn("DISARMED", _tname);
+    #endif
+  }
+}
+
+void Mixer::update(SurfaceDistance *obj) {
+  /**
+    SurfaceDistance is responsible for the exakt height of the PODRacer. This task check if a minimal height was reached
+    and than, it will manage the throttle management
+  **/
+  _sdist = obj;
+  if (_recv->isArmed()) {
+      _HoverMixer(TASK_SURFACEDISTANCE);
+  }
+}
+
+void Mixer::update(OpticalFlow *obj) {
+  _flow = obj; 
+  update();
+};
+
+void Mixer::update(Steering *obj) {
+  _steer = obj;
+  update();
+}
+
+void Mixer::update() {
+
 
   //Serial.println((long)&_recv);
 
+/*
   if (_recv) {
     if (_recv->isArmed()) {
       _hs = 0;
       logger->debug("RUN_HOVER", _tname);
+      logger->info("-1-", _tname);
       _HoverMixer(TASK_HOVER);
-      #if defined(RUN_SDIST)
-        logger->info("RUN_SDIST", _tname);
-        if (_sdist->isUpdated()) {
-          _HoverMixer(TASK_SURFACEDISTANCE);
-        }
-      #endif
+      logger->info("-2-", _tname);
+      sprintf(buffer, "_sdist addr: %d", (long)&_sdist);
+      logger->info(buffer);
+      sprintf(buffer, "_sdist->isUpdated: %d", _sdist->data().data.updated);
+      logger->info(buffer);
+      if (_sdist->isUpdated()) {
+        logger->info("-2a-", _tname);
+        _HoverMixer(TASK_SURFACEDISTANCE);
+        logger->info("-2b-", _tname);
+      }
+      logger->info("-3-", _tname);
 
-      /**
-        FlowTask has a lower priority as SteeringTask, because flow control is only used, if the PODRacer is hovering without moving 
-        IF FlowTask is updated, SteeringTask is ignored
-      **/
+      //
+      //  FlowTask has a lower priority as SteeringTask, because flow control is only used, if the PODRacer is hovering without moving 
+      //  IF FlowTask is updated, SteeringTask is ignored
+      //
       #if defined(RUN_OPTICALFLOW)
         logger->info("RUN_OPTICALFLOW", _tname);
         if (_flow->isUpdated()) {
@@ -53,38 +93,20 @@ void Mixer::update() {
       #if defined(LOG_TASK_MIXER)
         logger->info("memcpy to recv", _tname);
       #endif
-    #if defined(LOG_TASK_MIXER) | defined(LOG_TASK_HOVER)
-      sprintf(buffer, "MIXER DATA R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
-        _bbd.data.ch[0],
-        _bbd.data.ch[1],
-        _bbd.data.ch[2],
-        _bbd.data.ch[3],
-        _bbd.data.ch[4],
-        _bbd.data.ch[7]
-      );
-      logger->info(buffer,_tname);
-    #endif       
-    //memcpy(_recv->data().data.ch, _bbd.data.ch, sizeof(_bbd.data.ch));
-    /*
-    #if defined(LOG_TASK_MIXER) | defined(TASK_HOVER)
-      logger->info("after memcpy");
-//      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
-      sprintf(buffer, "SBUS DATA R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
-        _recv->data().data.ch[0],
-        _recv->data().data.ch[1],
-        _recv->data().data.ch[2],
-        _recv->data().data.ch[3],
-        _recv->data().data.ch[4],
-        _recv->data().data.ch[7] //,
-        //_hover->data().data.ch[HOVERING],
-        //_sdist->data().data.ch[HOVERING]
-      );
-      logger->info(buffer,_tname);
-    #endif      #endif
-    */
-      logger->info("before _recv->write");
+      #if defined(LOG_TASK_MIXER) | defined(LOG_TASK_HOVER)
+        sprintf(buffer, "MIXER DATA R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+          _bbd.data.ch[0],
+          _bbd.data.ch[1],
+          _bbd.data.ch[2],
+          _bbd.data.ch[3],
+          _bbd.data.ch[4],
+          _bbd.data.ch[7]
+        );
+        logger->info(buffer,_tname);
+      #endif       
+      //logger->info("before _recv->write");
       _recv->write(&_bbd);
-      logger->info("after _recv->write");
+      //logger->info("after _recv->write");
     }
     else {
       #if defined(LOG_TASK_MIXER)
@@ -96,55 +118,70 @@ void Mixer::update() {
       logger->error("Mixer.update() - no receiver object", _tname);
       setError(getID(), 0x01);
   }
-
+  */
 }
 
 /** used by HoverTask & SurfaceDistanceTask **/
-void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
-//  Serial.println("_HoverMixer - 1 - ");
+void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {  
+  if (taskId == TASK_HOVER) {
     memcpy(_bbd.data.ch, _hover->data().data.ch, sizeof(_bbd.data.ch));
-//  Serial.println("_HoverMixer - 2 - ");
-    #if defined(LOG_TASK_MIXER) | defined(LOG_TASK_HOVER)
+  }
+  else if (taskId == TASK_SURFACEDISTANCE) {
+    // nothing special for SDIST preparation
+  }
+  else {
+    sprintf(buffer,"invalid taskId used (%d) ", taskId);
+    logger->error(buffer);
+  }
+    #if defined(LOG_TASK_MIXER)
 //      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
-      sprintf(buffer, "HOVER/SDIST R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+      sprintf(buffer, "TASK(%2d) R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
+        taskId,
         _bbd.data.ch[0],
         _bbd.data.ch[1],
         _bbd.data.ch[2],
         _bbd.data.ch[3],
         _bbd.data.ch[4],
-        _bbd.data.ch[7] //,
-        //_hover->data().data.ch[HOVERING],
-        //_sdist->data().data.ch[HOVERING]
+        _bbd.data.ch[7]
       );
       logger->info(buffer,_tname);
     #endif
+    if (taskId == TASK_HOVER) {
+      // do nothing, because _bbd.data.ch contain hovering base data
+      return; // do nothing, because _bbd.data.ch contain hovering base data
+    }
+
     // if surface distance is not perfect over ground, than we adjust
     // the current HOVERING value.
     // adding a value means PODRacer to low over ground
     // substract a value means PODRacer to high over ground
-    #if defined(LOG_TASK_MIXER)
-      if (taskId == TASK_SURFACEDISTANCE) {
-        _bbd.data.ch[HOVERING] += _sdist->data().data.ch[HOVERING];
-      }
-    #endif
+    if (taskId == TASK_SURFACEDISTANCE) {
+      #if defined(LOG_TASK_MIXER)
+        sprintf(buffer, "SDIST ch[HOVERING](%4d) add (%4d) set (%4d)", 
+          _bbd.data.ch[HOVERING],
+          _sdist->data().data.ch[HOVERING],
+          (_bbd.data.ch[HOVERING] + _sdist->data().data.ch[HOVERING])
+        );
+        logger->info(buffer, _tname);
+      #endif
+      _bbd.data.ch[HOVERING] += _sdist->data().data.ch[HOVERING];
+    }
 }
 
 /** used by FlowTask & SteeringTask **/
 void Mixer::_RPYMixer(void) {
-  _bbd.data.ch[ROLL] += _sdist->data().data.ch[ROLL];
-  _bbd.data.ch[PITCH] += _sdist->data().data.ch[PITCH];
-  _bbd.data.ch[YAW] += _sdist->data().data.ch[YAW];
+  // _bbd.data.ch[ROLL] += _sdist->data().data.ch[ROLL];
+  // _bbd.data.ch[PITCH] += _sdist->data().data.ch[PITCH];
+  // _bbd.data.ch[YAW] += _sdist->data().data.ch[YAW];
 
   #if defined(LOG_TASK_MIXER)    
-    sprintf(buffer, "R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d - Hover:%4d - SDist: %4d (_RPYMixer)",
+    sprintf(buffer, "FLOW/STEER R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
       _bbd.data.ch[0],
       _bbd.data.ch[1],
       _bbd.data.ch[2],
       _bbd.data.ch[3],
       _bbd.data.ch[4],
-      _bbd.data.ch[7],
-      _hover->data().data.ch[HOVERING],
-      _sdist->data().data.ch[HOVERING]
+      _bbd.data.ch[7]
     );
     logger->info(buffer,_tname);
   #endif

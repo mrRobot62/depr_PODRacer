@@ -44,6 +44,7 @@ Mixer (Priorisierung)
 
 char * _tname = "MAIN";
 int taskToken = 1;
+bool showDisarmed = true;
 
 SLog logger(&Serial, 115200, LOGLEVEL);
 
@@ -185,27 +186,22 @@ void SteeringControlFunction() {
 // 
 void SurfaceDistanceControlFunction() {
   unsigned long lastMillis = millis();
-  #if defined(RUN_SDIST)
     if (distance.begin(&receiver) == false ) {
       logger.error("MAIN : can't start SurfaceDistance object", _tname);
       return;
     }
-  #else
-    logger.warn("SDIST-TASK deactivted", _tname);
-  #endif  
   for(;;) {
-
-    #if defined(RUN_SDIST)
-      if (!distance.hasError()) {
-        distance.update();
-        if ((millis() - lastMillis) > LOOP_TIME) {
-          yield();
-        }
-        delay(LOOP_TIME);
+    if (!distance.hasError()) {
+      distance.update();
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
       }
-    #else
+      delay(LOOP_TIME);
+    }
+    else {
       yield();
-    #endif
+    }
+
   }
 }
 
@@ -228,24 +224,20 @@ void MixerControlFunction() {
   bool updated = false;
   for(;;) {
     updated=false;
-    #if defined(RUN_MIXER)
-      // all update(xxx) calls, include a mixer.update() call
-      if (hover.isUpdated()) {mixer.update(&hover); updated=true;}
-      if (distance.isUpdated()) {mixer.update(&distance); updated=true;}  
-      if (steering.isUpdated()) {mixer.update(&steering); updated=true;} 
-      if (flow.isUpdated()) {mixer.update(&flow); updated=true;}  
-      // if nothing above was updated, than do an explicit update()
-      if (!updated) {mixer.update();}
+    // all update(xxx) calls, include a mixer.update() call
+    if (hover.isUpdated()) {Serial.println("MIXER(HOVER)"); mixer.update(&hover); updated=true;}
+    if (distance.isUpdated()) {Serial.println("MIXER(SDIST)"); mixer.update(&distance); updated=true;}  
+    if (steering.isUpdated()) {mixer.update(&steering); updated=true;} 
+    if (flow.isUpdated()) {mixer.update(&flow); updated=true;}  
+    // if nothing above was updated, than do an explicit update()
+    if (!updated) {mixer.update();}
 
-      if ((millis() - lastMillis) > LOOP_TIME) {
-        yield();
-      }
-      delay(LOOP_TIME);
-    #else
+    if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
-    #endif
+    }
+    delay(LOOP_TIME);
+
   }
-  
 }
 
 

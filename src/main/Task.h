@@ -149,6 +149,7 @@
       uint8_t _id;
     private:
       uint8_t errorCode;
+
   };
 //};
 

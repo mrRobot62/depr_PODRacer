@@ -37,11 +37,25 @@ class SurfaceDistance : public TaskAbstract {
     Receiver *_recv;
     SimpleKalmanFilter *skfToF, *skfLidar;
 
+    double skfE = 0.005;      // we assume a loop in 50ms, to be adjusted if filter is not good enough
+    double skfeMea = 1.0;      // intial for SKF, is adjusted during runtime
+    double skfeEst = skfeMea;  // is adjusted during runtime
     int16_t tfDist = 0;    // Distance to object in centimeters
     int16_t tfFlux = 0;    // Strength or quality of return signal
     int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip
     int16_t tofMm = 0;     // Distance tof to object in millimeters
-    uint16_t channelData;  // Value of the Channel
+    int16_t hoverValue=0;
+
+
+    //----- PID Controller for SDIST sensor
+    PID *pidTOF, *pidLIDAR;
+    double tofSetPoint = (SDIST_MAX_DISTANCE-SDIST_MIN_DISTANCE)/2 + SDIST_MIN_DISTANCE; 
+    double tofRawValue, tofSKFValue, tofPIDAdjValue;
+
+    double kpTOF  = 0.8;
+    double kiTOF  = 0.005;     //0.9
+    double kdTOF  = 0.01;     //3.6
+
 };
 
 #endif

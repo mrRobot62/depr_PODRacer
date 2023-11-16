@@ -1,4 +1,8 @@
+<<<<<<< Updated upstream
 #include "HardwareSerial.h"
+=======
+#include "SimpleKalmanFilter.h"
+>>>>>>> Stashed changes
 #include "SurfaceDistance.h"
 
 SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb)
@@ -40,6 +44,24 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     return false;
   }
   _tof->setTimeout(500);
+<<<<<<< Updated upstream
+=======
+  _tof->startContinuous(SDIST_CONT_SCANS_MS);
+  
+  pidTOF = new PID(&tofSKFValue, &tofPIDAdjValue, &tofSetPoint, kpTOF, kiTOF, kdTOF, DIRECT);
+
+  if (pidTOF == nullptr) {
+    logger->error("PID controller not initialized", _tname);
+    setError(getID(), 0x03);
+    return false;
+  }
+
+  pidTOF->SetMode(AUTOMATIC);
+  pidTOF->SetOutputLimits(-SDIST_PID_OUTPUT_LIMIT, SDIST_PID_OUTPUT_LIMIT);
+  pidTOF->SetSampleTime(LOOP_TIME);
+
+  skfToF = new SimpleKalmanFilter(skfeMea, skfeEst, skfE);
+>>>>>>> Stashed changes
 
   /*
   _lidar = new TFMPlus();
@@ -98,13 +120,71 @@ void SurfaceDistance::update(void) {
   {
     channelData = _recv->getData(TASK_SURFACEDISTANCE);
 #if defined(LOG_TASK_SURFACE1)
-    sprintf(buffer, "Dist(TFMini):%04icm, Flux:%05i, CHData:%4.0f", tfDist, tfFlux, channelData);
+    sprintf(buffer, "Dist(TFMini):%04icm, Flux:%05i", tfDist, tfFlux);
     logger->info(buffer, _tname);
 #endif
 */
+  if (_recv->isArmed()) {
+    tofMm = _tof->readRangeContinuousMillimeters();
+    tofMm = constrain(tofMm, SDIST_COND_MIN_VALUE, SDIST_COND_MAX_VALUE);
+    // if something happens, we set channel to zero (no additional load for HOVERING)
+    _bbd.data.ch[HOVERING] = 0;
+    _bbd.data.ldata[0] = tofMm;     // store raw value
+    if (tofMm < SDIST_MINIMAL_HEIGHT) {
+        #if defined(LOG_TASK_SURFACE_TOF)
+          // if minimal height is not reached no height calculation is needed
+          sprintf(buffer, "TO LOW HEIGHT (%4imm,%4imm,%4imm)\t%5imm", 
+          (long)SDIST_MINIMAL_HEIGHT,
+          (long)SDIST_MIN_DISTANCE,
+          (long)SDIST_MAX_DISTANCE,
+          tofMm
+          );
+          logger->info(buffer, _tname);
+        #endif      
+        return;
+    }
+    
+    //
+    // If PODRacer is higher as MINIMAL_HEIGHT, than we use a PID-Controller to
+    // put it into the correct height
+    tofMm = constrain(tofMm, SDIST_MINIMAL_HEIGHT, SDIST_COND_MAX_VALUE);
+    tofRawValue = (double)tofMm;
+    tofPIDAdjValue = 0.0;
+    // PID Controll save adjusted value into tofPIDAdjValue
+    // this value is used by KalmanFilter to smoothing the real output
+    pidTOF->Compute();
 
-    /**** Berechnungen auf Basis TFMini ****/
+//    tofSKFValue = skfToF->updateEstimate(tofRawValue);
+    tofSKFValue = skfToF->updateEstimate(tofPIDAdjValue);
+    // now we have a PID adjusted value which was smoothed
+    _bbd.data.fdata[0] = tofSKFValue;     // store raw value
+    // to get a good hovering channel value, we multiply this value
+    // by an bias (default is 1.0 (do not reduce/increase the value))
+    hoverValue = (uint16_t)(tofSKFValue * SDIST_BIAS); 
+    _bbd.data.ldata[1] = hoverValue;                // store hovering (should same as channel[HOVERING])
+    _bbd.data.ch[HOVERING] = hoverValue;
+    #if defined(LOG_TASK_SURFACE_TOF)
+      #if defined(USE_SERIAL_PLOTTER)
+        sprintf(buffer, "Raw:%i, Filtered:%4.3f, PID:%4.3f, Hover: %i", 
+          tofMm,
+          tofSKFValue,
+          tofPIDAdjValue,
+          hoverValue
+        );
+      #else
+        sprintf(buffer, "TOF: (%4imm) HEIGHT (%4imm, %4imm), PID(SKF_IN:%+7.2f, OUT:%+7.2f, SETP:%+7.2f) => CH[HOVERING]: %4d", 
+          tofMm,
+          SDIST_MIN_DISTANCE, SDIST_MAX_DISTANCE,
+          tofSKFValue,
+          tofPIDAdjValue,
+          tofSetPoint,
+          hoverValue
+        );
+      #endif
+      logger->info(buffer, _tname);
+    #endif
 
+<<<<<<< Updated upstream
 /*
 #if defined(LOG_TASK_SURFACE1)
     sprintf(buffer, "Dist(TFMini):CHData(in):%4.0f", channelData);
@@ -128,6 +208,13 @@ void SurfaceDistance::update(void) {
   //_recv->setNewData(TASK_SURFACEDISTANCE, channelData);
   Serial.println("-1-");
   setUpdateFlag();
+=======
+    //_bbd.data.fdata[0] = tofPIDAdjValue;
+    setUpdateFlag();
+  } else {
+    resetUpdateFlag();
+  }
+>>>>>>> Stashed changes
   resetError();
   Serial.println("-2-");
 }

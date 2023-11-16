@@ -62,8 +62,8 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
 
     pidX->SetMode(AUTOMATIC);
     pidY->SetMode(AUTOMATIC);
-    pidX->SetOutputLimits(-PID_OUTPUT_LIMIT, PID_OUTPUT_LIMIT);
-    pidY->SetOutputLimits(-PID_OUTPUT_LIMIT, PID_OUTPUT_LIMIT);
+    pidX->SetOutputLimits(-OFLOW_PID_OUTPUT_LIMIT, OFLOW_PID_OUTPUT_LIMIT);
+    pidY->SetOutputLimits(-OFLOW_PID_OUTPUT_LIMIT, OFLOW_PID_OUTPUT_LIMIT);
     pidX->SetSampleTime(LOOP_TIME);
     pidY->SetSampleTime(LOOP_TIME);
 
@@ -130,8 +130,8 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
     // remove noice
 
     // Value hight depends on velocity. As higher velocity as higher value
-    rawX = (isInRange(rawX, -PMW3901_ZERO, PMW3901_ZERO))?0:rawX;
-    rawY = (isInRange(rawY, -PMW3901_ZERO, PMW3901_ZERO))?0:rawY;
+    rawX = (isInRange(rawX, -OFLOW_PMW3901_ZERO, OFLOW_PMW3901_ZERO))?0:rawX;
+    rawY = (isInRange(rawY, -OFLOW_PMW3901_ZERO, OFLOW_PMW3901_ZERO))?0:rawY;
 
     // adjust sensor direction
     rawX = direction[1] * rawX ;
@@ -143,7 +143,7 @@ OpticalFlow::OpticalFlow(uint8_t taskID, SLog *log, uint8_t cs_pin, Blackbox *bb
             
     // we just wait some time if a flow was recognizes
     // if value is greater than threshold, we try avoid this drift and set channel values for roll/pitch
-    if (abs(slipAdjX) < SLIP_RANGE && abs(slipAdjY) < SLIP_RANGE) {
+    if (abs(slipAdjX) < OFLOW_SLIP_RANGE && abs(slipAdjY) < OFLOW_SLIP_RANGE) {
       return;
     }
     // note: pidXY result ist stored in slipRollAxis / slipPitchAxis

@@ -22,11 +22,11 @@
 #define LOGLEVEL 3  // 3=Info, 4=Debug
 
 //#define LOG_TASK_ALL
-#define LOG_TASK_RECEIVER_W
+//#define LOG_TASK_RECEIVER_W
 //#define LOG_TASK_RECEIVER_RRAW
-#define LOG_TASK_RECEIVER_R
-#define LOG_TASK_RECEIVER
-//#define LOG_TASK_MIXER
+//#define LOG_TASK_RECEIVER_R
+//#define LOG_TASK_RECEIVER
+#define LOG_TASK_MIXER
 //#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE_LIDAR
@@ -101,10 +101,24 @@
 
 //
 // OpticalFlow
-#define FLOW_COUNTER_MAX 100
-#define SLIP_RANGE 500
-#define PMW3901_ZERO 1
-#define PID_OUTPUT_LIMIT 250
+//#define OFLOW_COUNTER_MAX 100         // currently not used :-/
+#define OFLOW_SLIP_RANGE 500          // during measurement we add the result from sensor, if sum is larger than range, we assume PODRacer slips
+#define OFLOW_PMW3901_ZERO 1          // due to sensor fluctuation a little bit, this value is used as "minus/plus range" to avoid jitter
+#define OFLOW_PID_OUTPUT_LIMIT 250    // to avoid to big output from PIDController, we limit the output value
+
+//
+// SurfaceDistance
+#define SDIST_MIN_DISTANCE 400         // mm minimum height for hovering
+#define SDIST_MAX_DISTANCE 500         // mm maximum height for hovering
+#define SDIST_THRESHOLD_RANGE_MM 50    // mm if current range is in a time range SDIST_THRESHOLD_RANGE_MS more than the last value - ignore it
+#define SDIST_THRESHOLD_RANGE_MS 50    // ms observe values in this timerange
+#define SDIST_CONT_SCANS_MS 50         // ms for continous scans
+#define SDIST_MINIMAL_HEIGHT 100       // mm up from this height the SDIST-Task will check target height, this is a security topic
+#define SDIST_COND_MIN_VALUE 0         // mm define min valid conditions for height. If environment condition is bad, sensor can deliver invalid values
+#define SDIST_COND_MAX_VALUE 1000      // mm max valid condition value for height
+#define SDIST_PID_OUTPUT_LIMIT 100     // to avoid to big output from PIDController, we limit the output value. Adjust this value if to fast/slow in steps of +/- 10 
+#define SDIST_BIAS 0.2
+
 
 // Steering
 #define STEERING_ROLL_BIAS 0.1      // adjust this if during steering, this bias is not high enough (or is to high) - roll & pitch must not be the same
