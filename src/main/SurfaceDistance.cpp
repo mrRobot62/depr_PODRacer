@@ -1,8 +1,5 @@
-<<<<<<< Updated upstream
 #include "HardwareSerial.h"
-=======
 #include "SimpleKalmanFilter.h"
->>>>>>> Stashed changes
 #include "SurfaceDistance.h"
 
 SurfaceDistance::SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb)
@@ -44,8 +41,6 @@ bool SurfaceDistance::begin(Receiver *receiver) {
     return false;
   }
   _tof->setTimeout(500);
-<<<<<<< Updated upstream
-=======
   _tof->startContinuous(SDIST_CONT_SCANS_MS);
   
   pidTOF = new PID(&tofSKFValue, &tofPIDAdjValue, &tofSetPoint, kpTOF, kiTOF, kdTOF, DIRECT);
@@ -61,7 +56,6 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   pidTOF->SetSampleTime(LOOP_TIME);
 
   skfToF = new SimpleKalmanFilter(skfeMea, skfeEst, skfE);
->>>>>>> Stashed changes
 
   /*
   _lidar = new TFMPlus();
@@ -94,9 +88,10 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   sprintf(buffer, "Lidar FW: %1u.%1u.%1u", _lidar->version[0], _lidar->version[1], _lidar->version[2]);
   logger->info(buffer, _tname);
 #endif
-*/
-  _tof->startContinuous(50);
 
+  
+
+*/
   // Start continuous back-to-back mode (take readings as
   // fast as possible).  To use continuous timed mode
   // instead, provide a desired inter-measurement period in
@@ -123,6 +118,7 @@ void SurfaceDistance::update(void) {
     sprintf(buffer, "Dist(TFMini):%04icm, Flux:%05i", tfDist, tfFlux);
     logger->info(buffer, _tname);
 #endif
+
 */
   if (_recv->isArmed()) {
     tofMm = _tof->readRangeContinuousMillimeters();
@@ -184,37 +180,10 @@ void SurfaceDistance::update(void) {
       logger->info(buffer, _tname);
     #endif
 
-<<<<<<< Updated upstream
-/*
-#if defined(LOG_TASK_SURFACE1)
-    sprintf(buffer, "Dist(TFMini):CHData(in):%4.0f", channelData);
-    logger->info(buffer);
-  } else  // If the command fails...
-  {
-    logger->info("getData failed", _tname);
-    _lidar->printFrame();  // display the error and HEX data
-#endif
-  }
-*/
-  tofMm = _tof->readRangeContinuousMillimeters();
-
-  /**** Berechnungen auf Basis VL53L1X ****/
-
-#if defined(LOG_TASK_SURFACE1)
-    //sprintf(buffer, "Dist(Tof):%05imm, CHData(out):%4.0f", tofMm, channelData);
-    sprintf(buffer, "Dist(Tof):%05imm", tofMm);
-    logger->info(buffer, _tname);
-#endif  
-  //_recv->setNewData(TASK_SURFACEDISTANCE, channelData);
-  Serial.println("-1-");
-  setUpdateFlag();
-=======
     //_bbd.data.fdata[0] = tofPIDAdjValue;
     setUpdateFlag();
   } else {
     resetUpdateFlag();
   }
->>>>>>> Stashed changes
   resetError();
-  Serial.println("-2-");
 }
