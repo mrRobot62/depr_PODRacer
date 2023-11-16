@@ -225,8 +225,8 @@ void MixerControlFunction() {
   for(;;) {
     updated=false;
     // all update(xxx) calls, include a mixer.update() call
-    if (hover.isUpdated()) {Serial.println("MIXER(HOVER)"); mixer.update(&hover); updated=true;}
-    if (distance.isUpdated()) {Serial.println("MIXER(SDIST)"); mixer.update(&distance); updated=true;}  
+    if (hover.isUpdated()) {/*Serial.println("MIXER(HOVER)");*/ mixer.update(&hover); updated=true;}
+    if (distance.isUpdated()) {/*Serial.println("MIXER(SDIST)");*/ mixer.update(&distance); updated=true;}  
     if (steering.isUpdated()) {mixer.update(&steering); updated=true;} 
     if (flow.isUpdated()) {mixer.update(&flow); updated=true;}  
     // if nothing above was updated, than do an explicit update()

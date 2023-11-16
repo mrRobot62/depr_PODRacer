@@ -129,7 +129,7 @@ void SurfaceDistance::update(void) {
     if (tofMm < SDIST_MINIMAL_HEIGHT) {
         #if defined(LOG_TASK_SURFACE_TOF)
           // if minimal height is not reached no height calculation is needed
-          sprintf(buffer, "TO LOW HEIGHT (%4imm,%4imm,%4imm)\t%5imm", 
+          sprintf(buffer, "<<<<<<<<< TO LOW HEIGHT (%4imm,%4imm,%4imm)\t%5imm <<<<<<<<<", 
           (long)SDIST_MINIMAL_HEIGHT,
           (long)SDIST_MIN_DISTANCE,
           (long)SDIST_MAX_DISTANCE,
@@ -145,23 +145,24 @@ void SurfaceDistance::update(void) {
     // put it into the correct height
     tofMm = constrain(tofMm, SDIST_MINIMAL_HEIGHT, SDIST_COND_MAX_VALUE);
     tofRawValue = (double)tofMm;
+    // this raw value is filtered to remove jitter
+    // this value is used by KalmanFilter to smoothing the real output
+    tofSKFValue = skfToF->updateEstimate(tofRawValue);
     tofPIDAdjValue = 0.0;
     // PID Controll save adjusted value into tofPIDAdjValue
-    // this value is used by KalmanFilter to smoothing the real output
+    // Input is the filtered value from kalman and output is saved into tofPIDAdjValue
+    // => PID(&tofSKFValue, &tofPIDAdjValue, &tofSetPoint, kpTOF, kiTOF, kdTOF, DIRECT);
     pidTOF->Compute();
-
-//    tofSKFValue = skfToF->updateEstimate(tofRawValue);
-    tofSKFValue = skfToF->updateEstimate(tofPIDAdjValue);
     // now we have a PID adjusted value which was smoothed
-    _bbd.data.fdata[0] = tofSKFValue;     // store raw value
+    _bbd.data.fdata[0] = tofPIDAdjValue;     // store raw value
     // to get a good hovering channel value, we multiply this value
     // by an bias (default is 1.0 (do not reduce/increase the value))
-    hoverValue = (uint16_t)(tofSKFValue * SDIST_BIAS); 
+    hoverValue = (uint16_t)(tofPIDAdjValue * SDIST_BIAS); 
     _bbd.data.ldata[1] = hoverValue;                // store hovering (should same as channel[HOVERING])
     _bbd.data.ch[HOVERING] = hoverValue;
     #if defined(LOG_TASK_SURFACE_TOF)
       #if defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "Raw:%i, Filtered:%4.3f, PID:%4.3f, Hover: %i", 
+        sprintf(buffer, "Raw:%4i, Filtered:%8.3f, PID:%8.3f, Hover: %3i", 
           tofMm,
           tofSKFValue,
           tofPIDAdjValue,
