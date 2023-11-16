@@ -129,9 +129,10 @@ void SurfaceDistance::update(void) {
     if (tofMm < SDIST_MINIMAL_HEIGHT) {
         #if defined(LOG_TASK_SURFACE_TOF)
           // if minimal height is not reached no height calculation is needed
-          sprintf(buffer, "<<<<<<<<< TO LOW HEIGHT (%4imm,%4imm,%4imm)\t%5imm <<<<<<<<<", 
+          sprintf(buffer, "<<<<<<<<< TO LOW HEIGHT (%4imm,%4imm,%4imm, %4imm)\t%5imm <<<<<<<<<", 
           (long)SDIST_MINIMAL_HEIGHT,
           (long)SDIST_MIN_DISTANCE,
+          tofSetPoint,
           (long)SDIST_MAX_DISTANCE,
           tofMm
           );
@@ -162,10 +163,11 @@ void SurfaceDistance::update(void) {
     _bbd.data.ch[HOVERING] = hoverValue;
     #if defined(LOG_TASK_SURFACE_TOF)
       #if defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "Raw:%i, Filtered:%f, PID:%f, Hover:%i", 
+        sprintf(buffer, "TOF:%i, SKF:%f, PID:%f, SP:%f, Hover:%i", 
           tofMm,
           tofSKFValue,
           tofPIDAdjValue,
+          tofSetPoint,
           hoverValue
         );
         logger->simulate(buffer);
