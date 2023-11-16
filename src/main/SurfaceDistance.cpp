@@ -162,12 +162,13 @@ void SurfaceDistance::update(void) {
     _bbd.data.ch[HOVERING] = hoverValue;
     #if defined(LOG_TASK_SURFACE_TOF)
       #if defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "Raw:%4i, Filtered:%8.3f, PID:%8.3f, Hover: %3i", 
+        sprintf(buffer, "Raw:%i, Filtered:%f, PID:%f, Hover:%i", 
           tofMm,
           tofSKFValue,
           tofPIDAdjValue,
           hoverValue
         );
+        logger->simulate(buffer);
       #else
         sprintf(buffer, "TOF: (%4imm) HEIGHT (%4imm, %4imm), PID(SKF_IN:%+7.2f, OUT:%+7.2f, SETP:%+7.2f) => CH[HOVERING]: %4d", 
           tofMm,
@@ -177,8 +178,8 @@ void SurfaceDistance::update(void) {
           tofSetPoint,
           hoverValue
         );
-      #endif
       logger->info(buffer, _tname);
+      #endif
     #endif
 
     //_bbd.data.fdata[0] = tofPIDAdjValue;

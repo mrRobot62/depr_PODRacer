@@ -117,7 +117,7 @@
 #define SDIST_COND_MIN_VALUE 0         // mm define min valid conditions for height. If environment condition is bad, sensor can deliver invalid values
 #define SDIST_COND_MAX_VALUE 1000      // mm max valid condition value for height
 #define SDIST_PID_OUTPUT_LIMIT 100     // to avoid to big output from PIDController, we limit the output value. Adjust this value if to fast/slow in steps of +/- 10 
-#define SDIST_BIAS 0.2
+#define SDIST_BIAS 1.1
 
 
 // Steering
