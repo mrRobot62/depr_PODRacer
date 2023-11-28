@@ -7,9 +7,9 @@
 #include <PID_v1.h>
 #include <TFMPlus.h>
 #include <Wire.h>
-#if defined(RUN_SDIST_VL53L0)
+#if defined(USE_SDIST_VL53L0)
   #include <VL53L0X.h>
-#elif defined(RUN_SDIST_VL53L1)
+#elif defined(USE_SDIST_VL53L1)
   #include <VL53L1X.h>
 #endif
 
@@ -27,9 +27,9 @@ class SurfaceDistance : public TaskAbstract {
   private:
     HardwareSerial *_bus;
     TFMPlus *_lidar;
-#if defined(RUN_SDIST_VL53L0)
+#if defined(USE_SDIST_VL53L0)
     VL53L0X *_tof;
-#elif defined(RUN_SDIST_VL53L1)
+#elif defined(USE_SDIST_VL53L1)
     VL53L1X *_tof;
 #endif
 

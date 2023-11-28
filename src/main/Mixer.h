@@ -34,19 +34,7 @@
       void update(Hover *obj);
       void update(Steering *obj);
 
-      inline bool begin(Receiver *receiver) {
-        if (receiver) {
-          _recv = receiver;
-        }
-        else {
-          logger->error("begin() - failed - receiver missing");
-          return false;
-        }
-
-        sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
-        logger->info(buffer, _tname);
-        return true;  
-      }
+      bool begin(Receiver *receiver);
 
     private:
       void _HoverMixer(uint8_t taskId);
@@ -55,14 +43,14 @@
     private: 
       char buffer[100];
       char _hs = 0x00;
-
+      uint16_t tmp1, tmp2;
+      
       //SDATA _data;
       Receiver *_recv;
       OpticalFlow *_flow;
       Hover *_hover;
       SurfaceDistance *_sdist;
       Steering *_steer;
-
   };
 
 #endif

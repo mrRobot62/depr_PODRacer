@@ -1,0 +1,44 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        },
+        {
+            "name": "PODR Serial",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/serial_reader.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--port", "/dev/cu.usbserial-0001",
+                "-vv"
+                //"--baud", "115200",
+                //"--tout", "5",
+                //"--opath", "./data",
+                //"--use_ts"
+            ],
+            "justMyCode": true
+        }, 
+        {
+            "name" : "PODR Dashboard",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/dashboard_podracer.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--paramfile", "PODRVisualizer_settings.json",
+                "--port", "4050"
+            ],
+            "justMyCode": true
+        }
+    ]
+}

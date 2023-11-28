@@ -139,6 +139,7 @@
       bool _sticksInArmingPos = false;
       bool _isPreventArming = true;
       bool _armSwitchOn = false;
+      bool _log_once_recv_disarmed;
       bfs::SbusRx *sbus_rx;
       bfs::SbusTx *sbus_tx;
       bfs::SbusData sbus_data, write_data, last_data;

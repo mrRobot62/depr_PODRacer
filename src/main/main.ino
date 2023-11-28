@@ -77,6 +77,11 @@ Mixer mixer(TASK_MIXER, &logger, &bb);
 
 //Blackbox bb(TASK_MIXER, &logger, CS_PIN);
 
+// some messages should only be print one time
+// if true, print otherweise do not print again
+bool log_once_disarmed = true;
+
+
 //Receiver *receiver;
 uint8_t blink_pattern = 0;
 
@@ -102,30 +107,21 @@ void MovementControlFunction() {
 
   unsigned long lastMillis = millis();
   int16_t deltaX,deltaY;
-  #if defined(RUN_OPTICALFLOW)
-    if (flow.begin(&receiver) == false) {
-      logger.error("MAIN : can't start OpticalFlow", _tname);
-      return;
-    }
-  #else
-    logger.warn("OFLOW-TASK deactivted", _tname);
-  #endif
-  for(;;) {
-    #if defined(RUN_OPTICALFLOW)
-      if (!flow.hasError()) {
-        //Serial.println("run MovementControlFunction");
-        flow.update();
-        //flow.readMotionCount(&deltaX, &deltaY);
-        if ((millis() - lastMillis) > LOOP_TIME) {
-          yield();
-        }
-        delay(LOOP_TIME);
-      }
-    #else
-      yield();
-    #endif
+  if (flow.begin(&receiver) == false) {
+    logger.error("MAIN : can't start OpticalFlow", _tname);
+    return;
   }
-
+  for(;;) {
+    if (!flow.hasError()) {
+      //Serial.println("run MovementControlFunction");
+      flow.update();
+      //flow.readMotionCount(&deltaX, &deltaY);
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      }
+      delay(LOOP_TIME);
+    }
+  }
 }
 
 
@@ -137,18 +133,22 @@ void HoverControlFunction() {
     logger.error("MAIN : can't start Hover object", _tname);
     return;
   }
-  #if !defined(RUN_HOVER)
-    logger.warn("HOVERING deactivted", _tname);
-  #endif
   for(;;) {
+    //Serial.println("HoverControlFunction");
     if (!hover.hasError()) {
+      #if defined(LOG_TASK_MIXER_HOVER)
+        logger.debug("hover.update()");
+      #endif
       hover.update();
       if ((millis() - lastMillis) > LOOP_TIME) {
         yield();
       }
-      delay(LOOP_TIME);
+    }
+    else {
+      logger.error("HOVER return error", _tname);
     }
   }
+  delay(LOOP_TIME);
 }
 
 // Primary Task Hovering is the base functionality of the complete PODRacer System
@@ -159,16 +159,12 @@ void HoverControlFunction() {
 void SteeringControlFunction() {
 
   unsigned long lastMillis = millis();
-  #if defined(RUN_STEERING)
-    if (steering.begin(&receiver) == false ) {
-      logger.error("MAIN : can't start Steering object", _tname);
-      return;
-    }
-  #else
-    logger.warn("STEERING-TASK deactivted", _tname);
-  #endif
+  if (steering.begin(&receiver) == false ) {
+    logger.error("MAIN : can't start Steering object", _tname);
+    return;
+  }
+
   for(;;) {
-    #if defined(RUN_STEERING)
     if (!steering.hasError()) {
       //steering.update();
       if ((millis() - lastMillis) > LOOP_TIME) {
@@ -176,9 +172,6 @@ void SteeringControlFunction() {
       }
       delay(LOOP_TIME);
     }
-    #else
-      yield();
-    #endif
   }
 
 }
@@ -209,29 +202,39 @@ void SurfaceDistanceControlFunction() {
 void MixerControlFunction() {
   char buffer[100];
   unsigned long lastMillis = millis();
-  #if defined(RUN_MIXER)
-    if (&receiver) {
-      if (!mixer.begin(&receiver)) {
-        logger.error("MAIN : can't start mixer object", _tname);
-      }
+  if (&receiver) {
+    if (!mixer.begin(&receiver)) {
+      logger.error("MAIN : can't start mixer object", _tname);
     }
-    else {
-      logger.error("mixer.begin() - no receiver object", _tname);
-    }
-  #else
-    logger.warn("MIXER-TASK deactivted", _tname);
-  #endif
+  }
+  else {
+    logger.error("mixer.begin() - no receiver object", _tname);
+  }
   bool updated = false;
   for(;;) {
     updated=false;
-    // all update(xxx) calls, include a mixer.update() call
-    if (hover.isUpdated()) {/*Serial.println("MIXER(HOVER)");*/ mixer.update(&hover); updated=true;}
-    if (distance.isUpdated()) {/*Serial.println("MIXER(SDIST)");*/ mixer.update(&distance); updated=true;}  
-    if (steering.isUpdated()) {mixer.update(&steering); updated=true;} 
-    if (flow.isUpdated()) {mixer.update(&flow); updated=true;}  
-    // if nothing above was updated, than do an explicit update()
-    if (!updated) {mixer.update();}
+    if (receiver.isArmed()) {
+      if (hover.isUpdated()) {/*Serial.println("MIXER(HOVER)");*/ mixer.update(&hover); updated=true;}
+      if (distance.isUpdated()) {/*Serial.println("MIXER(SDIST)");*/ mixer.update(&distance); updated=true;}  
+      if (steering.isUpdated()) {mixer.update(&steering); updated=true;} 
+      if (flow.isUpdated()) {mixer.update(&flow); updated=true;}  
+      // if nothing above was updated, than do an explicit update()
+      if (!updated) {mixer.update();}
+      log_once_disarmed = true;
+      if ((millis() - lastMillis) > LOOP_TIME) {
+        yield();
+      } else {
+        delay(LOOP_TIME);
+      }
 
+
+    }
+    else {
+      if (log_once_disarmed) {
+        logger.warn("\n\n********************\nDISARMED\n********************\n", _tname);
+        log_once_disarmed = false;
+      }
+    }
     if ((millis() - lastMillis) > LOOP_TIME) {
       yield();
     }

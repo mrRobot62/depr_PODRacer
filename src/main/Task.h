@@ -7,6 +7,7 @@
 #include "Blackbox.h"
 #include <SimpleKalmanFilter.h>
 #include <CoopSemaphore.h>
+#include <sbus.h>
 
 //namespace podr {
 
@@ -20,6 +21,7 @@
         _sema = sema;
         _blackbox = bb;
         _tname = "?";
+        _tgroup= "";
       };
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
@@ -68,8 +70,92 @@
         _bbd.data.task_id = _id;     
       }
 
+      /** prepare data to a visualizer byte stream and send it via serial to host **/
+      void send2Visualizer(const char *tname, const char *tgroup, BBD *data) {
+        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
+          (long)data->data.millis,
+          tname,
+          tgroup,
+          // channel data, can be absolut or relative, depends on task / group
+          data->data.ch[ROLL],
+          data->data.ch[PITCH],
+          data->data.ch[YAW],
+          data->data.ch[HOVERING],
+          data->data.ch[THRUST],
+          data->data.ch[AUX2],
+          data->data.ch[AUX3],
+          data->data.ch[ARMING],
+
+          // typcalliy used for output from filters and other double values
+          data->data.fdata[0],
+          data->data.fdata[1],
+          data->data.fdata[2],
+          data->data.fdata[3],
+          data->data.fdata[4],
+          data->data.fdata[5],
+          data->data.fdata[6],
+          data->data.fdata[7],
+
+          // long values typical for data to channels increas/decrease delta values
+          data->data.ldata[0],
+          data->data.ldata[1],
+          data->data.ldata[2],
+          data->data.ldata[3],
+          data->data.ldata[4],
+          data->data.ldata[5],
+          data->data.ldata[6],
+          data->data.ldata[7],
+
+          // PID channels
+          data->data.pid_rpyth[0],
+          data->data.pid_rpyth[1],
+          data->data.pid_rpyth[2],
+          data->data.pid_rpyth[3],
+          data->data.pid_rpyth[4],
+
+          // constants (needed for visualizer)
+          data->data.const_hover[0],
+          data->data.const_hover[1],
+          data->data.const_hover[2]
+        );
+        //Serial.print(sizeof(buffer));
+        if (serPortLocked == false) {
+          serPortLocked = true;
+          Serial.print(buffer);
+          delay(5);
+          serPortLocked = false;
+          delay(5);
+        }      
+      };
+
+      void send2VisualizerSBUS(const char *tname, const char *tgroup, bfs::SbusData *sbus) {
+        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f",
+          (long)millis(),
+          tname,
+          tgroup,
+          // channel data, can be absolut or relative, depends on task / group
+          sbus->ch[ROLL],
+          sbus->ch[PITCH],
+          sbus->ch[YAW],
+          sbus->ch[HOVERING],
+          sbus->ch[THRUST],
+          sbus->ch[AUX2],
+          sbus->ch[AUX3],
+          sbus->ch[ARMING],
+          0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+          0, 0, 0, 0, 0, 0, 0, 0,
+          0.0, 0.0, 0.0, 0.0, 0.0
+        );
+        if (serPortLocked == false) {
+          serPortLocked = true;
+          Serial.print(buffer);
+          serPortLocked = false;
+          delay(5);
+        }
+      };
+
     protected:
-      char *_tname;
+      char *_tname, *_tgroup;
 
       /** an error contain two parts. B7-B4 = TaskID, B3-B0 error code **/
       inline void setError(uint8_t taskID, uint8_t code) {
@@ -144,11 +230,12 @@
       float kdVH53 = 0.25;
 
       //-----
-      char buffer[100];
+      char buffer[300];
       uint8_t _blink_pattern;
       uint8_t _id;
     private:
       uint8_t errorCode;
+      bool serPortLocked;
 
   };
 //};

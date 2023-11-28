@@ -53,10 +53,10 @@ typedef struct {
   uint8_t groupA;                       // can be used to group data 1. order
   uint8_t groupB;                       // can be used to group data 2. order
   uint16_t ch[NUMBER_CHANNELS];         // channel data (0=ch1, 1=ch2, 2=ch3, ...)
-  //uint16_t ch_w[NUMBER_CHANNELS];       // channel data (0=ch1, 1=ch2, 2=ch3, ...) WRITE 
   long ldata[DATA_SIZE];                // an be used for long values  
   double fdata[DATA_SIZE];              // can be used for float values
-  double pid_rpyth[DATA_SIZE];          //(R/P/Y/T/H);
+  double pid_rpyth[5];                  //(R/P/Y/T/H);
+  uint16_t const_hover[4];              // 0=minimut height to start hovering, 1=min hovering heigt, 2=ideal hovering height, 3=max hovering height
   uint16_t crc;
 } BlackBoxStruct;
 

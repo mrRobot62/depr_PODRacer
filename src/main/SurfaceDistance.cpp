@@ -19,12 +19,12 @@ bool SurfaceDistance::begin(Receiver *receiver) {
   sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
   logger->info(buffer, _tname);
 
-  #if defined(RUN_SDIST_VL53L0) | defined(RUN_SDIST_VL53L1)
+  #if defined(USE_SDIST_VL53L0) | defined(USE_SDIST_VL53L1)
 
-  #if defined(RUN_SDIST_VL53L0)
+  #if defined(USE_SDIST_VL53L0)
     _tof = new VL53L0X();
-  #elif defined(RUN_SDIST_VL53L1)
-    //_tof = new VL53L1X();
+  #elif defined(USE_SDIST_VL53L1)
+    _tof = new VL53L1X();
   #endif
 
   if (_tof == nullptr) {
@@ -120,21 +120,24 @@ void SurfaceDistance::update(void) {
 #endif
 
 */
+
+
   if (_recv->isArmed()) {
+    setUpdateFlag();
     tofMm = _tof->readRangeContinuousMillimeters();
     tofMm = constrain(tofMm, SDIST_COND_MIN_VALUE, SDIST_COND_MAX_VALUE);
     // if something happens, we set channel to zero (no additional load for HOVERING)
     _bbd.data.ch[HOVERING] = 0;
-    _bbd.data.ldata[0] = tofMm;     // store raw value
+    _bbd.data.ldata[SDIST_LDATA_TOF] = tofMm;     // store raw value
     if (tofMm < SDIST_MINIMAL_HEIGHT) {
         #if defined(LOG_TASK_SURFACE_TOF)
           // if minimal height is not reached no height calculation is needed
-          sprintf(buffer, "<<<<<<<<< TO LOW HEIGHT (%4imm,%4imm,%4imm, %4imm)\t%5imm <<<<<<<<<", 
-          (long)SDIST_MINIMAL_HEIGHT,
-          (long)SDIST_MIN_DISTANCE,
-          tofSetPoint,
-          (long)SDIST_MAX_DISTANCE,
-          tofMm
+          sprintf(buffer, "<<<<<<<<< HEIGHT TO LOW (%4imm,%4imm,%4imm, %4imm)\t%5imm <<<<<<<<<", 
+            (long)SDIST_MINIMAL_HEIGHT,
+            (long)SDIST_MIN_DISTANCE,
+            tofSetPoint,
+            (long)SDIST_MAX_DISTANCE,
+            _bbd.data.ldata[SDIST_LDATA_TOF]
           );
           logger->info(buffer, _tname);
         #endif      
@@ -155,39 +158,43 @@ void SurfaceDistance::update(void) {
     // => PID(&tofSKFValue, &tofPIDAdjValue, &tofSetPoint, kpTOF, kiTOF, kdTOF, DIRECT);
     pidTOF->Compute();
     // now we have a PID adjusted value which was smoothed
-    _bbd.data.fdata[0] = tofPIDAdjValue;     // store raw value
+    _bbd.data.fdata[SDIST_FDATA_PID] = tofPIDAdjValue;                      // store raw value
+    _bbd.data.fdata[SDIST_FDATA_HOVER] = (tofPIDAdjValue * SDIST_BIAS);     // store raw value
+    
     // to get a good hovering channel value, we multiply this value
     // by an bias (default is 1.0 (do not reduce/increase the value))
-    hoverValue = (uint16_t)(tofPIDAdjValue * SDIST_BIAS); 
-    _bbd.data.ldata[1] = hoverValue;                // store hovering (should same as channel[HOVERING])
-    _bbd.data.ch[HOVERING] = hoverValue;
+    //hoverValue = (int16_t)_bbd.data.fdata[SDIST_FDATA_HOVER]; 
+    _bbd.data.ldata[SDIST_LDATA_HOVER] = (int16_t)_bbd.data.fdata[SDIST_FDATA_HOVER];                // store hovering (should same as channel[HOVERING])
+    setUpdateFlag();
     #if defined(LOG_TASK_SURFACE_TOF)
       #if defined(USE_SERIAL_PLOTTER)
-        sprintf(buffer, "TOF:%i, SKF:%f, PID:%f, SP:%f, Hover:%i", 
-          tofMm,
+        sprintf(buffer, "TOF:%i, SKF:%.2f, PID:%f, SP:%.2f, Hover:%i", 
+          _bbd.data.ldata[SDIST_LDATA_TOF],
           tofSKFValue,
-          tofPIDAdjValue,
+          _bbd.data.fdata[SDIST_FDATA_PID],
           tofSetPoint,
-          hoverValue
+          _bbd.data.ldata[SDIST_LDATA_HOVER]
         );
         logger->simulate(buffer);
       #else
         sprintf(buffer, "TOF: (%4imm) HEIGHT (%4imm, %4imm), PID(SKF_IN:%+7.2f, OUT:%+7.2f, SETP:%+7.2f) => CH[HOVERING]: %4d", 
-          tofMm,
+          _bbd.data.ldata[SDIST_LDATA_TOF],
           SDIST_MIN_DISTANCE, SDIST_MAX_DISTANCE,
           tofSKFValue,
-          tofPIDAdjValue,
+          _bbd.data.fdata[SDIST_FDATA_PID],
           tofSetPoint,
-          hoverValue
+          _bbd.data.ldata[SDIST_LDATA_HOVER]
         );
       logger->info(buffer, _tname);
       #endif
     #endif
-
+    #if defined(IGNORE_SDIST_OUTPUT_TOF) 
+      resetUpdateFlag();
+    #endif
     //_bbd.data.fdata[0] = tofPIDAdjValue;
-    setUpdateFlag();
   } else {
     resetUpdateFlag();
   }
+
   resetError();
 }

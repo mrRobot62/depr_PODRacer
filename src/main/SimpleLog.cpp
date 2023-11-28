@@ -102,7 +102,7 @@
     private:
       HardwareSerial *_bus;
       uint8_t _level;
-      char buffer [200];
+      char buffer [300];
     private:
       void _print(const char *text, const char *LEVEL, bool cr=true, bool simulate=false, const char *tname="?") {
         if (simulate) {

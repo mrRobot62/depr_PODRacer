@@ -103,6 +103,7 @@
     sprintf(buffer, "ready");
     logger->info(buffer, _tname);
     rc = true;
+    _log_once_recv_disarmed = true;
     return rc;
   }
 
@@ -150,10 +151,13 @@
         );
         logger->info(buffer, "RECVR");      
       #endif
+
       uint16_t v1,v2;
       _blackbox->clearStruct(&_bbd, TASK_RECEIVER);
 
       // map sbus data to internal _bbd struct
+      
+      _bbd.data.millis = millis();
       for (uint8_t i=0; i < NUMBER_CHANNELS; i++) {
         _bbd.data.ch[i] = map(
                           sbus_data.ch[i], 
@@ -175,11 +179,12 @@
       // ------------------------------------------------------------------------
       // initial armingMask = 0b0000 0000
       // arming only allowed if 0b0000 1010
-      // bit 0 = initial set (in begin()) 0b0000 0000 , 
-      //         set if arm Switch OFF, reset if arm switch ON
-      // bit 1 = set to 1 if Sticks in center pos else 0
-      // bit 2 = unused
-      // bit 3 = set to 1 if armSwitch ON else 0
+      //
+      //  0b0000 0000
+      //         |||⎿__ 1 if arm switch is OFF, reset if arm switch is ON
+      //.        ||⎿___ 1 if one Gimbal or PORTI is not centered
+      //         |⎿____ unused
+      //         ⎿_____ 1 if arm switch is ON
       // ------------------------------------------------------------------------
       if (_armSwitchOn == false) {    // ---------- arm switch = OFF ------------
         bitSet(armingMask, 0);        // 0b---- ---1
@@ -208,6 +213,7 @@
         #endif
         _isPreventArming = false;
         _bbd.data.isArmed = true;
+        _log_once_recv_disarmed = true;
       }
       else {
         #if defined(LOG_TASK_RECEIVER)
@@ -219,9 +225,20 @@
         }
         else {
           _isPreventArming = true;    // bit not set
+          if (_log_once_recv_disarmed) {
+            logger->printBinary("\n\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\nPREVENT ARMING => ", _tname, armState);
+            _log_once_recv_disarmed = false;
+          }
         }
       }
       _bbd.data.updated = true;
+
+      #if defined(LOG_VISUALIZER)
+        if (_bbd.data.isArmed) {
+            send2Visualizer(_tname, "RD", &_bbd);
+        }
+      #endif
+
       #if defined(LOG_TASK_RECEIVER_R) && defined(USE_SERIAL_PLOTTER)
         sprintf(buffer,"RCH1:%4d, RCH2:%4d, RCH3:%4d, RCH4:%4d, RCH5:%4d, RCH6:%4d, RCH7:%4d, RCH8:%4d",
           _bbd.data.ch[0],
@@ -275,5 +292,8 @@
       );            
       logger->info(buffer, "RECVW");
     #endif
+      #if defined(LOG_VISUALIZER)
+        send2VisualizerSBUS(_tname, "WR", &write_data);
+      #endif
     sbus_tx->Write();
   }

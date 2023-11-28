@@ -5,11 +5,23 @@ Mixer::Mixer(uint8_t taskID, SLog *logger, Blackbox *bb) : TaskAbstract(taskID, 
   _tname = "MIXER";
 }
 
+bool Mixer::begin(Receiver *receiver) {
+  if (receiver) {
+    _recv = receiver;
+  }
+  else {
+    logger->error("begin() - failed - receiver missing");
+    return false;
+  }
+
+  sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
+  logger->info(buffer, _tname);
+  return true;  
+}
 
 void Mixer::update(Hover *obj) {
   /** 
-    Hovering is the absolutely base task. If RUN_HOVERING is not set, than the update flag inside Hover-Class is
-    set to false. As a base task after hovering the data struct is allways filled with absolute values.
+    Hovering is the absolutely base task. As a base task after hovering the data struct is allways filled with absolute values.
     All other tasks works only with relativ values. These values are added or subtracted to the absolute values
 
   **/
@@ -17,11 +29,7 @@ void Mixer::update(Hover *obj) {
   if (_recv->isArmed()) {
       _HoverMixer(TASK_HOVER);
   }
-  else {
-    #if defined(LOG_TASK_MIXER)
-      logger->warn("DISARMED", _tname);
-    #endif
-  }
+  update();
 }
 
 void Mixer::update(SurfaceDistance *obj) {
@@ -31,24 +39,31 @@ void Mixer::update(SurfaceDistance *obj) {
   **/
   _sdist = obj;
   if (_recv->isArmed()) {
+    #if defined(USE_SDIST_OUTPUT)
       _HoverMixer(TASK_SURFACEDISTANCE);
+    #endif
   }
+  update();
 }
 
 void Mixer::update(OpticalFlow *obj) {
   _flow = obj; 
+  if (_recv->isArmed()) {
+    Serial.println("update(OpticalFlow *obj)");
+  }
   update();
 };
 
 void Mixer::update(Steering *obj) {
   _steer = obj;
+  if (_recv->isArmed()) {
+    Serial.println("update(Steering *obj)");
+  }
   update();
 }
 
 void Mixer::update() {
-
-
-  //Serial.println((long)&_recv);
+  _recv->write(&_bbd);
 
 /*
   if (_recv) {
@@ -133,8 +148,7 @@ void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
     sprintf(buffer,"invalid taskId used (%d) ", taskId);
     logger->error(buffer);
   }
-    #if defined(LOG_TASK_MIXER)
-//      sprintf(buffer, "R:%d, P:%d, H:%d, Y:%d, Arm:%d, TH:%d  - Hover:%d - SDist: %d (_HoverMixer)",
+    #if defined(LOG_TASK_MIXER_HOVER) | defined(LOG_TASK_MIXER_SDIST)
       sprintf(buffer, "TASK(%2d) R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
         taskId,
         _bbd.data.ch[0],
@@ -156,16 +170,18 @@ void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
     // adding a value means PODRacer to low over ground
     // substract a value means PODRacer to high over ground
     if (taskId == TASK_SURFACEDISTANCE) {
-      #if defined(LOG_TASK_MIXER)
-        sprintf(buffer, "SDIST ch[HOVERING](%4d) add (%4d) set (%4d)", 
-          _bbd.data.ch[HOVERING],
-          _sdist->data().data.ch[HOVERING],
-          (_bbd.data.ch[HOVERING] + _sdist->data().data.ch[HOVERING])
+      tmp1 =  _bbd.data.ch[HOVERING];
+      _bbd.data.ch[HOVERING] += _sdist->data().data.ldata[SDIST_LDATA_HOVER];
+    }
+    _bbd.data.ch[HOVERING] = constrain(_bbd.data.ch[HOVERING], GIMBAL_MIN, GIMBAL_MAX);
+      #if defined(LOG_TASK_MIXER_SDIST)
+        sprintf(buffer, "SDIS ch[HOVERING](%4d) add (%4d) set (%4d)", 
+          tmp1,
+          _sdist->data().data.ldata[SDIST_LDATA_HOVER],
+          _bbd.data.ch[HOVERING]
         );
         logger->info(buffer, _tname);
       #endif
-      _bbd.data.ch[HOVERING] += _sdist->data().data.ch[HOVERING];
-    }
 }
 
 /** used by FlowTask & SteeringTask **/
@@ -174,7 +190,7 @@ void Mixer::_RPYMixer(void) {
   // _bbd.data.ch[PITCH] += _sdist->data().data.ch[PITCH];
   // _bbd.data.ch[YAW] += _sdist->data().data.ch[YAW];
 
-  #if defined(LOG_TASK_MIXER)    
+  #if defined(LOG_TASK_MIXER_RPY)    
     sprintf(buffer, "FLOW/STEER R:%4d, P:%4d, H:%4d, Y:%4d, Arm:%4d, TH:%4d",
       _bbd.data.ch[0],
       _bbd.data.ch[1],

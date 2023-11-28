@@ -11,13 +11,18 @@
   Steering
 
   this class is responsible if pilot use YAW to turn the POD Racer to left or right.
-  to get a better (smoother) flight, the PODracer use ROLL & PITCH & YAW for a turning.
+  to get a better (smoother) flight, the PODracer use ROLL & PITCH & YAW for a turning
+  and adjust ROLL / PITCH based on YAW value
 
-  Example: Turn left
-  * roll left
-  * pitch forward
+  to stop the PODRacer, thrust should be go to 0 and PITCH a little bit backwards until
+  OFLOW go to reverse
 
-  roll & pitch are x% from YAW
+  YAW     | THRUST  | ROLL    | PITCH   
+  -----------------------------------
+  left    | ignore  | left    | fwd
+  right   | ignore  | right   | fwd   
+  center  | ignore  | center  | center
+          | 0       | center  | backward
 
 **/
 class Steering : public TaskAbstract {

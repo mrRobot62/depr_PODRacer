@@ -26,24 +26,38 @@
 //#define LOG_TASK_RECEIVER_RRAW
 //#define LOG_TASK_RECEIVER_R
 //#define LOG_TASK_RECEIVER
-//#define LOG_TASK_MIXER
+//#define LOG_TASK_MIXER_HOVER
+//#define LOG_TASK_MIXER_SDIST
+//#define LOG_TASK_MIXER_RPY
+//#define LOG_TASK_MIXER_RECVW
+//#define LOG_TASK_MIXER_OFLOW
 //#define LOG_TASK_HOVER
 //#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE_LIDAR
-#define LOG_TASK_SURFACE_TOF
+//#define LOG_TASK_SURFACE_TOF
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
-#define USE_SERIAL_PLOTTER
+//#define USE_SERIAL_PLOTTER
+#define LOG_VISUALIZER
 
-#define RUN_HOVER
-//#define RUN_OPTICALFLOW
-#define RUN_SDIST
-#define RUN_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
-//#define RUN_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
-//#define RUN_SDIST_TFMINI
+#define USE_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+//#define USE_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
+
+//-------------------------------------------------------------
+// only used during implementing to test & check outputs
+// all parts should used in real behaviour !
+// hovering as base task can't be ignored
 //
-//#define RUN_STEERING
-#define RUN_MIXER
+// Note: if below parts are commented, the behind task will work
+//        and can output messages, but inside MIXER the results
+//        from this task will be ignored
+//-------------------------------------------------------------
+//#define USE_SDIST_OUTPUT         
+//#define USE_OFLOW_OUTPUT
+//#define USE_STEERING_OUTPUT
+//-------------------------------------------------------------
+
+
 
 
 //#define TEST_OPTICAL_FLOW
@@ -110,14 +124,18 @@
 // SurfaceDistance
 #define SDIST_MIN_DISTANCE 400         // mm minimum height for hovering
 #define SDIST_MAX_DISTANCE 500         // mm maximum height for hovering
-#define SDIST_THRESHOLD_RANGE_MM 50    // mm if current range is in a time range SDIST_THRESHOLD_RANGE_MS more than the last value - ignore it
+#define SDIST_THRESHOLD_RANGE_MM 50    // mm if current range is in a time range SDIST_THRESHOLD_RANGE_MS more than the last value - USE it
 #define SDIST_THRESHOLD_RANGE_MS 50    // ms observe values in this timerange
 #define SDIST_CONT_SCANS_MS 50         // ms for continous scans
 #define SDIST_MINIMAL_HEIGHT 100       // mm up from this height the SDIST-Task will check target height, this is a security topic
 #define SDIST_COND_MIN_VALUE 0         // mm define min valid conditions for height. If environment condition is bad, sensor can deliver invalid values
 #define SDIST_COND_MAX_VALUE 1000      // mm max valid condition value for height
 #define SDIST_PID_OUTPUT_LIMIT 100     // to avoid to big output from PIDController, we limit the output value. Adjust this value if to fast/slow in steps of +/- 10 
-#define SDIST_BIAS 0.5                 // please adjust this value -> higher more throttle outcome, lower -> less throttle outcome
+#define SDIST_BIAS 0.75                // please adjust this value -> higher more throttle outcome, lower -> less throttle outcome (Multiplicator for PIDAdjustesValue. This value is the new "HOVERING-Value")
+#define SDIST_LDATA_TOF 0              // index in ldata array
+#define SDIST_LDATA_HOVER 1
+#define SDIST_FDATA_PID 0
+#define SDIST_FDATA_HOVER 1
 
 
 
