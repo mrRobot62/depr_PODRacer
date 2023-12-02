@@ -16,6 +16,8 @@ bool Mixer::begin(Receiver *receiver) {
 
   sprintf(buffer, "begin() - ready | AddrRecv:%d |", (long)&receiver);
   logger->info(buffer, _tname);
+
+
   return true;  
 }
 

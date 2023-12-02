@@ -46,9 +46,9 @@ char * _tname = "MAIN";
 int taskToken = 1;
 bool showDisarmed = true;
 
-SLog logger(&Serial, 115200, LOGLEVEL);
+SLog        logger(&Serial, 115200, LOGLEVEL);
 
-Blackbox bb(&logger, BLACKBOX_CS_PIN);
+Blackbox    bb(&logger, BLACKBOX_CS_PIN);
 
 CoopTask<void>* blinkpatternTask = nullptr;
 CoopTask<void>* receiverCtrlTask = nullptr;
@@ -57,6 +57,8 @@ CoopTask<void>* hoverCtrlTask = nullptr;
 CoopTask<void>* steeringCtrlTask = nullptr;
 CoopTask<void>* surfaceDistCtrlTask = nullptr;
 CoopTask<void>* mixerCtrlTask = nullptr;
+
+
 //CoopTask<void>* blackboxCtrlTask = nullptr;
 
 /** 
@@ -339,8 +341,6 @@ void setup() {
   steeringCtrlTask->scheduleTask();
   mixerCtrlTask->scheduleTask();
   logger.info("all tasks scheduled", _tname);
-
-
 
 }
 

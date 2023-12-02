@@ -15,10 +15,9 @@
 
   class TaskAbstract {
     public:
-      TaskAbstract(uint8_t taskID, SLog *log, Blackbox *bb=nullptr, CoopSemaphore *sema=nullptr) {
+      TaskAbstract(uint8_t taskID, SLog *log, Blackbox *bb=nullptr) {
         logger = log;
         _id = taskID;
-        _sema = sema;
         _blackbox = bb;
         _tname = "?";
         _tgroup= "";
@@ -154,6 +153,7 @@
         }
       };
 
+
     protected:
       char *_tname, *_tgroup;
 
@@ -233,6 +233,10 @@
       char buffer[300];
       uint8_t _blink_pattern;
       uint8_t _id;
+
+
+      //------
+
     private:
       uint8_t errorCode;
       bool serPortLocked;

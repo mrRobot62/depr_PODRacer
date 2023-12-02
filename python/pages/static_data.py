@@ -1,7 +1,5 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 # Import packages
+import dash
 from dash                   import Dash, html, dash_table, dcc, callback, Output, Input, ctx, State
 from flask                  import Flask
 import plotly.express       as px
@@ -9,20 +7,24 @@ import plotly.graph_objects as go
 
 import argparse
 import dash_bootstrap_components as dbc
-
-server = Flask(__name__)
-
-app = Dash(__name__, server=server, external_stylesheets=[dbc.themes.BOOTSTRAP, dbc.icons.BOOTSTRAP])
-
 from modules.datasets import *
 from modules.components import *
+from pages.default_fig import default_fig
+from dash_bootstrap_templates import ThemeSwitchAIO
+
+template_theme2 = "flatly"
+template_theme1 = "darkly"
+
+
+dash.register_page(__name__, top_nav=True)
+
 
 #------------------------------------------------------------------------------------------------------
 # Design the app
-app.layout = html.Div(
+layout = html.Div(
     [
         # HEADERf
-        header_row,
+        static_header_row,
         # User input for main figure
         # ----------------------------------------------------------------------
         # upper graph   
@@ -30,14 +32,14 @@ app.layout = html.Div(
         dbc.Row([
             dbc.Col([dbc.Button(">>",id="btn-backdrop-1", n_clicks=0)],width=1),
             offcanvas,
-            dbc.Col(dcc.Graph(id="fig-main"))
+            dbc.Col(dcc.Graph(id="fig-main", figure=default_fig))
             ], align="center"),
         # ----------------------------------------------------------------------
         # lower graph   
         # ----------------------------------------------------------------------
         dbc.Row([
             dbc.Col([dbc.Button(">>",id="btn-backdrop-2", n_clicks=0)],width=1),
-            dbc.Col(dcc.Graph(id="fig-graph2"))
+            dbc.Col(dcc.Graph(id="fig-graph2", figure=default_fig))
             ], align="center"),
         # ----------------------------------------------------------------------
         # Bottom-Row  
@@ -58,7 +60,7 @@ def pandas_rename_column(x,g="?"):
 #**********************************************
 # Create & Callback for fig_main (upper graph)
 #**********************************************
-def _update_fig_main(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels):
+def _update_fig_main(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels, toggle):
     ## graphs
     df_filt_tasks = None
     df_t = []
@@ -81,11 +83,14 @@ def _update_fig_main(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks,
 
     #
     #
+    
+    template = template_theme1 if toggle else template_theme2
     fig_main.update_xaxes(title="milliseconds", type='linear' if xaxis_type == 'Linear' else 'log')
     fig_main.update_yaxes(title="sbus-value", type='linear' if yaxis_type == 'Linear' else 'log')
     fig_main.update_layout(
         title="Main graph",
         #xaxis_tickformat='ms',
+        template=template,
         xaxis=dict(
             dtick=500,
             rangeslider=dict(
@@ -160,10 +165,11 @@ def _update_fig_graph2(smoothing_value, hover_mode, xaxis_type, yaxis_type, task
     Input(component_id='rb-yaxis-type', component_property='value'),
     Input(component_id='dd-task-filter', component_property='value'),
     Input(component_id='dd-channels-filter', component_property='value'),
+    Input(ThemeSwitchAIO.ids.switch("theme"), "value"),    
 )
-def update_main(graph, smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels):
+def update_main(graph, smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels, toggle):
     if graph == "fig-main":
-        fig = _update_fig_main(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels)
+        fig = _update_fig_main(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels, toggle)
     return fig
 
 #**********************************************
@@ -185,80 +191,3 @@ def update_graph2(graph, smoothing_value, hover_mode, xaxis_type, yaxis_type, ta
     if graph == "fig-graph2":
         fig = _update_fig_graph2(smoothing_value, hover_mode, xaxis_type, yaxis_type, tasks, channels)
     return fig
-
-#---------------------------------------------------------------
-# callbacks on app-level
-#---------------------------------------------------------------
-
-#**********************************************
-# Callback for left offcanvas
-#**********************************************
-
-## APP-Callbacks
-@app.callback(
-    Output("offcanvas-graph-content", "is_open"),
-    Output("dd-graph-select", "value"),
-    Input("btn-backdrop-1", "n_clicks"), Input("btn-backdrop-2", "n_clicks"),
-    State("offcanvas-graph-content", "is_open"),
-)
-def toggle_offcanvas(n1,n2, is_open):
-
-    comp = getChildComponent(offcanvas, "dd-graph-select", 1)
-    comp = getChildComponent(offcanvas, "chk-hover-mode", 1)
-    if n1:
-        value="fig-main"
-        return not is_open, value
-    if n2:
-        value="fig-graph2"
-        return not is_open, value
- 
-    if not n1:
-        value="fig-main"
-        return is_open, value
-    if not n2:
-        value="fig-graph2"
-        return is_open, value
-    return is_open, value
-
-
-# @app.callback(
-#     Output("offcanvas-graph2-content", "is_open"),
-#     Input("btn-backdrop-2", "n_clicks"),
-#     State("offcanvas-graph2-content", "is_open"),
-# )
-# def toggle_offcanvas(n1,n2, is_open):
-#     if n1 or n2:
-#         return not is_open
-#     return is_open
-
-#**********************************************
-# Callbacks for Live-Modal
-#**********************************************
-
-@callback(
-    Output("btn-live-data","disabled"),
-    Input("chk-live-mode", "value")    
-)
-def toggle_live_botton(enable_mode):
-    if True in enable_mode:
-        return False
-    return True
-
-@app.callback(
-    Output("modal-live", "is_open"),
-    Input("btn-live-data", "n_clicks"), Input("close-live", "n_clicks"), Input("run-live", "n_clicks"),
-    [State("modal-live", "is_open")],
-)
-def toggle_modal(n1, n2, n3, is_open):
-    if n1 or n2:
-        return not is_open
-    return is_open
-
-
-
-#---------------------------------------------------------------
-# Run the app
-#---------------------------------------------------------------
-
-if __name__ == '__main__':
-    app.run(debug=False)

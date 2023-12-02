@@ -149,4 +149,17 @@
 
 // Blackbox
 #define BLACKBOX_CS_PIN 32
+
+// WiFi
+#define WIFI_AP_PIN 36            // ADC0 configures with INPUT_PULLUP, if not groundet AP-Acces-Mode is active, if connected to GNDl, WLAN-Mode is activated
+#define WIFI_AP_SSID "PODRACER"
+
+#define WIFI_AP_PW ""
+#define WIFI_LOCAL_IP "192.168.0.133"
+#define WIFI_LOCAL_GW "192.168.0.1"
+#define WIFI_LOCAL_SUB "255.255.255.0"
+#define WIFI_LOCAL_SSID ""
+#define WIFI_LOCAL_PW ""
+
+
 #endif
