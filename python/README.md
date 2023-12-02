@@ -1,9 +1,9 @@
 # PODRacer visualizer
 
-> This python App is a part of the PODRacer Firmware and will be moved in future into a separate git repository
+This application is part of the PODRacer project 
 
 This visualizer app is used to visualize telemetry data which is produced by the PODRacer firmware.
-Written in Python with ploltly and dash to visualize the results inside a browser window
+Written in Python with ploltly and dash to visualize the results inside a browser window and act as a pure web application
 
 Typical telemetry data is
 - channel[0] to channel[7] in and out going (mapped in a range from 1000...2000)

@@ -16,7 +16,7 @@ template_theme2 = "flatly"
 template_theme1 = "darkly"
 
 
-dash.register_page(__name__, top_nav=True)
+dash.register_page(__name__, name="Static analysis", top_nav=True)
 
 
 #------------------------------------------------------------------------------------------------------

@@ -4,4 +4,4 @@ import dash
 dash.register_page(__name__, top_nav=True)
 
 
-layout = html.Div("About page content")
+layout = html.Div("")

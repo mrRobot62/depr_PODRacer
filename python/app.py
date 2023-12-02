@@ -47,7 +47,7 @@ navbar = dbc.NavbarSimple(
         [ 
            dbc.NavLink(page["name"], href=page["path"])
             for page in page_registry.values()
-            if page["module"] != "pages.not_found_404"
+            #if page["module"] != "pages.not_found_404"
             if page.get("top_nav") 
         ]
     ),
@@ -58,7 +58,9 @@ navbar = dbc.NavbarSimple(
 )
 
 app.layout = dbc.Container(
-    [navbar, theme_toggle, dash.page_container],
+    [navbar, 
+     theme_toggle,
+     dash.page_container],
     fluid=True,
 )
 

@@ -182,6 +182,12 @@ static_header_row = dbc.Row(
     ]
 )
 
+dynamic_header_row = dbc.Row(
+    [
+        dbc.Col(html.H2("Live data analysis", style={'color':'darkcyan'}), width=6),
+    ]
+)
+
 """ the complete bottom row (currently not used)"""
 bottom_row = dbc.Row(
     [
@@ -317,13 +323,13 @@ sl_spline = dcc.Slider(
 # open on the left side - this canva is used twice - for upper graph and lower graph  
 offcanvas = dbc.Offcanvas(
     [
-        dbc.Row(
-            [
-                dbc.Label("Select graph to configure"),
-                dd_graph_select
-            ]
-        ),
-        html.Hr(),
+#        dbc.Row(
+#            [
+#                dbc.Label("Select graph to configure"),
+#                dd_graph_select
+#            ]
+#        ),
+#        html.Hr(),
         dbc.Row([
             dbc.Col([chk_hover_mode]),
             dbc.Col([chk_enable_live])
@@ -351,13 +357,13 @@ offcanvas = dbc.Offcanvas(
 # used bei fig-graph2
 offcanvas2 = dbc.Offcanvas(
     [
-        dbc.Row(
-            [
-                dbc.Label("Select graph to configure"),
-                dd_graph_select
-            ]
-        ),
-        html.Hr(),
+#        dbc.Row(
+#            [
+#                dbc.Label("Select graph to configure"),
+#                dd_graph_select
+#            ]
+#        ),
+#        html.Hr(),
         dbc.Row([
             dbc.Col([chk_hover_mode]),
             dbc.Col([chk_enable_live])
