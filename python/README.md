@@ -1,25 +1,35 @@
-# PODRacer visualizer
+# PODRacer - Serial Reader
 
-This application is part of the PODRacer project 
+This python script is used to collect live data send by PODRacer FW.
 
-This visualizer app is used to visualize telemetry data which is produced by the PODRacer firmware.
-Written in Python with ploltly and dash to visualize the results inside a browser window and act as a pure web application
+The serial read recevie messages which are send via serial interface and store them into a csv file.
 
-Typical telemetry data is
-- channel[0] to channel[7] in and out going (mapped in a range from 1000...2000)
-- float data (max 8) produced by tasks to store data from pid controllers, kalman filters, ...
-- long data (max 8) produced by tasks to store data indivdually content
-- data groups (task) and sub groups (e.g. from Group-SDIST SubGroups: TOF-Data and LIDAR data)
-- time stamp in milliseconds
+## Runtime Arguments
+- --port : define your serial port. If locked, system ends
+- --baud : default is 115200, it's possible to set a individual baud rate, must be the same as in fw.
+- --tout : timeout, default is 5secs
+- --opath : default is `data`, absolute path were file to store
+- --delimter : default is ',' (comma), should be the same as in firmware
+- --use_ts : if set, a current timestamp is set for filename (should be used !)
+- --v : output verbosity
+
+**Example**
+```./serial_reader.py --port /dev/cu.usbserial-0001 ```
+
+
+## CSV structure
+```
+TIME,TASK,GROUP,CH_R,CH_P,CH_Y,CH_H,CH_T,ARMING,AUX2,AUX3,float0,float1,float2,float3,float4,float5,float6,float7,ldata0,ldata1,ldata2,ldata3,ldata4,ldata5,ldata6,ldata7,pidRoll,pidPitch,pidYaw,pidThrust,pidHover,HOVER_MINIMAL_HEIGHT,HOVER_MIN_DISTANCE,HOVER_MAX_DISTANCE,CRC
+```
+- TIME : in milli seconds
+- TASK : Task name
+- GROUP : can be set by TASK - default should be 'UPD'. Is used to separate different output from a task
+- CHR_R - CH-T : channel data which es send to receiver
+- ARMING :  should allways 1
+- AUX2+3 : data from AUX-_Channels
+- float0-7 : depends on task, if a task contain several sensors (groups), can be splittet into several parts
+- ldata0-7 : see float0-7 
+- pidRPYTH : special pid values for channels
+- HOVERxxx : constant values for hover task
+- CRC : checksum
 - 
-
-> details descriptions please refere to `doc` subfolder
-
-## Using Blackbox data
-Not implemented yet
-
-## Using Serial data
-
-### Serial format
-``` ```
-

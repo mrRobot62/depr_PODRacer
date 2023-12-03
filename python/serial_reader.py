@@ -147,9 +147,5 @@ def run():
         print(f"writing into '{fn}'")
         data = readSerialData(ser, cw)
 
-        
-
-
-
 if __name__ == "__main__":
     run()    
