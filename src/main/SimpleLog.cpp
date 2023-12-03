@@ -16,7 +16,7 @@
         _level = level;
       }
       void error(const long v, const char *tname="?", bool cr=true) {
-        sprintf(buffer, "%d", v);
+        sprintf(buffer, "%i", v);
         error(buffer, tname, cr);
       }
       void error(const char *text, const char *tname="?", bool cr=true) {
@@ -25,7 +25,7 @@
         }
       }
       void warn(const long v, const char *tname="?", bool cr=true) {
-        sprintf(buffer, "%d", v);
+        sprintf(buffer, "%i", v);
         warn(buffer, tname, cr);
       }
       void warn(const char *text, const char *tname="?", bool cr=true) {
@@ -39,10 +39,14 @@
       }
 
       void info(const long v, const char *tname="?", bool cr=true) {
-        sprintf(buffer, "%d", v);
+        sprintf(buffer, "%i", v);
         info(buffer, tname, cr);
       }
 
+      void info(const double v, const char *tname="?", bool cr=true) {
+        sprintf(buffer, "%f", v);
+        info(buffer, tname, cr);
+      }
       void info(const char *text, const char *tname="?", bool cr=true) {
         if (_level >= 3) {
           _print(text, "INFO", cr,false,tname);
@@ -50,7 +54,7 @@
       }
 
       void print(const long v, bool cr=true) {
-        sprintf(buffer, "%d", v);
+        sprintf(buffer, "%i", v);
         print(buffer, cr);
       }
 

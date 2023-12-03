@@ -278,7 +278,7 @@ bool DelayCoopFunction(int ms) {
 
 bool SleepCoopFunction() {
 
-  Serial.println("run SleepCoopFunction");
+  //Serial.println("run SleepCoopFunction");
   Serial.flush();
   delay(LOOP_TIME);
   if (blinkpatternTask) blinkpatternTask->wakeup();
@@ -314,7 +314,7 @@ void setup() {
   bb.begin();
 
   char buffer[30];
-  sprintf(buffer, "FWVersion: %s", bb.FWVersioin());
+  sprintf(buffer, "PODRacer-FWVersion: %s", bb.FWVersioin());
   logger.info(buffer, _tname);
 
   //-----------------------------------------

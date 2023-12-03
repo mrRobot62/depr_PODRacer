@@ -173,13 +173,13 @@ void Mixer::_HoverMixer(uint8_t taskId = TASK_HOVER) {
     // substract a value means PODRacer to high over ground
     if (taskId == TASK_SURFACEDISTANCE) {
       tmp1 =  _bbd.data.ch[HOVERING];
-      _bbd.data.ch[HOVERING] += _sdist->data().data.ldata[SDIST_LDATA_HOVER];
+      _bbd.data.ch[HOVERING] += _sdist->data().data.ldata[SDIST_LDATA_TOF_HOVER];
     }
     _bbd.data.ch[HOVERING] = constrain(_bbd.data.ch[HOVERING], GIMBAL_MIN, GIMBAL_MAX);
       #if defined(LOG_TASK_MIXER_SDIST)
         sprintf(buffer, "SDIS ch[HOVERING](%4d) add (%4d) set (%4d)", 
           tmp1,
-          _sdist->data().data.ldata[SDIST_LDATA_HOVER],
+          _sdist->data().data.ldata[SDIST_LDATA__TOFHOVER],
           _bbd.data.ch[HOVERING]
         );
         logger->info(buffer, _tname);

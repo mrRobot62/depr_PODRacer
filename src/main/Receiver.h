@@ -88,6 +88,9 @@
 
       /** return current arming state **/
       bool isArmed() {
+        #if defined(TEST_NO_TRANSMITTER_USED)
+          return true;
+        #endif
         return _bbd.data.isArmed;
       }
 

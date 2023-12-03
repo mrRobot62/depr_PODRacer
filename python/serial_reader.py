@@ -22,8 +22,10 @@ columns = [
            # pid values used by tasks
            "pidRoll","pidPitch","pidYaw","pidThrust","pidHover",
            # constants.....
-           "HOVER_MINIMAL_HEIGHT", "HOVER_MIN_DISTANCE", "HOVER_MAX_DISTANCE" 
-           ];
+           "HOVER_MINIMAL_HEIGHT", "HOVER_MIN_DISTANCE", "HOVER_MAX_DISTANCE",
+           # CRC-16Bit, FW send 8 Bytes 4 Padding-Bytes and 4 bytes CRC
+           "CRC"
+           ]
 
 fname = "podrdata{TS}.csv"
 
@@ -52,12 +54,16 @@ def createSerialObj(port, baud, tout):
     Return:
         serial obj
     """
+    s = None
     try:
         s = serial.Serial(port=port,baudrate=baud, timeout=tout)
         s.isOpen()
         print("SerialPort open");
     except IOError as err:
         print ("Port already in use. Try to close ...")
+        if s is None:
+            print (f"problem to create serial object on '{port}' with '{baud}' baudrate")
+            exit(1)
         s.close()
         print ("Port closed, try to reopen...")
         s.open()
@@ -78,30 +84,36 @@ def readSerialData(ser:serial, writer : csv.writer):
     Returns:
         dict: data structuse
     """
-    ser.flushInput()
-    raw = []
-    timeout = False
-    lines = lb = 0
-    print("-----------------------------")
-    print("waiting for serial data......")
-    print("-----------------------------")
-    while not timeout:
-        line = ser.readline()
-        l = line.decode('utf-8').splitlines()
-        if (len(l) > 0):
-            raw = l[0].split(',')
-            if raw[0] != "FEEF":
+    try:
+        ser.flushInput()
+        raw = []
+        timeout = False
+        lines = lb = 0
+        print("-----------------------------")
+        print("waiting for serial data......")
+        print("-----------------------------")
+        while not timeout:
+            line = ser.readline()
+            l = line.decode('utf-8').splitlines()
+            if (len(l) > 0):
+                raw = l[0].split(',')
+                if raw[0] != "FEEF":
+                    continue
+            else:
                 continue
-        else:
-            continue
-        writer.writerow(raw[1:])
-        if (lines % 100 == 0):
-            if (lb % 10 == 0) and (lb > 0): 
-                print("")
-                lb = 0
-            print(f"{lines:>6} ",end="")
-            lb += 1
-        lines += 1
+            writer.writerow(raw[1:])
+            if (lines % 100 == 0):
+                if (lb % 10 == 0) and (lb > 0): 
+                    print("")
+                    lb = 0
+                print(f"{lines:>6} ",end="")
+                lb += 1
+            lines += 1
+    except IOError as err:
+        print (f"SerialIOError '{str(err)}'")
+    except Exception as err:
+        print (f"General exception '{str(err)}'")
+
 
 def getFileName(path="./"):
     dt = datetime.fromtimestamp(time.time())

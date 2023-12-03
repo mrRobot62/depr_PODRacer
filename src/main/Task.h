@@ -8,6 +8,7 @@
 #include <SimpleKalmanFilter.h>
 #include <CoopSemaphore.h>
 #include <sbus.h>
+#include <FastCRC.h>
 
 //namespace podr {
 
@@ -59,6 +60,10 @@
         _bbd.data.updated=true;
       }
 
+      inline void setMilliseconds() {
+        _bbd.data.millis = millis();
+      }
+
       inline void resetUpdateFlag() {
         _bbd.data.updated=false;
       }
@@ -67,6 +72,18 @@
       inline void clearStruct() {
         memset (&_bbd, 0, sizeof(_bbd));
         _bbd.data.task_id = _id;     
+      }
+
+      /** create a 16Bit CRC sum from buffer **/
+      uint16_t getCRC(const char *buf) {
+        return CRC16.ccitt((uint8_t*)buf, strlen(buf));
+      }
+
+      /** add a 16Bit CRC sum at the end of buffer **/
+      void addCRC2Buffer(char *buf) {
+          char crc_buf[15];
+          sprintf(crc_buf,",%08X", getCRC(buf));
+          memcpy(buf+strlen(buf), crc_buf, sizeof(crc_buf));
       }
 
       /** prepare data to a visualizer byte stream and send it via serial to host **/
@@ -117,9 +134,16 @@
           data->data.const_hover[1],
           data->data.const_hover[2]
         );
+        uint16_t crc = getCRC(buffer);
         //Serial.print(sizeof(buffer));
         if (serPortLocked == false) {
           serPortLocked = true;
+          // concat a crc sum at the end of the buffer
+//          char crc_buf[5];
+//          sprintf(crc_buf,",%04X", crc);
+//          memcpy(buffer+strlen(buffer), crc_buf, sizeof(crc_buf));
+          //
+          addCRC2Buffer(buffer);
           Serial.print(buffer);
           delay(5);
           serPortLocked = false;
@@ -128,7 +152,7 @@
       };
 
       void send2VisualizerSBUS(const char *tname, const char *tgroup, bfs::SbusData *sbus) {
-        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f",
+        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
           (long)millis(),
           tname,
           tgroup,
@@ -143,10 +167,18 @@
           sbus->ch[ARMING],
           0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
           0, 0, 0, 0, 0, 0, 0, 0,
-          0.0, 0.0, 0.0, 0.0, 0.0
+          0.0, 0.0, 0.0, 0.0, 0.0,
+          0,0,0
         );
+        uint16_t crc = getCRC(buffer);
         if (serPortLocked == false) {
           serPortLocked = true;
+//          char crc_buf[5];
+//          sprintf(crc_buf,",%04X", crc);
+//          memcpy(buffer+strlen(buffer), crc_buf, sizeof(crc_buf));
+          //
+          addCRC2Buffer(buffer);
+          //
           Serial.print(buffer);
           serPortLocked = false;
           delay(5);
@@ -236,6 +268,7 @@
 
 
       //------
+      FastCRC16 CRC16;
 
     private:
       uint8_t errorCode;

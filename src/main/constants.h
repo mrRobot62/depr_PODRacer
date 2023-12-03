@@ -1,6 +1,10 @@
 #ifndef _CONSTANTS_H_
 #define _CONSTANTS_H_
 
+#define TEST_NO_TRANSMITTER_USED            // TEST - ATTENTION use this only to work withou transmiter
+
+
+
 #define FW_VERSION_PATTERN "%02d.%02d.%02d"
 #define FW_VERSION_MAJOR 0
 #define FW_VERSION_MINOR 1
@@ -21,6 +25,10 @@
 
 #define LOGLEVEL 3  // 3=Info, 4=Debug
 
+// if you use the PODRacer Visualizer / Analyzer - please use this define and comment ALL LOG_xxxxx output
+#define LOG_VISUALIZER
+
+
 //#define LOG_TASK_ALL
 //#define LOG_TASK_RECEIVER_W
 //#define LOG_TASK_RECEIVER_RRAW
@@ -38,10 +46,9 @@
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
 //#define USE_SERIAL_PLOTTER
-#define LOG_VISUALIZER
 
-#define USE_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
-//#define USE_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
+//#define USE_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+#define USE_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
 
 //-------------------------------------------------------------
 // only used during implementing to test & check outputs
@@ -49,10 +56,10 @@
 // hovering as base task can't be ignored
 //
 // Note: if below parts are commented, the behind task will work
-//        and can output messages, but inside MIXER the results
+//        and can output messages, and inside MIXER the results
 //        from this task will be ignored
 //-------------------------------------------------------------
-//#define USE_SDIST_OUTPUT         
+#define USE_SDIST_OUTPUT         
 //#define USE_OFLOW_OUTPUT
 //#define USE_STEERING_OUTPUT
 //-------------------------------------------------------------
@@ -69,7 +76,9 @@
 #define LOOP_TIME 10
 #define PIN_PMW3901 5
 
+//------------------------------------------------------------------------------------------------------------
 // TASK_IDs are used to indicate a blink pattern
+//------------------------------------------------------------------------------------------------------------
 #define TASK_HB 0xFF
 #define TASK_HOVER 1
 #define TASK_OPTICALFLOW 2
@@ -80,8 +89,10 @@
 #define TASK_MIXER 7
 #define TASK_EMERGENCY 8
 
+//------------------------------------------------------------------------------------------------------------
 // receivers toogle values around 1-5 +/- if nothing done by user activity
 // this avoid false readings inside Receiver-class. As bigger the value is, as less sensitive your PODracer is around center gimbal position
+//------------------------------------------------------------------------------------------------------------
 #define RECEIVER_NOISE 5       // if normaly center pos should be 1500 (calibrated transmitter), mostley this value slip +/- 5 aournd this centerposition
                                 // is used inside receiver to remove this slip
 
@@ -107,21 +118,28 @@
 // value is used for isGimbalMin/Max
 #define CENTER_RANGE 50 
 
+
+
+//------------------------------------------------------------------------------------------------------------
 // Hovering
+//------------------------------------------------------------------------------------------------------------
 #define HOVER_ROLL GIMBAL_CENTER_POSITION   // default ch1
 #define HOVER_PITCH GIMBAL_CENTER_POSITION  // default ch2
 #define HOVER_YAW GIMBAL_CENTER_POSITION    // default ch4
 #define HOVER_THRUST GIMBAL_MIN             // ch8 forward mapped used for ESC for EDF thrust nozzle
 
+//------------------------------------------------------------------------------------------------------------
 //
 // OpticalFlow
+//------------------------------------------------------------------------------------------------------------
 //#define OFLOW_COUNTER_MAX 100         // currently not used :-/
 #define OFLOW_SLIP_RANGE 500          // during measurement we add the result from sensor, if sum is larger than range, we assume PODRacer slips
 #define OFLOW_PMW3901_ZERO 1          // due to sensor fluctuation a little bit, this value is used as "minus/plus range" to avoid jitter
 #define OFLOW_PID_OUTPUT_LIMIT 250    // to avoid to big output from PIDController, we limit the output value
 
-//
+//------------------------------------------------------------------------------------------------------------
 // SurfaceDistance
+//------------------------------------------------------------------------------------------------------------
 #define SDIST_MIN_DISTANCE 400         // mm minimum height for hovering
 #define SDIST_MAX_DISTANCE 500         // mm maximum height for hovering
 #define SDIST_THRESHOLD_RANGE_MM 50    // mm if current range is in a time range SDIST_THRESHOLD_RANGE_MS more than the last value - USE it
@@ -132,34 +150,41 @@
 #define SDIST_COND_MAX_VALUE 1000      // mm max valid condition value for height
 #define SDIST_PID_OUTPUT_LIMIT 100     // to avoid to big output from PIDController, we limit the output value. Adjust this value if to fast/slow in steps of +/- 10 
 #define SDIST_BIAS 0.75                // please adjust this value -> higher more throttle outcome, lower -> less throttle outcome (Multiplicator for PIDAdjustesValue. This value is the new "HOVERING-Value")
-#define SDIST_LDATA_TOF 0              // index in ldata array
-#define SDIST_LDATA_HOVER 1
-#define SDIST_FDATA_PID 0
-#define SDIST_FDATA_HOVER 1
+
+#define SDIST_LDATA_TOF_RAW 0              // index in ldata array
+#define SDIST_LDATA_TOF_HOVER 1
+
+#define SDIST_FDATA_TOF_PID 0
+#define SDIST_FDATA_TOF_HOVER 1
+#define SDIST_FDATA_TOF_SETPOINT 2
+#define SDIST_FDATA_TOF_SKFVALUE 3
+
+// TFMini Serial 1
+#define SDIST_LDATA_LIDAR_RAW 4              // index in ldata array
+#define SDIST_LDATA_LIDAR_HOVER 5
+
+#define SDIST_FDATA_LIDAR_PID 4
+#define SDIST_FDATA_LIDAR_HOVER 5
+#define SDIST_FDATA_LIDAR_SETPOINT 6
+#define SDIST_FDATA_LIDAR_SKFVALUE 7
+
+#define RX1_PIN 0                       // GPIO 0 to TX on Lidar
+#define TX1_PIN 2                       // GPIO 2 to RX on Lidar
 
 
 
+//------------------------------------------------------------------------------------------------------------
 // Steering
+//------------------------------------------------------------------------------------------------------------
 #define STEERING_ROLL_BIAS 0.1      // adjust this if during steering, this bias is not high enough (or is to high) - roll & pitch must not be the same
 #define STEERING_PITCH_BIAS 0.1     // adjust this if during steering, this bias is not high enough (or is to high) - roll & pitch must not be the same
 #define STEEIRNG_MAX_RP 150         // adjust this, if the maximum compensation is not optimal, as higher as more pitch/roll follow up the yaw steering
-// TFMini Serial 1
-#define RX1_PIN 2
-#define TX1_PIN 4
 
+//------------------------------------------------------------------------------------------------------------
 // Blackbox
+//------------------------------------------------------------------------------------------------------------
 #define BLACKBOX_CS_PIN 32
 
-// WiFi
-#define WIFI_AP_PIN 36            // ADC0 configures with INPUT_PULLUP, if not groundet AP-Acces-Mode is active, if connected to GNDl, WLAN-Mode is activated
-#define WIFI_AP_SSID "PODRACER"
-
-#define WIFI_AP_PW ""
-#define WIFI_LOCAL_IP "192.168.0.133"
-#define WIFI_LOCAL_GW "192.168.0.1"
-#define WIFI_LOCAL_SUB "255.255.255.0"
-#define WIFI_LOCAL_SSID ""
-#define WIFI_LOCAL_PW ""
 
 
 #endif

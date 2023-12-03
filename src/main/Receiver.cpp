@@ -87,11 +87,11 @@
       setError(getID(), 0x02);
       return rc;
     }
-    Serial.println("RECV before sbus_rx/tx.Begin()");
+    //Serial.println("RECV before sbus_rx/tx.Begin()");
     sbus_rx->Begin();   // pin from SBUS-RECEIVER -> ESP32(RX)
     sbus_tx->Begin();   // pin from ESP32(TX) -> FlightController
     _bbd.data.isArmed = false;
-    Serial.println("RECV after sbus_rx/tx.Begin()");
+    //Serial.println("RECV after sbus_rx/tx.Begin()");
     armingMask = 0b00000000;
     _armSwitchOn = false;
 /*
@@ -172,6 +172,9 @@
       // only a local state for arming, this is later used to 
       // check some security mechanism and calculate a result if arming is allowed
       _armSwitchOn = (_bbd.data.ch[ARMING] > ARMING_VALUE)?true:false;
+      #if defined(TEST_NO_TRANSMITTER_USED)
+        _armSwitchOn = true;
+      #endif
       // 
       _bbd.data.failsafe = sbus_data.failsafe;
       _bbd.data.lost_frame = sbus_data.lost_frame;
@@ -232,7 +235,9 @@
         }
       }
       _bbd.data.updated = true;
-
+      #if defined(TEST_NO_TRANSMITTER_USED)
+        _bbd.data.isArmed = true;
+      #endif
       #if defined(LOG_VISUALIZER)
         if (_bbd.data.isArmed) {
             send2Visualizer(_tname, "RD", &_bbd);

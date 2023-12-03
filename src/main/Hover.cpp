@@ -60,10 +60,6 @@
         logger->info(buffer, _tname); 
       #endif
       #if defined(LOG_VISUALIZER) 
-        //  ["TIME", "TASK","GROUP","ARMING", "CH_R", "CH_P", "CH_Y", "CH_H", "CH_T",
-        //  "float0","float1", "float2", "float3", "float4", "float5", "float6", "float7",
-        //  "ldata0","ldata1","ldata2","ldata3","ldata4","ldata5","ldata6","ldata7"
-        //  ]
         _tgroup="UPD";
         send2Visualizer(_tname, _tgroup, &_bbd);
       #endif
