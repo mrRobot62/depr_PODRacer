@@ -109,6 +109,8 @@
       char buffer [300];
     private:
       void _print(const char *text, const char *LEVEL, bool cr=true, bool simulate=false, const char *tname="?") {
+        #if not defined (LOG_VISUALIZER)
+
         if (simulate) {
           _bus->println(text);
         }
@@ -122,7 +124,9 @@
         }
         }
         _bus->flush();
+        #endif 
       }
+
   };
 
 //};

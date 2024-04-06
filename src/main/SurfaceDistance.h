@@ -15,7 +15,7 @@
 
 class SurfaceDistance : public TaskAbstract {
   public:
-    SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb=nullptr);
+    SurfaceDistance(uint8_t taskID, SLog *log, HardwareSerial *bus, Blackbox *bb=nullptr, HardwareSerial *visBus=nullptr);
 
     /** initialize **/
     bool begin(void) {;};
@@ -40,21 +40,22 @@ class SurfaceDistance : public TaskAbstract {
     double skfE = 0.02;      // we assume a loop in 50ms, to be adjusted if filter is not good enough
     double skfeMea = 1.0;      // intial for SKF, is adjusted during runtime
     double skfeEst = skfeMea;  // is adjusted during runtime
-    int16_t tfDist = 0;    // Distance to object in centimeters
-    int16_t tfFlux = 0;    // Strength or quality of return signal
-    int16_t tfTemp = 0;    // Internal temperature of Lidar sensor chip
+    int16_t lidarDist = 0;    // Distance to object in centimeters
+    int16_t lidarFlux = 0;    // Strength or quality of return signal
+    int16_t lidarTemp = 0;    // Internal temperature of Lidar sensor chip
     int16_t tofMm = 0;     // Distance tof to object in millimeters
     int16_t hoverValue=0;
-
+    int16_t rawSUM = 0;
 
     //----- PID Controller for SDIST sensor
     PID *pidTOF, *pidLIDAR;
-    double tofSetPoint = (SDIST_MAX_DISTANCE-SDIST_MIN_DISTANCE)/2.0 + SDIST_MIN_DISTANCE; 
-    double tofRawValue, tofSKFValue, tofPIDAdjValue;
+    double sdistSetPoint = (SDIST_MAX_DISTANCE-SDIST_MIN_DISTANCE)/2.0 + SDIST_MIN_DISTANCE; 
+    double lidarRawValue, lidarSKFValue, lidarPIDAdjValue, tofRawValue, tofSKFValue, tofPIDAdjValue;
 
-    double kpTOF  = 0.8;
-    double kiTOF  = 0.0;     // set a very small value because ki is slow and aggregate all errors over time
-    double kdTOF  = 0.0;       // 0.1 is not the badest value ;-)
+    double kpSDIST  = 0.8;
+    double kiSDIST  = 0.0;     // set a very small value because ki is slow and aggregate all errors over time
+    double kdSDIST  = 0.0;       // 0.1 is not the badest value ;-)
+
 
 };
 

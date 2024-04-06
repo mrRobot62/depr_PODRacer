@@ -9,20 +9,23 @@
 
 
 class Hover : public TaskAbstract {
-  public:
-    Hover(uint8_t taskID, SLog *log,Blackbox *bb=nullptr);
+public:
+  Hover(uint8_t taskID, SLog *log, Blackbox *bb = nullptr, HardwareSerial *visBus = nullptr);
 
-    /** initialize **/
-    bool begin(void) {;};
-    bool begin(Receiver *receiver);
+  /** initialize **/
+  bool begin(void) {
+    ;
+  };
+  bool begin(Receiver *receiver);
 
-    /** update site loop **/
-    void update(void);
+  /** update site loop **/
+  void update(void);
 
-  private:
-    Receiver *_recv;
-    SimpleKalmanFilter *skfHover;
-    long last_value;
+private:
+  Receiver *_recv;
+  SimpleKalmanFilter *skfHover;
+  long last_value;
+  HardwareSerial *_visBus;
 };
 
 #endif

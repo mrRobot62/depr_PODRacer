@@ -46,7 +46,10 @@ char * _tname = "MAIN";
 int taskToken = 1;
 bool showDisarmed = true;
 
+HardwareSerial hsBus2(2);
+
 SLog        logger(&Serial, 115200, LOGLEVEL);
+//SLog        logger(&hsBus2, 115200, LOGLEVEL);
 
 Blackbox    bb(&logger, BLACKBOX_CS_PIN);
 
@@ -70,11 +73,11 @@ HardwareSerial lidarSerial(1);      // Parameter 1 => Serial1.
 
 
 BlinkPattern blinkP(TASK_HB, &logger);
-Hover hover(TASK_HOVER, &logger,&bb);
-SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger, &lidarSerial, &bb);
-OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901, &bb);
-Steering steering(TASK_STEERING, &logger, &bb);
-Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true, &bb);
+Hover hover(TASK_HOVER, &logger,&bb, nullptr);
+SurfaceDistance distance(TASK_SURFACEDISTANCE, &logger, &lidarSerial, &bb, nullptr);
+OpticalFlow flow(TASK_OPTICALFLOW, &logger, PIN_PMW3901, &bb, nullptr);
+Steering steering(TASK_STEERING, &logger, &bb, nullptr);
+Receiver receiver(TASK_RECEIVER, &logger, &Serial2, 16, 17, true, &bb, nullptr);
 Mixer mixer(TASK_MIXER, &logger, &bb);
 
 //Blackbox bb(TASK_MIXER, &logger, CS_PIN);
@@ -309,7 +312,9 @@ void setup() {
   #endif
 
   //Serial.println("setup.....");
-  logger.info("setup...", _tname);
+  #if defined(LOG_VISUALIZER)
+    logger.info("setup...", _tname);
+  #endif
   //<todo> should be moved if armed=true
   bb.begin();
 
@@ -318,8 +323,9 @@ void setup() {
   logger.info(buffer, _tname);
 
   //-----------------------------------------
+  #if defined(LOG_VISUALIZER)
   logger.info("create tasks....", _tname);
-
+  #endif
   blinkpatternTask = new CoopTask<void>(F("BLINK"),BlinkPatternFunction);
   receiverCtrlTask = new CoopTask<void>(F("RECV"),ReceiverControlFunction);
   steeringCtrlTask = new CoopTask<void>(F("STEER"),SteeringControlFunction);
@@ -327,10 +333,11 @@ void setup() {
   hoverCtrlTask = new CoopTask<void>(F("HOVER"), HoverControlFunction);
   surfaceDistCtrlTask= new CoopTask<void>(F("SURFD"), SurfaceDistanceControlFunction);
   mixerCtrlTask = new CoopTask<void>(F("MIXER"),MixerControlFunction);
-  logger.info("all tasks ready", _tname);
 
-  //-----------------------------------------
+  #if defined(LOG_VISUALIZER)
+  logger.info("all tasks ready", _tname);
   logger.info("schedule tasks", _tname);
+  #endif
   runCoopTasks(nullptr, nullptr, SleepCoopFunction);
 
   blinkpatternTask->scheduleTask();
@@ -340,11 +347,11 @@ void setup() {
   hoverCtrlTask->scheduleTask();
   steeringCtrlTask->scheduleTask();
   mixerCtrlTask->scheduleTask();
+  #if defined(LOG_VISUALIZER)
   logger.info("all tasks scheduled", _tname);
+  #endif
 
 }
-
-
 
 void loop() {
   // put your main code here, to run repeatedly:

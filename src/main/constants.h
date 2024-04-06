@@ -43,6 +43,7 @@
 //#define LOG_TASK_OPTICALFLOW
 //#define LOG_TASK_SURFACE_LIDAR
 //#define LOG_TASK_SURFACE_TOF
+//#define LOG_TASK_SURFACE_BOTH        // both values 
 //#define LOG_TASK_STEERING
 //#define LOG_FILE_LOGGER
 //#define USE_SERIAL_PLOTTER

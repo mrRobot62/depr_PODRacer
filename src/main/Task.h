@@ -16,12 +16,13 @@
 
   class TaskAbstract {
     public:
-      TaskAbstract(uint8_t taskID, SLog *log, Blackbox *bb=nullptr) {
+      TaskAbstract(uint8_t taskID, SLog *log, Blackbox *bb=nullptr, HardwareSerial *visBus=nullptr) {
         logger = log;
         _id = taskID;
         _blackbox = bb;
         _tname = "?";
         _tgroup= "";
+        _visBus=visBus;
       };
       virtual bool begin(void) = 0;
       virtual void update(void) = 0;
@@ -88,10 +89,13 @@
 
       /** prepare data to a visualizer byte stream and send it via serial to host **/
       void send2Visualizer(const char *tname, const char *tgroup, BBD *data) {
-        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
+        char tg[20];
+        sprintf(tg,"%s_%s", tname, tgroup);
+        sprintf(buffer, "\nFEEF,%d,%s,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
           (long)data->data.millis,
           tname,
           tgroup,
+          tg,
           // channel data, can be absolut or relative, depends on task / group
           data->data.ch[ROLL],
           data->data.ch[PITCH],
@@ -144,7 +148,16 @@
 //          memcpy(buffer+strlen(buffer), crc_buf, sizeof(crc_buf));
           //
           addCRC2Buffer(buffer);
-          Serial.print(buffer);
+
+          if (_visBus == nullptr) {
+            //Serial.print("***");
+            Serial.print(buffer);
+          } 
+          else {
+            //Serial.print("+++");
+            _visBus->print(buffer);
+          }
+
           delay(5);
           serPortLocked = false;
           delay(5);
@@ -152,10 +165,13 @@
       };
 
       void send2VisualizerSBUS(const char *tname, const char *tgroup, bfs::SbusData *sbus) {
-        sprintf(buffer, "\nFEEF,%d,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
+        char tg[20];
+        sprintf(tg,"%s_%s", tname, tgroup);
+        sprintf(buffer, "\nFEEF,%d,%s,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
           (long)millis(),
           tname,
           tgroup,
+          tg,
           // channel data, can be absolut or relative, depends on task / group
           sbus->ch[ROLL],
           sbus->ch[PITCH],
@@ -179,7 +195,14 @@
           //
           addCRC2Buffer(buffer);
           //
-          Serial.print(buffer);
+          if (_visBus == nullptr) {
+            //Serial.print("***");
+            Serial.print(buffer);
+          } 
+          else {
+            //Serial.print("+++");
+            _visBus->print(buffer);
+          }
           serPortLocked = false;
           delay(5);
         }
@@ -238,7 +261,7 @@
         }
         return false;
       }
-      BBD _bbd;        // Blackbox Data Struct
+      BBD _bbd;                     // Blackbox Data Struct
       Blackbox *_blackbox;
       SLog *logger;   
       CoopSemaphore *_sema;
@@ -273,7 +296,7 @@
     private:
       uint8_t errorCode;
       bool serPortLocked;
-
+      HardwareSerial *_visBus;
   };
 //};
 

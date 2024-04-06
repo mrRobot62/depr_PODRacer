@@ -29,14 +29,29 @@
             "justMyCode": true
         }, 
         {
+            "name": "PODR DF Serial",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/serial2dataframe.py",
+            "console": "integratedTerminal",
+            "args": [
+                "--port", "/dev/cu.usbserial-0001",
+                "-vv"
+                //"--baud", "115200",
+                //"--tout", "5",
+                //"--opath", "./data",
+                //"--use_ts"
+            ],
+            "justMyCode": true
+        }, 
+        {
             "name" : "PODR Dashboard",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/dashboard_podracer.py",
             "console": "integratedTerminal",
             "args": [
-                "--paramfile", "PODRVisualizer_settings.json",
-                "--port", "4050"
+                
             ],
             "justMyCode": true
         }

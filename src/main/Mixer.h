@@ -11,46 +11,46 @@
 #include "constants.h"
 
 
-  typedef struct sbus_data SDATA;  
-  struct sbus_data {
-    bool active;
-    bool failsafe;
-    bool lostframe;
-    static constexpr int8_t NUM_CH = 16;
-    int16_t ch[NUM_CH];        
-  }; 
+typedef struct sbus_data SDATA;
+struct sbus_data {
+  bool active;
+  bool failsafe;
+  bool lostframe;
+  static constexpr int8_t NUM_CH = 16;
+  int16_t ch[NUM_CH];
+};
 
-  class Mixer: public TaskAbstract {
-    public:
-      Mixer(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
-      bool begin(void) {
-        bool rc = false;
-        resetError();
-        return true;        
-      };
-      void update(void);
-      void update(OpticalFlow *obj);
-      void update(SurfaceDistance *obj);
-      void update(Hover *obj);
-      void update(Steering *obj);
-
-      bool begin(Receiver *receiver);
-
-    private:
-      void _HoverMixer(uint8_t taskId);
-      void _RPYMixer(void);
-
-    private: 
-      char buffer[100];
-      char _hs = 0x00;
-      uint16_t tmp1, tmp2;
-      
-      //SDATA _data;
-      Receiver *_recv;
-      OpticalFlow *_flow;
-      Hover *_hover;
-      SurfaceDistance *_sdist;
-      Steering *_steer;
+class Mixer : public TaskAbstract {
+public:
+  Mixer(uint8_t taskID, SLog *log, Blackbox *bb = nullptr, HardwareSerial *visBus=nullptr);
+  bool begin(void) {
+    bool rc = false;
+    resetError();
+    return true;
   };
+  void update(void);
+  void update(OpticalFlow *obj);
+  void update(SurfaceDistance *obj);
+  void update(Hover *obj);
+  void update(Steering *obj);
+
+  bool begin(Receiver *receiver);
+
+private:
+  void _HoverMixer(uint8_t taskId);
+  void _RPYMixer(void);
+
+private:
+  char buffer[100];
+  char _hs = 0x00;
+  uint16_t tmp1, tmp2;
+
+  //SDATA _data;
+  Receiver *_recv;
+  OpticalFlow *_flow;
+  Hover *_hover;
+  SurfaceDistance *_sdist;
+  Steering *_steer;
+};
 
 #endif

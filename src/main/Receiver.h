@@ -47,7 +47,7 @@
 
   class Receiver : public TaskAbstract {
     public:
-      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, const char *chmap="AEHRD23T");
+      Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb=nullptr, HardwareSerial *visBus=nullptr, const char *chmap="AEHRD23T");
 
       /** starting the receiver **/
       bool begin(void);

@@ -2,7 +2,8 @@
 #include "Receiver.h"
 
 
-  Receiver::Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb, const char *chmap) : TaskAbstract(taskID, log, bb)  {
+  Receiver::Receiver(uint8_t taskID, SLog *log, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, Blackbox *bb, HardwareSerial *visBus, const char *chmap) 
+  : TaskAbstract(taskID, log, bb, visBus)  {
     _bus = bus;
     _invert = invert;
     _txpin = txpin;

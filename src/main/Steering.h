@@ -22,12 +22,12 @@
   left    | ignore  | left    | fwd
   right   | ignore  | right   | fwd   
   center  | ignore  | center  | center
-          | 0       | center  | backward
+  center  | 0       | center  | backward
 
 **/
 class Steering : public TaskAbstract {
   public:
-    Steering(uint8_t taskID, SLog *log, Blackbox *bb=nullptr);
+    Steering(uint8_t taskID, SLog *log, Blackbox *bb=nullptr, HardwareSerial *visBus=nullptr);
 
     /** initialize **/
     bool begin(void) {;};

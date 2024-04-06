@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+# ------------------------------------------------------------------------------------------------------
+#
+#   The serial reader is a stand alone python progamm, which can collect data from a serial port
+#   and store the content into a csv file
+#
+#   the structure of this binary data is stricktly defined in the PODRacer FW
+#
+#   If something is changed in FW, you have to adapt this changes in this file too (normaly adjusting columns)
+# ------------------------------------------------------------------------------------------------------
+
 import csv
 import time
 from datetime import datetime
@@ -18,7 +28,7 @@ columns = [
            "ARMING","AUX2","AUX3",
            # floats & long values, used by tasks
            "float0","float1", "float2", "float3", "float4", "float5", "float6", "float7",
-           "ldata0","ldata1","ldata2","ldata3","ldata4","ldata5","ldata6","ldata7",
+           "long0","long1","long2","long3","long4","long5","long6","long7",
            # pid values used by tasks
            "pidRoll","pidPitch","pidYaw","pidThrust","pidHover",
            # constants.....
