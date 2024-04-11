@@ -24,7 +24,7 @@ void Blackbox::clearStruct(TaskData *bbd, uint8_t task_id, uint8_t groupA, uint8
 }
 
 bool Blackbox::begin(void) {
-  logger->info("Blackbox initializing ...", _tname);
+  logger->info("Blackbox initializing ...", true, _tname);
   blackboxAvailable = false;
   fOpen = false;
   if (!SD.begin(_cs)) {
@@ -45,7 +45,7 @@ bool Blackbox::begin(void) {
 
   uint64_t cardSize = SD.cardSize() / (1024 * 1024);
   sprintf(buffer, "Blackbox::SD Card Size: %lluMB", cardSize );
-  logger->info(buffer, _tname);
+  logger->info(buffer, true, _tname);
 
   File f = SD.open(cfgFile);
   bool ok = false;
@@ -69,7 +69,7 @@ bool Blackbox::begin(void) {
   int idx = 0;
   sscanf(_buf, "%d", &idx);
   sprintf(buffer, "/blackbox_%04d.bbd", idx);
-  logger->info(buffer, _tname);
+  logger->info(buffer, true, _tname);
 
   bbf = open(SD, buffer, FILE_APPEND, true);
   if (bbf) {

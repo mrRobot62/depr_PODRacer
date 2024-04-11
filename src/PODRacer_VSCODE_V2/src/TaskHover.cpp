@@ -5,9 +5,9 @@ TaskHover::TaskHover(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskS
     bbd = new TaskData();
 }
 
-void TaskHover::begin(uint8_t preventLogging) {
-  sprintf(buffer, "begin() - task ready - preventLogging: %d", preventLogging);
-  log->info(buffer, name);
+void TaskHover::begin(bool allowLog) {
+  sprintf(buffer, "begin() - task ready - allowLogging: %d", allowLog);
+  log->info(buffer, true, name);
 
   resetTaskData();
   sprintf(buffer, "reset hover buffer: FW: %s, TaskID:%d, Armed:%d, ch[HOVERING]:%d, ",
@@ -15,10 +15,10 @@ void TaskHover::begin(uint8_t preventLogging) {
           bbd->data.task_id,
           bbd->data.is_armed,
           bbd->data.ch[HOVERING]);
-  log->info(buffer, _tname);  
+  log->info(buffer, true, _tname);  
 }
 
-void TaskHover::update(uint8_t armed, uint8_t preventLogging) {
+void TaskHover::update(uint8_t armed, bool allowLog) {
   if (armed) {
     resetTaskData();
     log->once_warn(&log_once_mask, LOG_ONCE_DATA1_BIT,"PODRacer armed", name);
@@ -35,7 +35,8 @@ void TaskHover::update(uint8_t armed, uint8_t preventLogging) {
     bbd->data.const_hover[2] = SDIST_MAX_DISTANCE;
     bbd->data.updated = true;
     bb->update(bbd);
-    log->data(bbd, name, "UPD",true);
+    bbd->data.end_millis = millis();
+    log->data(bbd, allowLog, name, "UPD");
   }
   else {
     log->once_warn(&log_once_mask, LOG_ONCE_WARN0_BIT,"PODRacer disarmed", name);

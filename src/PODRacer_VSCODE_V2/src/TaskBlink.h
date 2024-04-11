@@ -18,10 +18,10 @@ class BlinkPattern : public Task {
     BlinkPattern(SLog *log, char* name, uint8_t taskID, CoopSemaphore *taskSema);
     // virtual ~BlinkPattern(){};
     void init(void) {;};      // implementation form abstract class
-    void begin(uint8_t preventLogging = 1);     // implementation form abstract class
-    void update(uint8_t preventLogging = 1);
-    void update(uint8_t pattern, uint8_t preventLogging);
-    void update(TaskData *data, uint8_t preventLogging = 1){;};
+    void begin(bool allowLog = 0);     // implementation form abstract class
+    void update(bool allowLog = 0);
+    void update(uint8_t pattern, bool allowLog = 0);
+    void update(TaskData *data, bool allowLog = 0){;};
     TaskData *getMockedData(TaskData *td, uint8_t mode){;};
 
     inline void reset(void) {

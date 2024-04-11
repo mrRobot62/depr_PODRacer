@@ -82,7 +82,7 @@ void callbackTaskBlinkPattern() {
     } else if (receiver.isArmed()) {
         blink_pattern = PATTERN_ARMED;          // blink pattern to show PODRacer is disarmed
     }
-    obj->update(blink_pattern, PREVENT_LOGGING_BLINK);
+    obj->update(blink_pattern, ALLOW_LOGGING_BLINK);
     yield();
   }
 }
@@ -91,20 +91,17 @@ void callbackTaskBlinkPattern() {
 void callbackTaskHover() {
   unsigned long lastMillis = millis();
   TaskHover *obj = new TaskHover(&logger, "HOVER", TASK_HOVER, &taskSema);
-  obj->begin(PREVENT_LOGGING_HOVER);
+  obj->begin(ALLOW_LOGGING_HOVER);
   mixer.addTask(obj, TASK_HOVER);
-
-  #if defined(USE_TASK_HOVER)
   for(;;) {
     // for hovering we have to set explizit the current hovering
     // value which was received by SBUS
     if (tdr != nullptr) {
       obj->setGlobalChannel(HOVERING, tdr->data.ch[HOVERING]);
     }
-    obj->update(podracer_armed, PREVENT_LOGGING_HOVER);
+    obj->update(podracer_armed, ALLOW_LOGGING_HOVER);
     yield();
   }
-  #endif
 }
 
 /* RUN this callBack function for endless loop this task */
@@ -127,26 +124,29 @@ void callbackTaskOpticalFlow() {
   unsigned long lastMillis = millis();
   TaskOpticalFlow *obj = new TaskOpticalFlow(&logger, "STEER", TASK_OPTICALFLOW, &taskSema);
   mixer.addTask(obj, TASK_OPTICALFLOW);
-  #if defined(USE_TASK_OPTICALFLOW)
   for(;;) {
 
-
-    
   }
-  #endif
 }
 
 /* RUN this callBack function for endless loop this task */
 void callbackTaskSurface() {
   unsigned long lastMillis = millis();
-  TaskSurface *obj = new TaskSurface(&logger, "SDIST", TASK_SURFACEDISTANCE, &taskSema);
+  uint16_t err;
+  HardwareSerial lidarSerial(1);
+  TaskSurface *obj = new TaskSurface(&logger, "SDIST", TASK_SURFACEDISTANCE, &taskSema, &lidarSerial);
   mixer.addTask(obj, TASK_SURFACEDISTANCE);
-  #if defined(USE_TASK_SURFACE)
   for(;;) {
-
+    err = obj->getInternalErrorCode();
+    if (err == 0) {
+      obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
+    }
+    else {
+      sprintf(buffer, "TaskSurface error detected. Code(%5i)", err);
+      //logger.once_error(&log_once_);
+    }
     yield();
   }
-#endif
 }
 
 /*-----------------------------------------------------------------------------------------*/
@@ -165,43 +165,33 @@ void setup() {
     assert(0);
   #endif
 
+
   sprintf(buffer, "- PODRacer-FWVersion: %s", bb.FWVersion());
 
-  logger.info("------------------------------------------------", _tname);
-  logger.info(buffer, _tname);
-  logger.info("------------------------------------------------", _tname);
-  logger.info("setup in progress....", _tname);
+  logger.info("------------------------------------------------", true, _tname);
+  logger.info(buffer, true, _tname);
+  logger.info("------------------------------------------------", true, _tname);
+  logger.info("setup in progress....", true, _tname);
   bb.begin();
   mixer.begin();
 
   taskBlink = new CoopTask<void>(F("BLINK"), callbackTaskBlinkPattern);
   taskHover = new CoopTask<void>(F("HOVER"), callbackTaskHover);
+  taskSurface = new CoopTask<void>(F("SDIST"), callbackTaskSurface);
+  //taskOFlow = new CoopTask<void>(F("OFLOW"), callbackTaskOpticalFlow);
+  //taskSteer = new CoopTask<void>(F("STEER"), callbackTaskSteering);
 
-  logger.info("all tasks initialized, wakeup tasks...", _tname);
+  logger.info("all tasks initialized, wakeup tasks...", true, _tname);
   if (taskBlink) taskBlink->wakeup();
   if (taskHover) taskHover->wakeup();
+  if (taskSurface) taskSurface->wakeup();
 
 
-  logger.info("all tasks running", _tname);
+  logger.info("all tasks running", true, _tname);
 
   //logger.setVisualizerMode(0);
   logger.setVisualizerMode(LOG_OUTPUT_VISUALIZER_MODE);
   
-  //
-  //  We need this task list for the mixer 
-  // Via this pointer list, mixer can call the getter methods
-  // get explicit task data struct
-  //
-  // taskList.list[0] = taskHover;
-  // taskList.list[1] = taskSurface;
-  // taskList.list[2] = taskOFlow;
-  // taskList.list[3] = taskSurface;
-  // taskList.list[4] = taskSteer;
-  // taskList.list[5] = nullptr;
-  // taskList.list[6] = nullptr;
-  // taskList.list[7] = nullptr;
-  // taskList.list[8] = nullptr;
-  // taskList.list[9] = nullptr;
 }
 
 
@@ -222,7 +212,7 @@ void loop() {
   tdr = tdw = nullptr;
   // read SBUS Data from receiver
   receiver.setMock(MOCK_RECEIVER_READ);
-  receiver.read(tdr, PREVENT_LOGGING_RECEIVER);
+  receiver.read(tdr, ALLOW_LOGGING_RECEIVER);
   tdr = receiver.getTaskData();
   // set global arming-flag
   //podracer_armed = receiver.isArmed() ;
@@ -233,7 +223,7 @@ void loop() {
 
   // now we mix all data together
   // update all task data due to latest receiver data structure
-  mixer.update(tdr);
+  mixer.update(tdr, ALLOW_LOGGING_MIXER);
   // get the result from mixer
   tdw = mixer.getTaskData();
   //

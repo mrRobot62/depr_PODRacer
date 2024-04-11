@@ -2,20 +2,20 @@
 
 BlinkPattern::BlinkPattern(SLog *log, char* name, uint8_t taskID, CoopSemaphore *taskSema )
   : Task(log, name, taskID, taskSema) {
-  log->info("BlinkPattern initialized", _tname);
+  log->info("BlinkPattern initialized", true, _tname);
 }
 
 /** do some initializing stuff **/
-void BlinkPattern::begin(uint8_t preventLogging) {
+void BlinkPattern::begin(bool allowLog) {
     reset();
     for (uint8_t i=0; i < sizeof(pins); i++) {
       pinMode(pins[i], OUTPUT);
     }
     sprintf(buffer, "begin() - task ready");
-    log->info(buffer, _tname);
+    log->info(buffer, true, _tname);
 }
 
-void BlinkPattern::update(uint8_t preventLogging) {
+void BlinkPattern::update(bool allowLog) {
   /** update() is called in our processesing loop, call current blink pattern **/
   uint8_t   SEQ = pattern[cPattern][0];       // how often blink
   uint16_t  SEQ_MS = pattern[cPattern][1];    // in this range of milliseconds
@@ -34,8 +34,8 @@ void BlinkPattern::update(uint8_t preventLogging) {
   yield();
 }
 
-void BlinkPattern::update(uint8_t pattern, uint8_t preventLogging) {
+void BlinkPattern::update(uint8_t pattern, bool allowLog) {
   cPattern = constrain(pattern, 0, MAX_PATTERN-1);
-  update(preventLogging);
+  update(allowLog);
 }
 

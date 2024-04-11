@@ -38,7 +38,7 @@ class PODRacer {
       // this is only used during development !!!!!!
       this->mock_level = 0;
       sprintf(buffer,"Constructor PODRacer::%s created...", name);
-      log->info(buffer, name);
+      log->info(buffer, true, name);
       log_once_mask = 0;
     }
     // ~PODRacer(){;};

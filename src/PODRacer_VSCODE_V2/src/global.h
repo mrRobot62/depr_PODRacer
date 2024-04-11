@@ -30,24 +30,24 @@
 // if you use the PODRacer Visualizer / Analyzer - please use this define and comment ALL LOG_xxxxx output
 //#define LOG_VISUALIZER
 
-#define USE_TASK_HOVER          // comment out and this task is not used (only for test purposes)
-#define USE_TASK_STEERING       // comment out and this task is not used (only for test purposes)
-#define USE_TASK_SURFACE        // comment out and this task is not used (only for test purposes)
-#define USE_TASK_OPTICALFLOW    // comment out and this task is not used (only for test purposes)
-#define USE_TASK_IDLE           // comment out and this task is not used (only for test purposes)
-#define USE_TASK_BLINK          // do not commet out !
+// #define USE_TASK_HOVER          // comment out and this task is not used (only for test purposes)
+// #define USE_TASK_STEERING       // comment out and this task is not used (only for test purposes)
+// #define USE_TASK_SURFACE        // comment out and this task is not used (only for test purposes)
+// #define USE_TASK_OPTICALFLOW    // comment out and this task is not used (only for test purposes)
+// #define USE_TASK_IDLE           // comment out and this task is not used (only for test purposes)
+// #define USE_TASK_BLINK          // do not commet out !
 
 
 //#define LOG_ALL
 //#define LOG_BLINK
-// this PREVENT_LOGGING directives suspend additional logoutput as human readable output (in prod env, they should be prevented)
-//
-#define PREVENT_LOGGING_RECEIVER 1
-#define PREVENT_LOGGING_MIXER 1
-#define PREVENT_LOGGING_BLINK 1
-#define PREVENT_LOGGING_HOVER 1
-#define PREVENT_LOGGING_OFLOW 1
-#define PREVENT_LOGGING_SDIST 1
+// this ALLOW_LOGGING directives can suspend additional logoutput as human readable output 
+// if set to 0 - suspend logging (prod-environment), 1=Test/development //
+#define ALLOW_LOGGING_RECEIVER 0
+#define ALLOW_LOGGING_MIXER 0
+#define ALLOW_LOGGING_BLINK 0
+#define ALLOW_LOGGING_HOVER 0
+#define ALLOW_LOGGING_OFLOW 0
+#define ALLOW_LOGGING_SDIST 1
 
 // output data in visualizer-mode or human-readable-mode
 #define LOG_OUTPUT_VISUALIZER_MODE 0     // 0 or 1, 1(default) => visualizer-mode, 0=human-readable-mode
@@ -90,20 +90,7 @@
 
 #define LOG_ONCE_MASK_INIT 0x00   // reset everything to 0
 
-//-------------------------------------------------------------
-// only used during implementing to test & check outputs
-// all parts should used in real behaviour !
-// hovering as base task can't be ignored
-//
-// Note: if below parts are commented, the behind task will work
-//        and can output messages, and inside MIXER the results
-//        from this task will be ignored
-//-------------------------------------------------------------
-#define USE_BLACKBOX
-#define USE_SDIST_OUTPUT
 
-//#define USE_OFLOW_OUTPUT
-//#define USE_STEERING_OUTPUT
 //-------------------------------------------------------------
 
 //-------------------------------------------------------------
@@ -124,17 +111,30 @@
 //------------------------------------------------------------------------------------------------------------
 // TASK_IDs are used to indicate a blink pattern
 //------------------------------------------------------------------------------------------------------------
-#define TASK_HOVER 0
-#define TASK_OPTICALFLOW 1
-#define TASK_SURFACEDISTANCE 2
-#define TASK_STEERING 3
-#define TASK_EMERGENCY 4
-#define TASK_RECEIVER 5          // remember, receiver is not a real cooptask
-#define TASK_MIXER 6              // remember, mixer is not a real cooptask
-#define TASK_BLINK 7
+// Important note:
+// the order number is how mixper.cpp will read output data from the 
+// task, means: higher task (priority), will override (or adapt) less task data
+#define TASK_HOVER 1              // Hover will have the lowest prio
+#define TASK_STEERING 2
+#define TASK_OPTICALFLOW 3
+#define TASK_SURFACEDISTANCE 4
+#define TASK_EMERGENCY 5           // Emergency will have the highes prio
+#define TASK_BLINK -1              // is a task but do not have any prio
+#define TASK_RECEIVER -1           // remember, receiver is not a real cooptask
+#define TASK_MIXER -1              // remember, mixer is not a real cooptask
 
-#define SEMAPHORE_COUNTS 6+2        // number of tasks + MIXER + RECEIVER
+// Error-Codes are 16bit numbers
+// <MSB> = Task, <LSB> Errocde for this Task
+// below comments are only to describe how a error code is generated
+// see Task.h setInternalError
+// #define TASK_ERROR_HOVER          (TASK_HOVER << 8)
+// #define TASK_ERROR_STEERING       (TASK_STEERING << 8)
+// #define TASK_ERROR_SDIST          (TASK_SURFACEDISTANCE << 8)
+// #define TASK_ERROR_OFLOW          (TASK_OPTICALFLOW << 8)
+// #define TASK_ERROR_EMERGENCY      (TASK_EMERGENCY << 8)
 
+
+// this are blink-patterns
 #define PATTERN_PREVENTARMING 9
 #define PATTERN_DISARMED 8
 #define PATTERN_EMERGENCY 7

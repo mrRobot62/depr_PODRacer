@@ -15,18 +15,22 @@
 class Mixer : public PODRacer {
   public:
     Mixer(SLog *log, char *name, CoopSemaphore *taskSema = nullptr)
-      : PODRacer(log, name, taskSema) {;};
+      : PODRacer(log, name, taskSema) {
+      for (uint8_t t=0; t < TASK_LIST_SIZE; t++) {
+        taskList[t].taskID = -1;
+        taskList[t].task = nullptr;
+      }
+    };
     // ~Mixer() {};
     void init() {;};
-    void begin(void);
-
+    void begin(bool allowLog = 0);
     void addTask(Task  *task, uint8_t taskID){
       uint8_t id = constrain(number_of_tasks++, 0, TASK_LIST_SIZE);
-      taskList.list[id] = task;
-      taskList.taskID = taskID;
+      taskList[id].task = task;
+      taskList[id].taskID = taskID;
     } ;
   
-    void update(TaskData *data); 
+    void update(TaskData *data, bool allowLog = 0); 
     
     TaskData *getTaskData() {return this->tdw;};
   protected:
@@ -37,11 +41,11 @@ class Mixer : public PODRacer {
     TaskData *tdw = nullptr;
 
     typedef struct {
-      uint8_t taskID;
-      Task *list[TASK_LIST_SIZE];
+      int taskID;
+      Task *task;
     } TaskList;
 
-    TaskList taskList ;
+    TaskList taskList[TASK_LIST_SIZE] ;
 
 
   private:

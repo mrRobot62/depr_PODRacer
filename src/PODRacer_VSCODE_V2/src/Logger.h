@@ -79,7 +79,7 @@ class SLog {
     void once_info(uint16_t *once_mask, uint8_t maskBit, const char *text, const char *tname="?", bool cr=true) {
       (maskBit > 15)?maskBit=15:maskBit;
       if (bitRead(*once_mask, maskBit) == 0) {
-        info(text, tname, cr);
+        info(text, true, tname, cr);
       }
       bitSet(*once_mask, maskBit);
     }
@@ -101,10 +101,10 @@ class SLog {
       bitSet(*once_mask, maskBit);
     }
 
-    void once_data(uint16_t *once_mask, uint8_t maskBit,TaskData *td, const char *tname="?", const char *tgroup="-", bool printCH=true, bool printFData=false, bool printLData = false, bool pidData = false, bool mode=0 ) {
+    void once_data(uint16_t *once_mask, uint8_t maskBit,TaskData *td, const bool allowLog, const char *tname="?", const char *tgroup="-", bool printCH=true, bool printFData=false, bool printLData = false, bool pidData = false) {
       (maskBit > 15)?maskBit=15:maskBit;
       if (bitRead(*once_mask, maskBit) == 0) {
-        data(td, tname, tgroup, printCH, printFData, printLData, pidData, mode);
+        data(td, allowLog, tname, tgroup, printCH, printFData, printLData, pidData);
       }
       bitSet(*once_mask, maskBit);
     }
@@ -112,7 +112,7 @@ class SLog {
     void once_binary(uint16_t *once_mask, uint8_t maskBit,const char *text, const char* tname, const uint8_t v, bool cr=true){
       (maskBit > 15)?maskBit=15:maskBit;
       if (bitRead(*once_mask, maskBit) == 0) {
-        printBinary(text, tname, v, cr);
+        printBinary(text, true, tname, v, cr);
       }
       bitSet(*once_mask, maskBit);
 
@@ -121,17 +121,18 @@ class SLog {
     /************************************************************************/
     #
     /** is used to log data as output for visualizer or human-readable **/
-    void data(TaskData *data, const char *tname="?", const char *tgroup="-", bool printCH=true, bool printFData=false, bool printLData = false, bool pidData = false, bool mode=0) {
+    void data(TaskData *data, const bool allowLog, const char *tname="?", const char *tgroup="-", bool printCH=true, bool printFData=false, bool printLData = false, bool pidData = false) {
       char tg[20];
       sprintf(tg,"%s_%s", tname, tgroup);
 
       memset(buffer, '\0', sizeof(buffer));
       memset(tmp, '\0', sizeof(tmp));
 
-      if (_visualizer_mode == 1 or mode == 1) {
-        sprintf(buffer, "FEEF,%i,%i,%s,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%d,%d,%d,%d",
+      if (_visualizer_mode == 1 && allowLog) {
+        sprintf(buffer, "\nFEEF,%d,%d,%d,%s,%s,%s,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i,%i,%i,%i,%i,%i,%.2f,%.2f,%.2f,%.2f,%.2f,%i,%i,%i",
         (long)data->data.start_millis,
         (long)data->data.end_millis,
+        ((long)data->data.end_millis - (long)data->data.start_millis),
         tname,
         tgroup,
         tg,
@@ -176,87 +177,88 @@ class SLog {
         data->data.const_hover[0],
         data->data.const_hover[1],
         data->data.const_hover[2],
-        data->data.const_hover[3]
-        );
+        data->data.const_hover[3]);
         addCRC2Buffer(buffer);
         print(buffer, true);
       }
       else {
         // human-readable-output
-        if (printCH) {
-          sprintf(tmp, 
-            "(%s) UPD:%d,ARM:%d,FAIL:%d,LF:%d, CH(R,P,Y,H,T,ARM,AUX2-3): %04d, %04d, %04d, %04d, %04d, %04d, %04d, %04d",
-            tgroup,
-            data->data.updated,
-            data->data.is_armed,
-            data->data.failsafe,
-            data->data.lost_frame,
-            data->data.ch[ROLL],
-            data->data.ch[PITCH],
-            data->data.ch[YAW],
-            data->data.ch[HOVERING],
-            data->data.ch[THRUST],
-            data->data.ch[ARMING],
-            data->data.ch[AUX2],
-            data->data.ch[AUX3]
-          );
-          info(tmp, tname, true);
-        }
-        if (printLData) {
-          sprintf(tmp, 
-            "LONG (0-7):%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-              data->data.ldata[0],
-              data->data.ldata[1],
-              data->data.ldata[2],
-              data->data.ldata[3],
-              data->data.ldata[4],
-              data->data.ldata[5],
-              data->data.ldata[6],
-              data->data.ldata[7]
-           );
-          info(tmp, tname, true);
-        }
-        if (printFData) {
-          sprintf(tmp, 
-            "FLOAT(0-7):%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
-            data->data.fdata[0],
-            data->data.fdata[1],
-            data->data.fdata[2],
-            data->data.fdata[3],
-            data->data.fdata[4],
-            data->data.fdata[5],
-            data->data.fdata[6],
-            data->data.fdata[7]
-          );
-          info(tmp, tname, true);
-        }
-        if (pidData) {
-          sprintf(tmp, 
-            "PID  (RPYTH):%d\t%d\t%d\t%d\t%d",
-            data->data.pid_rpyth[0],
-            data->data.pid_rpyth[1],
-            data->data.pid_rpyth[2],
-            data->data.pid_rpyth[3],
-            data->data.pid_rpyth[4]
-          );
-          info(tmp, tname, true);
-        }
+        if (allowLog) {
+          if (printCH) {
+            sprintf(tmp, 
+              "(%3s)RUN(%3d) UPD:%d,ARM:%d,FAIL:%d,LF:%d, CH(R,P,Y,H,T,ARM,AUX2-3): %04d, %04d, %04d, %04d, %04d, %04d, %04d, %04d",
+              tgroup,
+             ((long)data->data.end_millis - (long)data->data.start_millis),
+              data->data.updated,
+              data->data.is_armed,
+              data->data.failsafe,
+              data->data.lost_frame,
+              data->data.ch[ROLL],
+              data->data.ch[PITCH],
+              data->data.ch[YAW],
+              data->data.ch[HOVERING],
+              data->data.ch[THRUST],
+              data->data.ch[ARMING],
+              data->data.ch[AUX2],
+              data->data.ch[AUX3]
+            );
+            info(tmp, allowLog, tname, true);
+          }
+          if (printLData) {
+            sprintf(tmp, 
+              "LONG (0-7):%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
+                data->data.ldata[0],
+                data->data.ldata[1],
+                data->data.ldata[2],
+                data->data.ldata[3],
+                data->data.ldata[4],
+                data->data.ldata[5],
+                data->data.ldata[6],
+                data->data.ldata[7]
+            );
+            info(tmp, allowLog, tname, true);
+          }
+          if (printFData) {
+            sprintf(tmp, 
+              "FLOAT(0-7):%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d",
+              data->data.fdata[0],
+              data->data.fdata[1],
+              data->data.fdata[2],
+              data->data.fdata[3],
+              data->data.fdata[4],
+              data->data.fdata[5],
+              data->data.fdata[6],
+              data->data.fdata[7]
+            );
+            info(tmp, allowLog, tname, true);
+          }
+          if (pidData) {
+            sprintf(tmp, 
+              "PID  (RPYTH):%d\t%d\t%d\t%d\t%d",
+              data->data.pid_rpyth[0],
+              data->data.pid_rpyth[1],
+              data->data.pid_rpyth[2],
+              data->data.pid_rpyth[3],
+              data->data.pid_rpyth[4]
+            );
+            info(tmp, allowLog, tname, true);
+          }
+        } // allowLog
       }
-      
     }
 
-    void info(const long v, const char *tname="?", bool cr=true) {
+    void info(const long v, bool allowLog, const char *tname="?", bool cr=true) {
       sprintf(buffer, "%i", v);
-      info(buffer, tname, cr);
+      info(buffer, allowLog, tname, cr);
     }
 
-    void info(const double v, const char *tname="?", bool cr=true) {
+    void info(const double v, bool allowLog, const char *tname="?", bool cr=true) {
       sprintf(buffer, "%f", v);
-      info(buffer, tname, cr);
+      info(buffer, allowLog, tname, cr);
     }
     
-    void info(const char *text, const char *tname="?", bool cr=true) {
-      if (_level >= 3) {
+    void info(const char *text, bool allowLog, const char *tname="?", bool cr=true) {
+      if (_level >= 3 && allowLog) {
         _print(text, "INFO", tname, cr);
       }
     }
@@ -275,8 +277,8 @@ class SLog {
       }
     }
 
-    void printBinary(const char *text, const char* tname, const uint8_t v, bool cr=true) {
-      info(text, tname, false);
+    void printBinary(const char *text, bool allowLog, const char* tname, const uint8_t v, bool cr=true) {
+      info(text, allowLog, tname, false);
       sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
       if (cr) {
         _bus->println(buffer);
@@ -301,13 +303,13 @@ class SLog {
       return buffer;
     }
 
-    void debug(const long v, const char *tname="?", bool cr=true) {
+    void debug(const long v, bool allowLog, const char *tname="?", bool cr=true) {
       sprintf(buffer, "%d", v);
-      debug(buffer,tname, cr);
+      debug(buffer, allowLog, tname, cr);
     }
 
-    void debug(const char *text, const char *tname="?", bool cr=true) {
-      if (_level >= 4) {
+    void debug(const char *text, bool allowLog, const char *tname="?", bool cr=true) {
+      if (_level >= 4 && allowLog) {
         _print(text, "DEBUG",tname, cr);
       } 
     }

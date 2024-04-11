@@ -85,12 +85,6 @@ bool SurfaceDistance::begin(Receiver *receiver) {
 
 
 
-  /*
-    RX1_PIN and TX1_PIN occupy the IO ports for the internal flash memory. 
-    When flashing the program, GPIO2 must not be connected to the TFMini.
-  */
-
-
   _bus->begin(BAUD_115200, SERIAL_8N1, RX1_PIN, TX1_PIN);
   if (_lidar->begin(_bus) == false) {
     logger->error("Initialization lidar sensor failed", _tname);

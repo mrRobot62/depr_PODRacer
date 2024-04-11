@@ -25,9 +25,9 @@ class Receiver : public PODRacer{
   public:
     Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSerial *bus, uint8_t rxpin, uint8_t txping, bool invert, const char *chmap="AEHRD23T");
     // ~Receiver(){};
-    bool begin(void);                                       // initialize the receiver
-    void read(TaskData *data, uint8_t preventLogging=1);    // read sbus data and store result inside data struct, preventLogging=0 do logging, 1=supress logging
-    void write(TaskData *data, uint8_t preventLogging=1);   // write data back to sbus receiver, preventLogging=0 do logging, 1=supress logging
+    bool begin(bool allowLog=0);                                       // initialize the receiver
+    void read(TaskData *data, bool allowLog=0);    // read sbus data and store result inside data struct, preventLogging=0 do logging, 1=supress logging
+    void write(TaskData *data, bool allowLog=0);   // write data back to sbus receiver, preventLogging=0 do logging, 1=supress logging
     TaskData *getTaskData();
 
     bool sticksInArmingPos(uint8_t *mask);                  // return true, if all sticks are in arming pos R, P, Y = CenterPos, T, H = MIN_POS

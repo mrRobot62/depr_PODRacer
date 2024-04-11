@@ -53,11 +53,11 @@ Receiver::Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSeria
       channel_calibration[i][CC_SBUS_CPO] = (uint16_t)(channel_calibration[i][CC_SBUS_MAX] - channel_calibration[i][CC_SBUS_MIN]) / 2 + channel_calibration[i][CC_SBUS_MIN];
     }
     bbd = new TaskData();
-    log->info("initialized", name);
+    log->info("initialized", true, name);
 }
 
 /** read() - SBUS data from receiver **/
-void Receiver::read(TaskData *data, uint8_t preventLogging) {
+void Receiver::read(TaskData *data, bool allowLog) {
   bb->clearStruct(bbd, TASK_RECEIVER);
   bbd->data.start_millis = millis();
   if (mock_level > 0) {
@@ -90,16 +90,16 @@ void Receiver::read(TaskData *data, uint8_t preventLogging) {
     bbd->data.ch[i] = centeredValue(bbd->data.ch[i], GIMBAL_CENTER_POSITION, RECEIVER_NOISE);
   }
   
-  log->once_data(&log_once_mask, LOG_ONCE_MOCK3_BIT, bbd, name, "RAW1",true);
+  log->once_data(&log_once_mask, LOG_ONCE_MOCK3_BIT, bbd, allowLog, name, "RAW1");
 
   if (bbd != nullptr) {
     if (ArmingAllowed()) {
         bbd->data.end_millis = millis();
         bbd->data.is_armed = true;
         bbd->data.updated = true;
-        log->once_data(&log_once_mask, LOG_ONCE_RECV_MOCK1, bbd, name, "RAW2", true);
+        log->once_data(&log_once_mask, LOG_ONCE_RECV_MOCK1, bbd, allowLog, name, "RAW2");
         log->once_info(&log_once_mask, LOG_ONCE_RECV_ARM, "PODRacer ARMED", name);
-        log->data(bbd, name, "RD", true, false, false, false);
+        log->data(bbd, allowLog, name, "RD");
     } else {
           bbd->data.end_millis = millis();
         log->once_info(&log_once_mask, LOG_ONCE_RECV_DISARM, "PODRacer DIS-ARMED", name);
@@ -113,12 +113,12 @@ void Receiver::read(TaskData *data, uint8_t preventLogging) {
 }
 
 /** write() - SBUS data to receiver**/
-void Receiver::write(TaskData *data, uint8_t preventLogging) {
+void Receiver::write(TaskData *data, bool allowLog) {
   data->data.start_millis = millis();
 
   delay(10);
   data->data.end_millis = millis();
-  log->data(data, name, "WR", true);
+  log->data(data, allowLog, name, "WR");
 }
 
 TaskData *Receiver::getTaskData() {
@@ -283,7 +283,7 @@ bfs::SbusData Receiver::getMockedData(uint8_t mode) {
   switch (mode) {
     case 1: {  
       sbus_data.ch[ARMING] =  channel_calibration[ARMING][CC_SBUS_MAX];     // ARMED
-      sbus_data.ch[HOVERING]= channel_calibration[HOVERING][CC_SBUS_CPO] + 200;
+      sbus_data.ch[HOVERING]= channel_calibration[HOVERING][CC_SBUS_CPO];
       break;}
     case 2: {
       // disarmed, but arming should be possible
