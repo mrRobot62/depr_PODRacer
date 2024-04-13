@@ -41,6 +41,15 @@ class Task : public PODRacer {
     /* reset TaskData structure, set taskID again*/
     inline void resetTaskData() {
       memset (bbd, 0, sizeof(bbd));
+      // sprintf(buffer, "delete bbd(%d)", bbd);
+      // log->info(buffer, true, name);
+      // delete bbd;
+      // bbd = new TaskData();
+      // sprintf(buffer, "create new bbd(%d)", bbd);
+      // log->info(buffer, true, name);
+      for (uint8_t ch=0;ch < NUMBER_CHANNELS; ch++) {
+        bbd->data.ch[ch] = 0;
+      }
       bbd->data.task_id = _id;  
       sprintf(bbd->data.fwversion, "%s", bb->FWVersion());
       setInternalError(this->_id, 0);

@@ -19,8 +19,8 @@ void Mixer::update(TaskData *data, bool allowLog) {
     TaskList item = taskList[t];
     TaskData *td = item.task->getTaskData();
     switch (item.taskID) {
-      case 1: { // TASK_HOVER
-        sprintf(buffer, "(HOVER)(%0d-%10d) - get data (CH[HOVERING]: %d)", 
+      case TASK_HOVER: { 
+        sprintf(buffer, "(HOVER)(%0d at %10d) - get data (CH[HOVERING]: %d)", 
         item.taskID, item.task,
         td->data.ch[HOVERING]);
         log->debug(buffer, allowLog, name);
@@ -28,15 +28,15 @@ void Mixer::update(TaskData *data, bool allowLog) {
         tdw->data.ch[HOVERING] = td->data.ch[HOVERING];
         break;
       }
-      case 2: { // TASK_STEERING
-        sprintf(buffer, "(STEER)(%0d-%10d) - get data (CH[xyz]: %d)", 
+      case TASK_STEERING: { 
+        sprintf(buffer, "(STEER)(%0d at %10d) - get data (CH[xyz]: %d)", 
         item.taskID, item.task,
         td->data.ch[HOVERING]);
         log->debug(buffer, allowLog, name);
-        break;
+        break; 
       }
-      case 3: { // TASK_OPTICALFLOW
-        sprintf(buffer, "(OFLOW)(%0d-%10d) - get data (CH[R][P][Y]: [%d][%d][%d])", 
+      case TASK_OPTICALFLOW: { 
+        sprintf(buffer, "(OFLOW)(%0d at %10d) - get data (CH[R][P][Y]: [%d][%d][%d])", 
         item.taskID, item.task,
         td->data.ch[ROLL],
         td->data.ch[PITCH],
@@ -48,8 +48,8 @@ void Mixer::update(TaskData *data, bool allowLog) {
         tdw->data.ch[PITCH] += td->data.ch[PITCH];        break;
         tdw->data.ch[YAW] += td->data.ch[YAW];        break;
       }
-      case 4: { // TASK_SURFACEDISTANCE
-        sprintf(buffer, "(SDIST)(%0d-%10d) - get data (CH[HOVERING]: %d)", 
+      case TASK_SURFACEDISTANCE: { 
+        sprintf(buffer, "(SDIST)(%0d at %10d) - get data (CH[HOVERING]: %d)", 
         item.taskID, item.task,
         td->data.ch[HOVERING]);
         log->debug(buffer, allowLog, name);

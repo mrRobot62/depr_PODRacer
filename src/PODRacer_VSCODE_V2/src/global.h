@@ -30,13 +30,6 @@
 // if you use the PODRacer Visualizer / Analyzer - please use this define and comment ALL LOG_xxxxx output
 //#define LOG_VISUALIZER
 
-// #define USE_TASK_HOVER          // comment out and this task is not used (only for test purposes)
-// #define USE_TASK_STEERING       // comment out and this task is not used (only for test purposes)
-// #define USE_TASK_SURFACE        // comment out and this task is not used (only for test purposes)
-// #define USE_TASK_OPTICALFLOW    // comment out and this task is not used (only for test purposes)
-// #define USE_TASK_IDLE           // comment out and this task is not used (only for test purposes)
-// #define USE_TASK_BLINK          // do not commet out !
-
 
 //#define LOG_ALL
 //#define LOG_BLINK
@@ -48,32 +41,15 @@
 #define ALLOW_LOGGING_HOVER 0
 #define ALLOW_LOGGING_OFLOW 0
 #define ALLOW_LOGGING_SDIST 1
+#define ALLOW_LOGGING_STEER 0
 
 // output data in visualizer-mode or human-readable-mode
 #define LOG_OUTPUT_VISUALIZER_MODE 0     // 0 or 1, 1(default) => visualizer-mode, 0=human-readable-mode
 
 #define LOG_ONCE_IDX 10
 
-//#define LOG_TASK_ALL
-//#define LOG_TASK_RECEIVER_W
-//#define LOG_TASK_RECEIVER_RRAW
-//#define LOG_TASK_RECEIVER_R
-//#define LOG_TASK_RECEIVER
-//#define LOG_TASK_MIXER_HOVER
-//#define LOG_TASK_MIXER_SDIST
-//#define LOG_TASK_MIXER_RPY
-//#define LOG_TASK_MIXER_RECVW
-//#define LOG_TASK_MIXER_OFLOW
-//#define LOG_TASK_HOVER
-//#define LOG_TASK_OPTICALFLOW
-//#define LOG_TASK_SURFACE_LIDAR
-//#define LOG_TASK_SURFACE_TOF
-//#define LOG_TASK_SURFACE_BOTH        // both values 
-//#define LOG_TASK_STEERING
-//#define LOG_FILE_LOGGER
-//#define USE_SERIAL_PLOTTER
 
-//#define USE_SDIST_VL53L0        // only VL53L0 OR VL53L1 - not both
+//#define USE_SDIST_VL53L0      // only VL53L0 OR VL53L1 - not both
 #define USE_SDIST_VL53L1      // only VL53L1 OR VL53L0 - not both
 
 // to use log-once mechanism in classes below standard defines are valid for all classes
@@ -122,17 +98,6 @@
 #define TASK_BLINK -1              // is a task but do not have any prio
 #define TASK_RECEIVER -1           // remember, receiver is not a real cooptask
 #define TASK_MIXER -1              // remember, mixer is not a real cooptask
-
-// Error-Codes are 16bit numbers
-// <MSB> = Task, <LSB> Errocde for this Task
-// below comments are only to describe how a error code is generated
-// see Task.h setInternalError
-// #define TASK_ERROR_HOVER          (TASK_HOVER << 8)
-// #define TASK_ERROR_STEERING       (TASK_STEERING << 8)
-// #define TASK_ERROR_SDIST          (TASK_SURFACEDISTANCE << 8)
-// #define TASK_ERROR_OFLOW          (TASK_OPTICALFLOW << 8)
-// #define TASK_ERROR_EMERGENCY      (TASK_EMERGENCY << 8)
-
 
 // this are blink-patterns
 #define PATTERN_PREVENTARMING 9
@@ -213,6 +178,13 @@
 //------------------------------------------------------------------------------------------------------------
 // SurfaceDistance
 //------------------------------------------------------------------------------------------------------------
+
+// use below two flags only , if you do not use one of them. 
+// Mostly used during developing without a physical sensor available
+#define SDIST_IGNORE_TOF_SENSOR 1     // 
+#define SDIST_IGNORE_LIDAR_SENSOR 1   //
+// ----------------------------------------------------------
+
 #define SDIST_MIN_DISTANCE 400         // mm minimum height for hovering
 #define SDIST_MAX_DISTANCE 500         // mm maximum height for hovering
 #define SDIST_THRESHOLD_RANGE_MM 50    // mm if current range is in a time range SDIST_THRESHOLD_RANGE_MS more than the last value - USE it

@@ -108,6 +108,7 @@ void callbackTaskHover() {
 void callbackTaskSteering() {
   unsigned long lastMillis = millis();
   TaskSteering *obj = new TaskSteering(&logger, "STEER", TASK_STEERING, &taskSema);
+  obj->begin(ALLOW_LOGGING_STEER);
   mixer.addTask(obj, TASK_STEERING);
 
   #if defined(USE_TASK_STEERING)
@@ -123,6 +124,7 @@ void callbackTaskSteering() {
 void callbackTaskOpticalFlow() {
   unsigned long lastMillis = millis();
   TaskOpticalFlow *obj = new TaskOpticalFlow(&logger, "STEER", TASK_OPTICALFLOW, &taskSema);
+  obj->begin(ALLOW_LOGGING_OFLOW);
   mixer.addTask(obj, TASK_OPTICALFLOW);
   for(;;) {
 
@@ -135,10 +137,15 @@ void callbackTaskSurface() {
   uint16_t err;
   HardwareSerial lidarSerial(1);
   TaskSurface *obj = new TaskSurface(&logger, "SDIST", TASK_SURFACEDISTANCE, &taskSema, &lidarSerial);
+  Serial.println("-- 1--");
+  obj->begin(ALLOW_LOGGING_SDIST);
   mixer.addTask(obj, TASK_SURFACEDISTANCE);
+  Serial.println("-- 2--");
   for(;;) {
+  Serial.println("------ 3a--");
     err = obj->getInternalErrorCode();
     if (err == 0) {
+  Serial.println("------ 3b--");
       obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
     }
     else {

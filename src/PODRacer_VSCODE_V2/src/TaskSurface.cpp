@@ -21,7 +21,6 @@ void TaskSurface::begin(bool allowLog) {
   skfToF = new SimpleKalmanFilter(skfeMea, skfeEst, skfE);
   skfLidar = new SimpleKalmanFilter(skfeMea, skfeEst, skfE);
 
-
   if (pidTOF == nullptr || pidLIDAR == nullptr) {
     log->error("PID controller not initialized", name);
     internal_error_occured = true;
@@ -51,19 +50,25 @@ void TaskSurface::begin(bool allowLog) {
     return;
   }
   Wire.begin();
-  if (!tof->init()) {
-    log->error("failed to detect and initalize TOF-Sensor", name);
-    internal_error_occured = true;
-    setInternalError(this->_id, ERROR_TASK_TOF2);
-    return;  }
-  tof->setTimeout(500);
-  tof->startContinuous(SDIST_CONT_SCANS_MS);
+  if (SDIST_IGNORE_TOF_SENSOR != 1) {
+    if (!tof->init()) {
+      log->error("failed to detect and initalize TOF-Sensor", name);
+      internal_error_occured = true;
+      setInternalError(this->_id, ERROR_TASK_TOF2);
+      return;  
+    }
+    tof->setTimeout(500);
+    tof->startContinuous(SDIST_CONT_SCANS_MS);
 
-  pidTOF->SetMode(AUTOMATIC);
-  pidTOF->SetOutputLimits(-SDIST_PID_OUTPUT_LIMIT, SDIST_PID_OUTPUT_LIMIT);   // -100...+100
-  pidTOF->SetSampleTime(LOOP_TIME);
+    pidTOF->SetMode(AUTOMATIC);
+    pidTOF->SetOutputLimits(-SDIST_PID_OUTPUT_LIMIT, SDIST_PID_OUTPUT_LIMIT);   // -100...+100
+    pidTOF->SetSampleTime(LOOP_TIME);
 
-  log->info("TOF-Sensor complete initialized...",allowLog, name);
+    log->info("TOF-Sensor complete initialized...",allowLog, name);
+  }
+  else {
+    log->warn("no TOF-sensor used by SDIST_IGNORE_TOF_SENSOR", name);
+  }
 
   // --------------------------------------
   // initializing LIDAR-Sensor (TFMini)
@@ -81,6 +86,7 @@ void TaskSurface::begin(bool allowLog) {
   */
 
   bus->begin(BAUD_115200, SERIAL_8N1, RX1_PIN, TX1_PIN);
+  Serial.println("try lidar->begin()");
   if (lidar->begin(bus) == false) {
     log->error("TFMini-Lidar initialization failed", name);
     setInternalError(this->_id, ERROR_TASK_LIDAR2) ;
