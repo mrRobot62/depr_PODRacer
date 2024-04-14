@@ -181,8 +181,8 @@
 
 // use below two flags only , if you do not use one of them. 
 // Mostly used during developing without a physical sensor available
-#define SDIST_IGNORE_TOF_SENSOR 1     // 
-#define SDIST_IGNORE_LIDAR_SENSOR 1   //
+#define SDIST_IGNORE_TOF_SENSOR     // 
+#define SDIST_IGNORE_LIDAR_SENSOR   //
 // ----------------------------------------------------------
 
 #define SDIST_MIN_DISTANCE 400         // mm minimum height for hovering

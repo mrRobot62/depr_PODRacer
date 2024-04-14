@@ -22,10 +22,10 @@
 // bit 8-15 are individual for classes and are define in the class header file 
 #define LOG_ONCE_SDIST_TOF1 8
 #define LOG_ONCE_SDIST_TOF2 9
-#define LOG_ONCE_SDIST_TOF3 10
+#define LOG_ONCE_SDIST_TOF_WARN3 10
 #define LOG_ONCE_SDIST_LIDAR1 11
 #define LOG_ONCE_SDIST_LIDAR2 12
-#define LOG_ONCE_SDIST_LIDAR3 13
+#define LOG_ONCE_SDIST_LIDAR_WARN3 13
 #define LOG_ONCE_SDIST_MOCK1 14
 #define LOG_ONCE_SDIST_MOCK2 15
 
@@ -46,6 +46,9 @@
 // TOF errors 0xA0..AF
 #define ERROR_LIDAR_OBJ 0x20    // LIDAR errors 0xB0..BF
 
+#define USE_TOF_SENSOR 0        // used as array index => ignore_sensor[]
+#define USE_LIDAR_SENSOR 1      // used as array index => ignore_sensor[]
+
 class TaskSurface : public Task {
   public:
     TaskSurface(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema, HardwareSerial *bus);
@@ -55,10 +58,32 @@ class TaskSurface : public Task {
     void update(bool allowLog = 0) {;};
     void update(bool armed, bool allowLog = 0);
     
-
   protected:
-    
+        
+    // normally used to test the system with simulated sensor data
+    // 
     TaskData *getMockedData(TaskData *td, uint8_t mode) {
+      // default
+      // td->data.ch[ROLL] = 0;
+      // td->data.ch[PITCH] = 0;
+      // td->data.ch[YAW] = 0;
+      // td->data.ch[HOVERING] = 0;
+      // td->data.ch[THRUST] = 0;
+      // td->data.ch[AUX2] = 0;
+      // td->data.ch[AUX3] = 0;
+      switch(mode) {
+        case 0: {
+          td->data.ldata[SDIST_LDATA_LIDAR_RAW] = (long)sdistSetPoint;
+          break;
+        }
+        case 1: {
+          td->data.ldata[SDIST_LDATA_TOF_RAW] = (long)sdistSetPoint;
+          break;
+        }
+        case 2: {
+          break;
+        }
+      }
       return td;
     }
 

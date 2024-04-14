@@ -28,6 +28,9 @@ class Task : public PODRacer {
       this->_id = taskID;
       this->_tname = name;
       this->setInternalError(0,0);
+      for (uint8_t i=0; i < 5; i++) {
+        ignore_sensor[i] = false;
+      }
     };
     // virtual ~Task();
     virtual void init(void) = 0;
@@ -97,6 +100,7 @@ class Task : public PODRacer {
     TaskData globalBBD;
     bool internal_error_occured;
     uint16_t internal_error_code;
+    bool ignore_sensor[5];          // can be used by Task to ignore a sensor (normally used for development)
 
   protected:
     void setBlinkPattern(uint8_t pattern) {this->_blink_pattern = pattern;};
