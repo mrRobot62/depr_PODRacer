@@ -10,11 +10,11 @@
 
 class TaskHover : public Task {
   public:
-    TaskHover(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema);
+    TaskHover(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema);
 
     void init(void) {;};      // implementation form abstract class
     void begin(bool allowLog = 0) ;        
-    void update(uint8_t armed, bool allowLog = 0);
+    void update(bool armed, bool allowLog = 0);
 
     TaskData *getTaskData() {return bbd;};
 

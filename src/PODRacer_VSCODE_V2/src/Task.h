@@ -24,36 +24,50 @@
 
 class Task : public PODRacer {
   public:
-    Task(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema): PODRacer(log, name, taskSema) {
+    Task(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema): PODRacer(log, name, taskSema) {
+      this->bbd = nullptr;
       this->_id = taskID;
       this->_tname = name;
-      this->setInternalError(0,0);
+      resetTaskData(true, true);
+      sprintf(buffer, "TaskID:%d at %d, TaskData: %d",
+         this->_id, this, this->bbd
+      );
+      log->info(buffer, true, name);
+
+      this->setInternalError(taskID,0);
       for (uint8_t i=0; i < 5; i++) {
         ignore_sensor[i] = false;
       }
+      log->debug("Task constructor loaded", true, name);
     };
     // virtual ~Task();
     virtual void init(void) = 0;
-    virtual void begin(bool allowLog = 0);
-    virtual void update(uint8_t armed, bool allowLog = 0){};
+    virtual void begin(bool allowLog = 0) = 0;
+    virtual void update(bool armed, bool allowLog = 0) = 0;
 
     //virtual void update(TaskData *data, uint8_t preventLogging = 1);   // use with a data struct as return 
     uint8_t getBlinkPattern() {return this->_blink_pattern;};
 
 
     /* reset TaskData structure, set taskID again*/
-    inline void resetTaskData() {
-      memset (bbd, 0, sizeof(bbd));
-      // sprintf(buffer, "delete bbd(%d)", bbd);
-      // log->info(buffer, true, name);
-      // delete bbd;
-      // bbd = new TaskData();
-      // sprintf(buffer, "create new bbd(%d)", bbd);
-      // log->info(buffer, true, name);
+    inline void resetTaskData(bool createNew=false, bool allowLogging=false) {
+      if (createNew) {
+        if (this->bbd != nullptr) {
+          //sprintf(buffer,"free this->bbd at %d", this->bbd);
+          //log->info(buffer, true, this->name);
+          free(this->bbd);
+        }
+        this->bbd = new TaskData();
+        log->info("create new TaskData-Object", allowLogging, name);
+      }
+      else {
+        memset (bbd, 0, sizeof(bbd));
+      }
+
       for (uint8_t ch=0;ch < NUMBER_CHANNELS; ch++) {
         bbd->data.ch[ch] = 0;
       }
-      bbd->data.task_id = _id;  
+      bbd->data.task_id = this->_id;  
       sprintf(bbd->data.fwversion, "%s", bb->FWVersion());
       setInternalError(this->_id, 0);
       setUpdated(false);
@@ -94,7 +108,7 @@ class Task : public PODRacer {
 
   protected:
     Receiver *recv;
-    char *_tname;
+    const char*_tname;
     uint8_t _blink_pattern;
     uint8_t _id;
     TaskData globalBBD;

@@ -51,7 +51,7 @@
 
 class TaskSurface : public Task {
   public:
-    TaskSurface(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema, HardwareSerial *bus);
+    TaskSurface(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema, HardwareSerial *bus);
 
     void init(void) {;};      // implementation form abstract class
     void begin(bool allowLog = 0) ;      

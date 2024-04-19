@@ -1,7 +1,7 @@
 #include "Receiver.h"
 
 /** constructor **/
-Receiver::Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char *chmap)
+Receiver::Receiver(SLog *log, const char*name, CoopSemaphore *taskSema, HardwareSerial *bus, uint8_t rxpin, uint8_t txpin, bool invert, const char*chmap)
   : PODRacer(log, name, taskSema) {
     this->_bus = bus;
     this->_invert = invert;
@@ -13,7 +13,7 @@ Receiver::Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSeria
       log->error(buffer, name );
     }
     sprintf(buffer, "ChMap => %s", chmap);
-    log->debug(buffer, name);
+    log->debug(buffer, true, name);
     for (uint8_t c=0; c < strlen(chmap); c++) {
         if (chmap[c] == 'A') {
           channelMap[ROLL] = c;
@@ -47,7 +47,7 @@ Receiver::Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSeria
           channelMap[HOVERING] = c;
           sprintf(buffer, "ChMap => HOVERING\tCH(%2d) Map('%1c'), ToPos(%2d)", c, chmap[c], HOVERING);
         }
-        log->debug(buffer, name);
+        log->debug(buffer, true, name);
     }
     for (uint8_t i=0; i < NUMBER_CHANNELS; i++) {
       channel_calibration[i][CC_SBUS_CPO] = (uint16_t)(channel_calibration[i][CC_SBUS_MAX] - channel_calibration[i][CC_SBUS_MIN]) / 2 + channel_calibration[i][CC_SBUS_MIN];

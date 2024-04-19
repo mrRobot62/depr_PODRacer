@@ -11,11 +11,11 @@
 
 class TaskSteering : public Task {
   public:
-    TaskSteering(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema);
+    TaskSteering(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema);
 
     void init(void) {;};      // implementation form abstract class
-    void begin(uint8_t preventLogging = 1);
-    void update(uint8_t preventLogging = 1) {;};
+    void begin(bool allowLog = 0); 
+    void update(bool armed, bool allowLog = 0){;};
     void update(TaskData *data, uint8_t preventLogging = 1);
 
   protected:

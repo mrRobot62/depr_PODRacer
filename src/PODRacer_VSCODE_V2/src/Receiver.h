@@ -23,7 +23,7 @@
 
 class Receiver : public PODRacer{
   public:
-    Receiver(SLog *log, char *name, CoopSemaphore *taskSema, HardwareSerial *bus, uint8_t rxpin, uint8_t txping, bool invert, const char *chmap="AEHRD23T");
+    Receiver(SLog *log, const char*name, CoopSemaphore *taskSema, HardwareSerial *bus, uint8_t rxpin, uint8_t txping, bool invert, const char*chmap="AEHRD23T");
     // ~Receiver(){};
     bool begin(bool allowLog=0);                                       // initialize the receiver
     void read(TaskData *data, bool allowLog=0);    // read sbus data and store result inside data struct, preventLogging=0 do logging, 1=supress logging
@@ -58,7 +58,7 @@ class Receiver : public PODRacer{
     // receiver use a special mocking method, because we write direcitly into the sbus_data_struact;
     bfs::SbusData getMockedData(uint8_t mode);
 
-    inline bool IsPreventArming() {return _isPreventArming;};     // variable is set by ArmingAllowed()
+    //inline bool IsPreventArming() {return _isPreventArming;};     // variable is set by ArmingAllowed()
 
     
     inline uint16_t getCurrentChannelValue(int8_t ch) {
@@ -84,11 +84,15 @@ class Receiver : public PODRacer{
     /** DO NOT USE THIS setting - maybe it's override your real arming state !!!!! Using only for tests **/
     inline void setArmed(bool v=true) {
       bbd->data.is_armed = v;
+      if (v) {
+        _isPreventArming = false;
+      }
     }
 
     // is true, if arming is allowed and arm-switch is in ARM-Position
     inline bool isArmed() {
-      Serial.print("isARMED("); Serial.print(bbd->data.is_armed); Serial.println(")");
+      //Serial.print("isARMED("); Serial.print(bbd->data.is_armed); Serial.println(")");
+      if (bbd->data.is_armed) {_isPreventArming = false;}
       return bbd->data.is_armed ;
     }
 

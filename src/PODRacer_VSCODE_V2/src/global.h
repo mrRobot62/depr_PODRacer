@@ -25,10 +25,17 @@
   ((byte) & 0x01 ? '1' : '0') 
 
 
-#define LOGLEVEL 3  // 3=Info, 4=Debug
+#define LOGLEVEL 4  // 3=Info, 4=Debug
 
 // if you use the PODRacer Visualizer / Analyzer - please use this define and comment ALL LOG_xxxxx output
 //#define LOG_VISUALIZER
+
+// WakeUp-Flag for tasks, is set to 0, this task will not run
+#define TASK_WAKEUP_BLINK 1
+#define TASK_WAKEUP_HOVER 1
+#define TASK_WAKEUP_OFLOW 1
+#define TASK_WAKEUP_SDIST 0
+#define TASK_WAKEUP_STEER 1
 
 
 //#define LOG_ALL
@@ -36,11 +43,11 @@
 // this ALLOW_LOGGING directives can suspend additional logoutput as human readable output 
 // if set to 0 - suspend logging (prod-environment), 1=Test/development //
 #define ALLOW_LOGGING_RECEIVER 0
-#define ALLOW_LOGGING_MIXER 0
+#define ALLOW_LOGGING_MIXER 1
 #define ALLOW_LOGGING_BLINK 0
-#define ALLOW_LOGGING_HOVER 0
+#define ALLOW_LOGGING_HOVER 1
 #define ALLOW_LOGGING_OFLOW 0
-#define ALLOW_LOGGING_SDIST 1
+#define ALLOW_LOGGING_SDIST 0
 #define ALLOW_LOGGING_STEER 0
 
 // output data in visualizer-mode or human-readable-mode

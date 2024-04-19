@@ -1,15 +1,19 @@
 #include "TaskSurface.h"
 
-TaskSurface::TaskSurface(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema, HardwareSerial *bus) 
+TaskSurface::TaskSurface(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema, HardwareSerial *bus) 
   : Task(log, name, taskID, taskSema) {
     this->bus = bus;
 }
 
+//-----------------------------------------------------------------------------------------------
+// begin()
+// called from main ony one time during initialization
+//-----------------------------------------------------------------------------------------------
 void TaskSurface::begin(bool allowLog) {
   sprintf(buffer, "begin() - task ready - allowLogging: %d", allowLog);
   log->info(buffer, true, name);
-  resetTaskData();
-  sprintf(buffer, "reset surface buffer: FW: %s, TaskID:%d, Armed:%d, ch[HOVERING]:%d, ",
+
+  sprintf(buffer, "TaskData - FW: %s, TaskID:%d, Armed:%d, ch[HOVERING]:%d, ",
           bbd->data.fwversion,
           bbd->data.task_id,
           bbd->data.is_armed,
@@ -34,11 +38,14 @@ void TaskSurface::begin(bool allowLog) {
     setInternalError(this->_id, ERROR_TASK_SKF1);
     return;
   }
+  //
+  // we assume, we do not have errors ;-)
+  this->setInternalError(this->_id, 0);
 
   // --------------------------------------
   // initializing TOF-Sensor
   // --------------------------------------  
-  #ifndef SDIST_IGNORE_TOF_SENSOR {
+  #ifndef SDIST_IGNORE_TOF_SENSOR 
       #if defined(USE_SDIST_VL53L0)
         tof = new VL53L0X();
       #elif defined(USE_SDIST_VL53L1)
@@ -70,21 +77,22 @@ void TaskSurface::begin(bool allowLog) {
     log->warn("TOF-Sensor not available based on SDIST_IGNORE_TOF_SENSOR",name);
     ignore_sensor[USE_TOF_SENSOR] = true;
   #endif
-    // --------------------------------------
-    // initializing LIDAR-Sensor (TFMini)
-    // --------------------------------------
-    lidar = new TFMPlus();
-    if (lidar == nullptr) {
-      log->error("TFMini-Lidar sensor not created");
-      setInternalError(this->_id, ERROR_TASK_LIDAR1) ;
-      return;  
-    }
+
+  // --------------------------------------
+  // initializing LIDAR-Sensor (TFMini)
+  // --------------------------------------
+  lidar = new TFMPlus();
+  if (lidar == nullptr) {
+    log->error("TFMini-Lidar sensor not created");
+    setInternalError(this->_id, ERROR_TASK_LIDAR1) ;
+    return;  
+  }
 
   /*
     RX1_PIN and TX1_PIN occupy the IO ports for the internal flash memory. 
     When flashing the program, GPIO2 must not be connected to the TFMini.
   */
-  #ifndef SDIST_IGNORE_TOF_SENSOR {
+  #ifndef SDIST_IGNORE_TOF_SENSOR
 
     bus->begin(BAUD_115200, SERIAL_8N1, RX1_PIN, TX1_PIN);
     Serial.println("try lidar->begin()");
@@ -96,7 +104,6 @@ void TaskSurface::begin(bool allowLog) {
 
     this->setUpdated(false);
     // reset error flag
-    this->setInternalError(0, this->_id);
 
     log->info("LIDAR-Sensor complete initialized...",allowLog, name);
     ignore_sensor[USE_LIDAR_SENSOR] = false;
@@ -104,7 +111,13 @@ void TaskSurface::begin(bool allowLog) {
     log->warn("LIDAR-Sensor not available based on SDIST_IGNORE_LIDAR_SENSOR", name);
     ignore_sensor[USE_LIDAR_SENSOR] = true;
   #endif
+
 }
+
+//-----------------------------------------------------------------------------------------------
+// update()
+// called from main in a end-less loop (cooperate task behaviour)
+//-----------------------------------------------------------------------------------------------
 
 /**
   SurfaceDistance use two different sensors (TFMini & VL53Lxy). The TFMini is in front of the
@@ -170,6 +183,7 @@ void TaskSurface::update(bool armed, bool allowLog) {
             log->info(buffer, _tname);
           }
         }
+      }
     }
     else {
       // if we do not have a LIDAR-Sensor, we get default data as mock data
@@ -185,7 +199,8 @@ void TaskSurface::update(bool armed, bool allowLog) {
     }
     else {
       // if no TOF-sensor used, set raw value to the defined setPoint
-      tofMm = (long)sdistSetPoint;  
+      getMockedData(bbd, 1);
+      tofMm = bbd->data.ldata[SDIST_LDATA_TOF_RAW];  
     }
     // if something happens, we set channel to zero (no additional load for HOVERING)
     bbd->data.ldata[SDIST_LDATA_LIDAR_RAW] = (long)lidarDist;          // store raw value

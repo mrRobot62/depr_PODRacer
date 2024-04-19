@@ -15,14 +15,15 @@
 
 class BlinkPattern : public Task {
   public:
-    BlinkPattern(SLog *log, char* name, uint8_t taskID, CoopSemaphore *taskSema);
+    BlinkPattern(SLog *log, const char* name, uint8_t taskID, CoopSemaphore *taskSema=nullptr);
     // virtual ~BlinkPattern(){};
     void init(void) {;};      // implementation form abstract class
     void begin(bool allowLog = 0);     // implementation form abstract class
-    void update(bool allowLog = 0);
-    void update(uint8_t pattern, bool allowLog = 0);
-    void update(TaskData *data, bool allowLog = 0){;};
-    TaskData *getMockedData(TaskData *td, uint8_t mode){;};
+    //void update(bool allowLog = 0);
+    void update(uint8_t pattern, bool allowLog = 0);      // special method only for TaskBlink
+    void update(bool armed, bool allowLog = 0){;};        // implementation of virtual method from Task.h
+    void update(TaskData *data, bool allowLog = 0){;};    // implementation of virtual method from Task.h
+    TaskData *getMockedData(TaskData *td, uint8_t mode){ return td;};
 
     inline void reset(void) {
       /* reset current Pattern to standard (0) */

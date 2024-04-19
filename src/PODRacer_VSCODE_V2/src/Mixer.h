@@ -14,7 +14,7 @@
 
 class Mixer : public PODRacer {
   public:
-    Mixer(SLog *log, char *name, CoopSemaphore *taskSema = nullptr)
+    Mixer(SLog *log, const char*name, CoopSemaphore *taskSema = nullptr)
       : PODRacer(log, name, taskSema) {
       for (uint8_t t=0; t < TASK_LIST_SIZE; t++) {
         taskList[t].taskID = -1;
@@ -29,7 +29,7 @@ class Mixer : public PODRacer {
       taskList[id].task = task;
       taskList[id].taskID = taskID;
     } ;
-  
+    void update(uint8_t armed, bool allowLog = 0){;};
     void update(TaskData *data, bool allowLog = 0); 
     
     TaskData *getTaskData() {return this->tdw;};

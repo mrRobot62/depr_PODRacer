@@ -1,6 +1,6 @@
 #include "TaskBlink.h"
 
-BlinkPattern::BlinkPattern(SLog *log, char* name, uint8_t taskID, CoopSemaphore *taskSema )
+BlinkPattern::BlinkPattern(SLog *log, const char* name, uint8_t taskID, CoopSemaphore *taskSema )
   : Task(log, name, taskID, taskSema) {
   log->info("BlinkPattern initialized", true, _tname);
 }
@@ -15,7 +15,8 @@ void BlinkPattern::begin(bool allowLog) {
     log->info(buffer, true, _tname);
 }
 
-void BlinkPattern::update(bool allowLog) {
+void BlinkPattern::update(uint8_t blinkPattern, bool allowLog) {
+  cPattern = constrain(blinkPattern, 0, MAX_PATTERN-1);
   /** update() is called in our processesing loop, call current blink pattern **/
   uint8_t   SEQ = pattern[cPattern][0];       // how often blink
   uint16_t  SEQ_MS = pattern[cPattern][1];    // in this range of milliseconds
@@ -32,10 +33,5 @@ void BlinkPattern::update(bool allowLog) {
   digitalWrite(pin, LOW);
   delay(WAIT);
   yield();
-}
-
-void BlinkPattern::update(uint8_t pattern, bool allowLog) {
-  cPattern = constrain(pattern, 0, MAX_PATTERN-1);
-  update(allowLog);
 }
 

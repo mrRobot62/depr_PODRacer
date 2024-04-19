@@ -1,12 +1,13 @@
 #include "Mixer.h"
 
-// Mixer::Mixer(SLog *log, char *name, CoopSemaphore *taskSema, uint8_t mock) 
+// Mixer::Mixer(SLog *log, const char*name, CoopSemaphore *taskSema, uint8_t mock) 
 //   : PODRacer(log, name, taskSema, mock) {
     
 // }
 
 void Mixer::begin(bool allowLog) {
   tdw = new TaskData();
+  log->info("begin() - task ready", true, name);
 }
 
 void Mixer::update(TaskData *data, bool allowLog) {
@@ -17,8 +18,9 @@ void Mixer::update(TaskData *data, bool allowLog) {
 
   for (uint8_t t=0; t < TASK_LIST_SIZE; t++) {
     TaskList item = taskList[t];
+    if (item.taskID < 0 || item.task == nullptr) break;
     TaskData *td = item.task->getTaskData();
-    switch (item.taskID) {
+     switch (item.taskID) {
       case TASK_HOVER: { 
         sprintf(buffer, "(HOVER)(%0d at %10d) - get data (CH[HOVERING]: %d)", 
         item.taskID, item.task,
@@ -58,10 +60,10 @@ void Mixer::update(TaskData *data, bool allowLog) {
         break;
       }
 
-      default: {
-          // do nothing
-      }
-    }
+       default: {
+           // do nothing
+       }
+     }
   }
 
   delay(10);

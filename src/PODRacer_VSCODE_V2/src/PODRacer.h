@@ -27,7 +27,7 @@ class PODRacer {
   public:
     
     /* PODRacer constructur SLog = Logger, char* name = Name of this object, semaphore is default null, mock (only for test purpose) */
-    PODRacer(SLog *log, char* name, CoopSemaphore *taskSema = nullptr) {
+    PODRacer(SLog *log, const char *name, CoopSemaphore *taskSema = nullptr) {
       //Serial.print("constructor PODRacer "); Serial.println(name);
       this->log = log;
       this->name = name;
@@ -42,7 +42,7 @@ class PODRacer {
       log_once_mask = 0;
     }
     // ~PODRacer(){;};
-    virtual TaskData *getMockedData(TaskData *td, uint8_t mode) {return nullptr;};
+    virtual TaskData *getMockedData(TaskData *td, uint8_t mode) = 0;
     TaskData *getTaskData(){return bbd;};
 
     // set a mock level. Mock leves can be used in tasks to generate different data for a task (like different receiver-read data)
@@ -59,7 +59,7 @@ class PODRacer {
     char buffer[300];
     bool blocked;                       // used as return value for Semaphore.wait() result. If true, blocked by an other task. Acquaring task has to wait
 
-    char* name;
+    const char* name;
     //uint8_t log_once[LOG_ONCE_IDX]; // ten differen types of messages can be used, to print only once per run (typically used by Disarming, Arming, .... messages)
     uint16_t log_once_mask;         // every class can be used 16 different bit position to work with logs which should be printed only once
     SLog *log;

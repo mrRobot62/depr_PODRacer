@@ -26,7 +26,7 @@
 #include "TaskSteering.h"       // task; responsible to calculate a smooth steering
 #include "TaskHover.h"          // task; responsible to calculate the hight of the PODRacer (hovering)
 
-char * _tname = "MAIN";         // used to log MAIN output
+const char* _tname = "MAIN";         // used to log MAIN output
 
 //HardwareSerial hsBus1(1);       // used by LIDAR Sensor in TaskSurface
 HardwareSerial hsBus2(2);       // used by Receiver for SBUS
@@ -70,12 +70,15 @@ TaskData *tdw = nullptr;
 /* RUN this callBack function for endless loop this task */
 void callbackTaskBlinkPattern() {
   unsigned long lastMillis = millis();
-  BlinkPattern *obj = new BlinkPattern(&logger, "BLINK", TASK_BLINK, nullptr);
+  Serial.println("B1...");
+  logger.info("callbackTaskBlinkPattern run...", true, _tname);
+  BlinkPattern *obj = new BlinkPattern(&logger, "BLINK", TASK_BLINK);
   uint8_t blink_pattern = 0;
   obj->begin();
   for(;;) {
     blink_pattern=PATTERN_IDLE;                 // if nothing special blink to have a heart-beat signal
     if (receiver.isPreventArming()) {           // special blink pattern if arming is not possible
+      Serial.println("Prevent");
       blink_pattern = PATTERN_PREVENTARMING;
     } else if (!receiver.isArmed()) {
         blink_pattern = PATTERN_DISARMED;       // blink pattern to show PODRacer is disarmed
@@ -142,16 +145,18 @@ void callbackTaskSurface() {
   mixer.addTask(obj, TASK_SURFACEDISTANCE);
   Serial.println("-- 2--");
   for(;;) {
-  Serial.println("------ 3a--");
-    err = obj->getInternalErrorCode();
-    if (err == 0) {
-  Serial.println("------ 3b--");
-      obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
-    }
-    else {
-      sprintf(buffer, "TaskSurface error detected. Code(%5i)", err);
-      //logger.once_error(&log_once_);
-    }
+    // Serial.println("------ 3a--"); Serial.println((long)obj);
+    // err = obj->getInternalErrorCode();
+    // Serial.println("------ 3b--");
+    // if (err == 0) {
+    //   Serial.println("------ 3c--");
+    //   obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
+    // }
+    // else {
+    //   sprintf(buffer, "TaskSurface error detected. Code(%5i)", err);
+    //   Serial.println(buffer);
+    //   //logger.once_error(&log_once_);
+    // }
     yield();
   }
 }
@@ -179,26 +184,26 @@ void setup() {
   logger.info(buffer, true, _tname);
   logger.info("------------------------------------------------", true, _tname);
   logger.info("setup in progress....", true, _tname);
-  bb.begin();
+  //bb.begin();
   mixer.begin();
 
   taskBlink = new CoopTask<void>(F("BLINK"), callbackTaskBlinkPattern);
   taskHover = new CoopTask<void>(F("HOVER"), callbackTaskHover);
   taskSurface = new CoopTask<void>(F("SDIST"), callbackTaskSurface);
-  //taskOFlow = new CoopTask<void>(F("OFLOW"), callbackTaskOpticalFlow);
-  //taskSteer = new CoopTask<void>(F("STEER"), callbackTaskSteering);
+  taskOFlow = new CoopTask<void>(F("OFLOW"), callbackTaskOpticalFlow);
+  taskSteer = new CoopTask<void>(F("STEER"), callbackTaskSteering);
 
-  logger.info("all tasks initialized, wakeup tasks...", true, _tname);
-  if (taskBlink) taskBlink->wakeup();
-  if (taskHover) taskHover->wakeup();
-  if (taskSurface) taskSurface->wakeup();
-
-
+  logger.info("CoopTasks initialized, wakeup tasks...", true, _tname);
+  if (taskBlink && TASK_WAKEUP_BLINK) { if (taskBlink->wakeup()) {logger.info("...taskBlink woke up", true, _tname);} else {logger.error("...error wakup taskBlink", _tname);}}
+  if (taskHover && TASK_WAKEUP_HOVER) { if (taskHover->wakeup()) {logger.info("...taskHover woke up", true, _tname);} else {logger.error("...error wakup taskHover", _tname);}}
+  if (taskSurface && TASK_WAKEUP_SDIST) { if (taskSurface->wakeup()) {logger.info("...taskSurface woke up", true, _tname);} else {logger.error("...error wakup taskSurface", _tname);}}
+  if (taskOFlow && TASK_WAKEUP_SDIST) { if (taskOFlow->wakeup()) {logger.info("...taskOFlow woke up", true, _tname);} else {logger.error("...error wakup taskOFlow", _tname);}}
+  if (taskSteer && TASK_WAKEUP_SDIST) { if (taskSteer->wakeup()) {logger.info("...taskSteer woke up", true, _tname);} else {logger.error("...error wakup taskSteer", _tname);}}
   logger.info("all tasks running", true, _tname);
 
   //logger.setVisualizerMode(0);
   logger.setVisualizerMode(LOG_OUTPUT_VISUALIZER_MODE);
-  
+  logger.info("setup finished", true, _tname);
 }
 
 
@@ -222,10 +227,10 @@ void loop() {
   receiver.read(tdr, ALLOW_LOGGING_RECEIVER);
   tdr = receiver.getTaskData();
   // set global arming-flag
-  //podracer_armed = receiver.isArmed() ;
+  podracer_armed = receiver.isArmed() ;
   podracer_armed = tdr->data.is_armed ;
 
-  // run all tasks
+  // // run all tasks
   runCoopTasks(nullptr, nullptr, nullptr);
 
   // now we mix all data together
@@ -233,8 +238,8 @@ void loop() {
   mixer.update(tdr, ALLOW_LOGGING_MIXER);
   // get the result from mixer
   tdw = mixer.getTaskData();
-  //
-  // // update SBUS-Receiver with a mixed signal
+  // //
+  // // // update SBUS-Receiver with a mixed signal
   receiver.write(tdw);
   yield();
 }

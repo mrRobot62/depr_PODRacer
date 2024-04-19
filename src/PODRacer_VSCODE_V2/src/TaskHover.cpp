@@ -1,8 +1,8 @@
 #include "TaskHover.h"
 
-TaskHover::TaskHover(SLog *log, char *name, uint8_t taskID, CoopSemaphore *taskSema) 
+TaskHover::TaskHover(SLog *log, const char*name, uint8_t taskID, CoopSemaphore *taskSema) 
   : Task(log, name, taskID, taskSema) {
-    bbd = new TaskData();
+    //bbd = new TaskData();
 }
 
 void TaskHover::begin(bool allowLog) {
@@ -18,7 +18,7 @@ void TaskHover::begin(bool allowLog) {
   log->info(buffer, true, _tname);  
 }
 
-void TaskHover::update(uint8_t armed, bool allowLog) {
+void TaskHover::update(bool armed, bool allowLog) {
   if (armed) {
     resetTaskData();
     log->once_warn(&log_once_mask, LOG_ONCE_DATA1_BIT,"PODRacer armed", name);
@@ -36,6 +36,7 @@ void TaskHover::update(uint8_t armed, bool allowLog) {
     bbd->data.updated = true;
     bb->update(bbd);
     bbd->data.end_millis = millis();
+    Serial.print("HOVER ");
     log->data(bbd, allowLog, name, "UPD");
   }
   else {

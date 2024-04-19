@@ -40,7 +40,7 @@ class Blackbox {
     bool blackboxAvailable;
     bool fOpen;
     fs::File bbf;
-    char *_tname;
+    const char *_tname;
     char buffer[50];
     char cfgFile[14] = "/blackbox.txt";  // please note \0 is added to the string
     char fw[10] = {0};
