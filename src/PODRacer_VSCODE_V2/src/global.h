@@ -13,19 +13,26 @@
 #define FW_VERSION_PATCH 0
 
 #define BYTE_TO_BINARY_PATTERN  "%c%c%c%c%c%c%c%c"
-#define BYTE_TO_BINARY_PATTERN2 "%c%c%c%c% c%c%c%c"
-#define BYTE_TO_BINARY(byte)  \
-  ((byte) & 0x80 ? '1' : '0'), \
-  ((byte) & 0x40 ? '1' : '0'), \
-  ((byte) & 0x20 ? '1' : '0'), \
-  ((byte) & 0x10 ? '1' : '0'), \
-  ((byte) & 0x08 ? '1' : '0'), \
-  ((byte) & 0x04 ? '1' : '0'), \
-  ((byte) & 0x02 ? '1' : '0'), \
-  ((byte) & 0x01 ? '1' : '0') 
+#define BYTE_TO_BINARY_PATTERN2 "%c%c%c%c %c%c%c%c"
+#define BYTE_TO_BINARY(d)  \
+  ((d) & 0x80 ? '1' : '0'), \
+  ((d) & 0x40 ? '1' : '0'), \
+  ((d) & 0x20 ? '1' : '0'), \
+  ((d) & 0x10 ? '1' : '0'), \
+  ((d) & 0x08 ? '1' : '0'), \
+  ((d) & 0x04 ? '1' : '0'), \
+  ((d) & 0x02 ? '1' : '0'), \
+  ((d) & 0x01 ? '1' : '0') 
 
 
-#define LOGLEVEL 4  // 3=Info, 4=Debug
+#define LOGLEVEL 3  // 3=Info, 4=Debug
+
+//------------------------------------------------------------------------------------------------------
+// output data in visualizer-mode or human-readable-mode
+#define LOG_OUTPUT_VISUALIZER_MODE 0     // 0 or 1, 1(default) => visualizer-mode, 0=human-readable-mode
+//------------------------------------------------------------------------------------------------------
+
+
 
 // if you use the PODRacer Visualizer / Analyzer - please use this define and comment ALL LOG_xxxxx output
 //#define LOG_VISUALIZER
@@ -34,7 +41,7 @@
 #define TASK_WAKEUP_BLINK 1
 #define TASK_WAKEUP_HOVER 1
 #define TASK_WAKEUP_OFLOW 1
-#define TASK_WAKEUP_SDIST 0
+#define TASK_WAKEUP_SDIST 1
 #define TASK_WAKEUP_STEER 1
 
 
@@ -47,11 +54,8 @@
 #define ALLOW_LOGGING_BLINK 0
 #define ALLOW_LOGGING_HOVER 1
 #define ALLOW_LOGGING_OFLOW 0
-#define ALLOW_LOGGING_SDIST 0
+#define ALLOW_LOGGING_SDIST 1
 #define ALLOW_LOGGING_STEER 0
-
-// output data in visualizer-mode or human-readable-mode
-#define LOG_OUTPUT_VISUALIZER_MODE 0     // 0 or 1, 1(default) => visualizer-mode, 0=human-readable-mode
 
 #define LOG_ONCE_IDX 10
 
@@ -97,10 +101,15 @@
 // Important note:
 // the order number is how mixper.cpp will read output data from the 
 // task, means: higher task (priority), will override (or adapt) less task data
+// side note: if an error occured, task ID is the first byte of an error byte !
+//              example: 0b00000000 00000000
+//                         |      | |______|  => 255 possible error codes
+//                         |      |
+//                         |______|           => which task produce an error?
 #define TASK_HOVER 1              // Hover will have the lowest prio
 #define TASK_STEERING 2
 #define TASK_OPTICALFLOW 3
-#define TASK_SURFACEDISTANCE 4
+#define TASK_SURFACEDISTANCE 4     
 #define TASK_EMERGENCY 5           // Emergency will have the highes prio
 #define TASK_BLINK -1              // is a task but do not have any prio
 #define TASK_RECEIVER -1           // remember, receiver is not a real cooptask
@@ -115,14 +124,6 @@
 
 // note : mocked values must start >= 1, because default value (no mocking) is 0 ans real SBUS-Data received
 #define MOCK_RECEIVER_READ 1     // id for createing mock data - see receiver.cpp getMockedData(mode)  
-
-// #define MOCK_RECEIVER_WRITE
-// #define MOCK_HOVER
-// #define MOCK_STEERING
-// #define MOCK_OPTICAL_FLOW
-// #define MOCK_SURFACE
-// #define MOCK_MIXER
-
 
 //------------------------------------------------------------------------------------------------------------
 // receivers toogle values around 1-5 +/- if nothing done by user activity

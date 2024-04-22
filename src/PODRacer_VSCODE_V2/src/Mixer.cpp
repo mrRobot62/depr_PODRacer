@@ -54,9 +54,9 @@ void Mixer::update(TaskData *data, bool allowLog) {
         sprintf(buffer, "(SDIST)(%0d at %10d) - get data (CH[HOVERING]: %d)", 
         item.taskID, item.task,
         td->data.ch[HOVERING]);
-        log->debug(buffer, allowLog, name);
-        // set write data (note: add SDIST relative value to current value !)
-        tdw->data.ch[HOVERING] += td->data.ch[HOVERING];
+        // log->debug(buffer, allowLog, name);
+        // // set write data (note: add SDIST relative value to current value !)
+        // tdw->data.ch[HOVERING] += td->data.ch[HOVERING];
         break;
       }
 

@@ -2,7 +2,9 @@
 #define _GLOBAL_UTILS_H_
 
 #define pragma once
-
+#include <stddef.h>
+#include <stdio.h>
+#include <limits.h>
 
 /** check if value is >= min and value <= max **/
 inline bool isInRange(double value, double min, double max) {
@@ -42,5 +44,6 @@ inline int16_t centeredValue(int16_t value, int16_t centerValue, int8_t offset) 
   }
   return value;
 }
+
 
 #endif

@@ -288,8 +288,8 @@ class SLog {
       }
     }
 
-    /** convert v into a bit buffer array **/
-    char* getBinary(const uint8_t v, uint8_t pattern=1) {
+    /** convert v into a bit buffer array, pattern=0|1 default = 1 = '0000 0000' **/
+    void getBinary(char* buffer, const uint8_t v, uint8_t pattern=1) {
       switch(pattern) {
         case 0:
           sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
@@ -300,7 +300,37 @@ class SLog {
         default:
           sprintf(buffer, BYTE_TO_BINARY_PATTERN, BYTE_TO_BINARY(v));
       }
-      return buffer;
+      // return buffer;
+    }
+
+    void convertValueToBinary(char* buffer, size_t const size, void const * const ptr) {
+      unsigned char *b;
+      unsigned char c;
+      uint8_t idx;
+      char x[64];
+
+      for (size_t i = size; i > 0; i--) {
+        b = ((unsigned char* )ptr+i);
+        Serial.println(*b);
+        for (int8_t j=7; j >= 0; j--) {
+          c = (*b & 1);
+          sprintf(x,"b(%d) i(%d) j(%d) idx(%d) c(%d)|", *b, i, j, idx, c);
+          _bus->println(x);          
+        }
+      }
+
+      // for (int8_t i = size-1; i >= 0; i--) {
+      //   for (int8_t j=7; j >= 0; j--) {
+      //     idx = (i*7) + j + 1;
+      //     *b = ((unsigned char* )ptr)[i];
+      //     c = ((b[i] >> j) & 1 > 0)?'1':'0';
+      //     c = (b[i] >> j) & 1;
+      //     //buffer[idx] = c;
+      //     sprintf(x,"b(%d) i(%d) j(%d) idx(%d) c(%d)|", *b, i, j, idx, c);
+      //     _bus->println(x);
+      //   }
+      //}
+      //_bus->println(buffer);
     }
 
     void debug(const long v, bool allowLog, const char *tname="?", bool cr=true) {

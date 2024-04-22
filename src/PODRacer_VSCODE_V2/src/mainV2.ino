@@ -140,23 +140,20 @@ void callbackTaskSurface() {
   uint16_t err;
   HardwareSerial lidarSerial(1);
   TaskSurface *obj = new TaskSurface(&logger, "SDIST", TASK_SURFACEDISTANCE, &taskSema, &lidarSerial);
-  Serial.println("-- 1--");
   obj->begin(ALLOW_LOGGING_SDIST);
   mixer.addTask(obj, TASK_SURFACEDISTANCE);
-  Serial.println("-- 2--");
   for(;;) {
-    // Serial.println("------ 3a--"); Serial.println((long)obj);
-    // err = obj->getInternalErrorCode();
-    // Serial.println("------ 3b--");
-    // if (err == 0) {
-    //   Serial.println("------ 3c--");
-    //   obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
-    // }
-    // else {
-    //   sprintf(buffer, "TaskSurface error detected. Code(%5i)", err);
-    //   Serial.println(buffer);
-    //   //logger.once_error(&log_once_);
-    // }
+    if (obj->isInternalError()) {
+      obj->update(podracer_armed, ALLOW_LOGGING_SDIST);
+    }
+    else {
+      char bin[32];
+      err = 0xCCF0;
+      logger.convertValueToBinary(bin, sizeof(uint16_t), &err);
+      sprintf(buffer, "*** TaskSurface error detected : [%s]", bin);
+      logger.error(buffer, _tname);
+      //logger.once_error(&log_once_);
+    }
     yield();
   }
 }

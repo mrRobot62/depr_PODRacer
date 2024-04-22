@@ -165,7 +165,7 @@ uint8_t Blackbox::writeFile(fs::FS &fs, const char * path, const char * message)
 
 /** write/append **/
 uint8_t Blackbox::writeFile(fs::File &f, const char * message){
-
+  return 0;
 }
 
 uint8_t Blackbox::appendFile(fs::File &f, const char * message){

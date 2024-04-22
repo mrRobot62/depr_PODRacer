@@ -101,9 +101,8 @@ class Task : public PODRacer {
 
     /* set error code and internal flag, of code=0, reset error code and flag*/
     void setInternalError(uint8_t taskID, uint8_t code) {
-      this->internal_error_code = (taskID << 8 ) + code;
       this->internal_error_occured = (code > 0)? true: false;
-
+      this->internal_error_code = (taskID << 8 ) + code;
     }
 
   protected:
