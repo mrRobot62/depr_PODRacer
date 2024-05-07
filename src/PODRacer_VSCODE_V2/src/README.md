@@ -39,7 +39,7 @@ flashed with latest PODRacer FW
 
 
 # Transmitter configuration
-We tested the system with transivers based on OpenTX. Below description describe only what you have to do on an OpenTX FW (or equivalent Systems like EdgeTX).
+We tested the system with transivers based on OpenTX. This description describe only what you have to do on an OpenTX FW (or equivalent Systems like EdgeTX).
 Very important: current FW for PODRacer do only work with SBUS-protocol - no CRSF, nothing other !!! Please double check if your receiver is configured as an SBUS-Receiver
 
 ## Configure Input/Output channels
@@ -47,7 +47,7 @@ Very important: current FW for PODRacer do only work with SBUS-protocol - no CRS
 
 # Betaflight - configuration
 
-#√# Configure Channels
+## Configure Channels
 
 # Thurster-ESC connected as an servo output
 The ESC for the thruster-brushless motor is an single esc connected with the PWM-input pin on the LED_OUTPUT pin from the main flight controller.
