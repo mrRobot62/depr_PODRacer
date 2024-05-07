@@ -1,6 +1,8 @@
 #ifndef _GLOBAL_H_
 #define _GLOBAL_H_
 
+#include <Preferences.h> 
+
 #define pragma once
 
 #define TEST_NO_TRANSMITTER_USED            // TEST - ATTENTION use this only to work withou transmiter
@@ -143,7 +145,7 @@
 #define CC_GIMB_CPO 4       // Gimbal CP
 #define CC_GIMB_MAX 5       // Gimbal MAX
 
-#define ARMING_VALUE 1600     // everything above this value is armed
+//#define ARMING_VALUE 1600     // everything above this value is armed
 
 #define ARMING_ON true
 #define ARMING_OFF false
@@ -162,7 +164,7 @@
 // this is used by sensors like OpticalFlow. All Values between value-CENTER_RANGE and value+CENTER_RANGE are used as "CENTER"
 // this avoid very sensible gimbal movements. For a PODRacer this is ok, for real quad copters a totally NO_GO ;-)
 // value is used for isGimbalMin/Max
-#define CENTER_RANGE 50 
+//#define CENTER_RANGE 50 
 
 
 

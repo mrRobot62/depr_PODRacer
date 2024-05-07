@@ -13,6 +13,7 @@
 #include <assert.h>
 #include "global.h"
 #include "global_utils.h"
+#include "globalvars.h"
 
 // PODRacer Classes/Stuff
 #include "Mixer.h"              // this is not a task; responsible to calculate new writings for receiver, based on all below tasks
@@ -25,6 +26,11 @@
 #include "TaskSurface.h"        // task; responsible to calculate new data based on both distance sensors
 #include "TaskSteering.h"       // task; responsible to calculate a smooth steering
 #include "TaskHover.h"          // task; responsible to calculate the hight of the PODRacer (hovering)
+
+
+
+TaskList taskList ;
+uint16_t ARMING_VALUE;
 
 const char* _tname = "MAIN";         // used to log MAIN output
 

@@ -9,7 +9,10 @@
 typedef struct {
   CoopTask<void> *list[TASK_LIST_SIZE];
 } TaskList;
+extern TaskList taskList;
 
-TaskList taskList ;
+
+// global variables used to set via CLI
+extern uint16_t ARMING_VALUE;
 
 #endif

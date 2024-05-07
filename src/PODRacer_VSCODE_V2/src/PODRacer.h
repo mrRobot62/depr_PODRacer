@@ -16,6 +16,7 @@
 //#include "globalvars.h"
 
 
+
 //------------------------------------------------------------------------
 // Main Abstact class for everything
 // All classes which are not Tasks inherit from this base class
@@ -54,6 +55,7 @@ class PODRacer {
       (maskBit > 15)?maskBit=15:maskBit;
       bitSet(*once_mask, maskBit);
     }
+ 
 
   protected:
     char buffer[300];

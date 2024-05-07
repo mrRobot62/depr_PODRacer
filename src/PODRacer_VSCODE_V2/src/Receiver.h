@@ -8,6 +8,7 @@
 #define _RECEIVER_H_
 
 #include "PODRacer.h"
+#include "globalvars.h"
 
 // LOG-ONCE mechanism only for this class
 // bit 8-15 are individual for classes and are define in the class header file 
