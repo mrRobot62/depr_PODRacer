@@ -1,3 +1,8 @@
+# OUTDATED
+I decided to start more or less from scratch new. Current PODRacer-FW is implemented here: https://github.com/mrRobot62/PODRacerV3.git
+
+
+
 # POD-Racer
 ```
 .---------------------------------------------------------.
